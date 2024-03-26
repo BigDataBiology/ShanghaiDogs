@@ -23,7 +23,7 @@
 ### External data
 
 1. GMGC MAGs
-2. singleM profiles from sandpiper
+2. singleM profiles from sandpiper (inside `dog_microbiome_archive_otu_tables` subdirectory)
 3. mOTU profiles for canid/felid
 
 ### Preprocessed
