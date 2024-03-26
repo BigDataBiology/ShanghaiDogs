@@ -10,6 +10,7 @@ household['D000'] = household['D008']
 
 data['ref_sample'] = data.reference.str.split('.').str[0].str.split('_').str[-1]
 data['qry_sample'] = data.querry.str.split('.').str[0].str.split('_').str[-1]
+data = data[data['alignment_coverage']>0.50]
 
 paired = data.groupby(['ref_sample', 'qry_sample'])['ani'].apply(list)
 paired = paired.reset_index()
