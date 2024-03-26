@@ -6,8 +6,8 @@
 - `data/` (not on git): raw data and results to upload (to ENA/Zenodo/...)
 - `external-data/code` (on git): code to download external data
 - `external-data/data` (not on git): external data downloaded
-- `preprocessed/` (not on git): results of preprocessing for convenience
-- `mag_generation_annotation/`
+- `intermediate-outputs/` (not on git): results of preprocessing for convenience
+- `resource_generation/`: scripts to generate assemblies, MAGs, annotations, ...
 - `analysis/`
 - `notes/`
 

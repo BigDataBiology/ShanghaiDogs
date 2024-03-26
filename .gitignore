@@ -1,4 +1,4 @@
 data/
 external-data/data/
-preprocessed/
+intermediate-outputs/
 *.jugdata/
