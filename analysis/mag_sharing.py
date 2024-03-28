@@ -36,7 +36,7 @@ sns.boxplot(data=paired_10, x='is_same_household', y='fraction_shared_st', ax=ax
 sns.stripplot(data=paired_10, x='is_same_household', y='fraction_shared_st', ax=ax)
 ax.text(0.5, 0.99, f'Mann-Whitney U test: p-value = {m_v.pvalue:.1e}', ha='center', va='center', transform=ax.transAxes)
 sns.despine(fig, trim=True)
-fig.savefig('figures/mag_sharing_ANI.pdf')
+fig.savefig('figures/mag_sharing_ANI.svg')
 
 print(f'''Mann-Whitney U test: p-value = {m_v.pvalue}''')
 
@@ -92,5 +92,9 @@ plt.bar(high_st_sharing['Species'], high_st_sharing['% ani >=99% if same sp'], \
 plt.xticks(rotation=30, ha='right')
 plt.ylim(0,100)
 plt.tight_layout()
+plt.ylabel('% comparisons with ANI >= 99%')
+plt.gca().spines['top'].set_visible(False)
+plt.gca().spines['right'].set_visible(False)
 #plt.show()
-plt.savefig('figures/species_high_ANI.pdf')
+plt.savefig('figures/species_high_ANI.svg')
+
