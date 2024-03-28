@@ -98,3 +98,30 @@ plt.gca().spines['right'].set_visible(False)
 #plt.show()
 plt.savefig('figures/species_high_ANI.svg')
 
+## Filter an specific genus only & plot boxplots
+
+data_tax_genus = data_tax_sp[data_tax_sp['Ref Classification'].str.contains('Blautia')]
+species_counts = data_tax_genus['Ref Classification'].value_counts()
+print(species_counts)
+species_to_keep = list(species_counts[species_counts >= 100].index)
+species_to_keep.remove('d__Bacteria;p__Bacillota_A;c__Clostridia;o__Lachnospirales;f__Lachnospiraceae;g__Blautia_A;s__')
+data_tax_genus_filt = data_tax_genus[data_tax_genus['Ref Classification'].isin(species_to_keep)]
+data_tax_genus_filt = data_tax_genus_filt[~(data_tax_genus_filt['Ref Classification'].str.contains('Blautia_A'))]
+data_tax_genus_filt.loc[:, 'Species'] = data_tax_genus_filt['Ref Classification'].str.split(';', expand=True)[6]
+data_tax_genus_filt.loc[:, 'Species'] = data_tax_genus_filt['Species'].str.replace('s__','')
+data_tax_genus_filt['is_same_household'] = data_tax_genus_filt[['ref_sample', 'qry_sample']].apply(lambda x: household[x[0]] == household[x[1]], axis=1)
+
+fig, ax = plt.subplots()
+ax.clear()
+
+sns.boxplot(data=data_tax_genus_filt, x='Species', y='ani', ax=ax, boxprops={'facecolor':'None'}, showfliers=False)
+sns.stripplot(data=data_tax_genus_filt[data_tax_genus_filt['is_same_household'] == False],
+              x='Species', y='ani', ax=ax, alpha=0.3, color='darkgray')
+sns.stripplot(data=data_tax_genus_filt[data_tax_genus_filt['is_same_household'] == True],
+              x='Species', y='ani', ax=ax, alpha=0.6, color='green')
+
+sns.despine(fig, trim=True)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+plt.tight_layout()
+#plt.show()
+fig.savefig('figures/Blautia_ANI.svg')
