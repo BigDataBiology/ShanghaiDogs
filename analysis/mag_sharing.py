@@ -50,9 +50,15 @@ data_tax = pd.merge(data_tax,mimag_tab[['Classification','Original ID']],left_on
 data_tax.rename(columns={'Classification_x': 'Ref Classification', 'Classification_y': 'Qry Classification'}, inplace=True)
 data_tax.drop(['Original ID_x','Original ID_y'],axis=1,inplace=True)
 
-# Remove comparisons with eachself
+# Remove comparisons with eachself & for comparisons in the two directions, keep one
+# Remove D000 comparisons, since D008 is the same
 mask = data_tax['reference'] != data_tax['querry']
 data_tax = data_tax[mask]
+data_tax['Comparison'] = data_tax[['reference', 'querry']].apply(lambda x: tuple(sorted(x)), axis=1)
+data_tax = data_tax.drop_duplicates('Comparison')
+data_tax.drop(columns=['Comparison'], inplace=True)
+data_tax = data_tax[~(data_tax['reference'].str.contains('D000'))]
+data_tax = data_tax[~(data_tax['querry'].str.contains('D000'))]
 
 # Keep within species comparisons only (according to GTDB-tk)
 diffs = data_tax['Ref Classification'] != data_tax['Qry Classification']
@@ -68,7 +74,7 @@ tax_grouping_99 = data_tax_99['Ref Classification'].value_counts().reset_index()
 tax_grouping = data_tax['Ref Classification'].value_counts().reset_index()
 
 merged_tax = pd.merge(tax_grouping_99,tax_grouping,right_on='Ref Classification',left_on='Ref Classification')
-merged_tax = merged_tax[merged_tax['count_y'] > 300]
+merged_tax = merged_tax[merged_tax['count_y'] > 100]
 merged_tax['comparisons >99 ANI'] = merged_tax['count_x']/merged_tax['count_y']*100
 merged_tax.columns = ['Classification','ani >=99%','ani >=95%','% ani >=99% if same sp']
 
@@ -80,10 +86,11 @@ high_st_sharing = merged_tax_sorted[merged_tax_sorted['% ani >=99% if same sp']>
 low_st_sharing = merged_tax_sorted[merged_tax_sorted['% ani >=99% if same sp']<10]
 
 plt.figure(figsize=(8, 4))
-order_colors = {phylum: plt.cm.tab20(i) for i, phylum in enumerate(merged_tax_sorted['Phylum'].unique())}
+order_colors = {phylum: plt.cm.Dark2(i) for i, phylum in enumerate(merged_tax_sorted['Phylum'].unique())}
 plt.bar(high_st_sharing['Species'], high_st_sharing['% ani >=99% if same sp'], \
         color=[order_colors[order] for order in high_st_sharing['Phylum']])
 plt.xticks(rotation=30, ha='right')
 plt.ylim(0,100)
 plt.tight_layout()
-plt.show()
+#plt.show()
+plt.savefig('figures/species_high_ANI.pdf')
