@@ -2,7 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
+import os
 
+os.chdir('/data/Projects/ShanghaiDogs/analysis')
 data = pd.read_csv('../intermediate-outputs/05_dereplication/01_drep/ANI_9999/data_tables/Ndb.csv')
 metadata = pd.read_csv('../data/ShanghaiDogsMetadata/SH_Dog_metadata_red.csv', index_col=0)
 household = metadata['Household.1'].to_dict()
@@ -11,6 +13,7 @@ household['D000'] = household['D008']
 data['ref_sample'] = data.reference.str.split('.').str[0].str.split('_').str[-1]
 data['qry_sample'] = data.querry.str.split('.').str[0].str.split('_').str[-1]
 data = data[data['alignment_coverage']>0.50]
+data = data[data['ani']>0.95]
 
 paired = data.groupby(['ref_sample', 'qry_sample'])['ani'].apply(list)
 paired = paired.reset_index()
@@ -34,4 +37,3 @@ sns.despine(fig, trim=True)
 fig.savefig('figures/mag_sharing.pdf')
 
 print(f'''Mann-Whitney U test: p-value = {m_v.pvalue}''')
-
