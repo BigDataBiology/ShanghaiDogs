@@ -24,8 +24,9 @@ cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tab
 for ls in *.txt
   do
     prefix=$(echo "$ls" | cut -d '_' -f 1)
+    head $ls
     echo $prefix
-    singlem summarise --input-archive-otu-table-list $ls \
+    singlem summarise --input-archive-otu-table $(cat $ls) \
     --output-archive-otu-table ../otu_tab_by_biosample/$prefix.json \
     --collapse-to-sample-name $prefix
   done
