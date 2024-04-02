@@ -15,6 +15,10 @@ for n in {00..08}
     -p /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}.profile.tsv \
     --otu-table /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_otutable.tsv \
     --taxonomic-profile-krona /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_krona.html
+    # Calculate microbial fraction, size file created with singlem_metagenome_size.py python script
+    singlem microbial_fraction --input-metagenome-sizes /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_350_size.tsv \
+    -p /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}.profile.tsv \
+    --output-tsv /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_microbial_fraction.tsv
   done
 
 for n in {10..52}
@@ -25,6 +29,10 @@ for n in {10..52}
     -p /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}.profile.tsv \
     --otu-table /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_otutable.tsv \
     --taxonomic-profile-krona /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_krona.html
+    # Calculate microbial fraction, size file created with singlem_metagenome_size.py python script
+    singlem microbial_fraction --input-metagenome-sizes /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_350_size.tsv \
+    -p /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}.profile.tsv \
+    --output-tsv /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/D0${n}/D0${n}_microbial_fraction.tsv
   done
 
 # Summarize taxonomic profiles at genus and species level
