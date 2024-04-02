@@ -36,8 +36,8 @@ cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tab
 for json in *.json
   do
     prefix=$(echo "$json" | cut -d '.' -f 1)
-    singlem renew --input-archive-otu-table $json \
-    -p $prefix_profile.tsv \
-    --taxonomic-profile-krona $prefix_krona.html
+    singlem renew --input-archive-otu-table ${json} \
+    -p ${prefix}_profile.tsv \
+    --taxonomic-profile-krona ${prefix}_krona.html
   done
 
