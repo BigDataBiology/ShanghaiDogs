@@ -30,3 +30,14 @@ for ls in *.txt
     --output-archive-otu-table ../otu_tab_by_biosample/$prefix.json \
     --collapse-to-sample-name $prefix
   done
+
+# Reannotate the archive OTU tables from Sandpiper
+cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample
+for json in *.json
+  do
+    prefix=$(echo "$json" | cut -d '.' -f 1)
+    singlem renew --input-archive-otu-table $json \
+    -p $prefix_profile.tsv \
+    --taxonomic-profile-krona $prefix_krona.html
+  done
+
