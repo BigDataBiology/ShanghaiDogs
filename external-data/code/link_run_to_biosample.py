@@ -25,12 +25,13 @@ multiple_output_dir = 'data/dog_microbiome_archive_otu_tables/run_to_biosample/m
 single_output_dir = 'data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run'
 
 for biosample, run_list in biosample_run_lists.items():
-    with open(os.path.join(multiple_output_dir, f'{biosample}_runs_list.txt'), 'w') as f:
-        if len(run_list) == 1:
-            single_output_file = os.path.join(single_output_dir, f'{biosample}_runs_list.txt')
-            with open(single_output_file, 'w') as single_f:
-                single_f.write(f"../../renew_outputs/{run_list[0][:5]}/{run_list[0]}.json\n")
-        else:
+    if len(run_list) == 1:
+        single_output_file = os.path.join(single_output_dir, f'{biosample}_runs_list.txt')
+        with open(single_output_file, 'w') as single_f:
+            single_f.write(f"../../renew_outputs/{run_list[0][:5]}/{run_list[0]}.json\n")
+    elif len(run_list) > 1:
+        multiple_output_file = os.path.join(multiple_output_dir, f'{biosample}_runs_list.txt')
+        with open(multiple_output_file, 'w') as multiple_f:
             for run_number in run_list:
                 full_path = f"../../renew_outputs/{run_number[:5]}/{run_number}.json"
-                f.write(f"{full_path}\n")
+                multiple_f.write(f"{full_path}\n")
