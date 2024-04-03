@@ -29,8 +29,8 @@ for biosample, run_list in biosample_run_lists.items():
         if len(run_list) == 1:
             single_output_file = os.path.join(single_output_dir, f'{biosample}_runs_list.txt')
             with open(single_output_file, 'w') as single_f:
-                single_f.write(f"../renew_outputs/{run_list[0][:5]}/{run_list[0]}.json\n")
+                single_f.write(f"../../renew_outputs/{run_list[0][:5]}/{run_list[0]}.json\n")
         else:
             for run_number in run_list:
-                full_path = f"../renew_outputs/{run_number[:5]}/{run_number}.json"
+                full_path = f"../../renew_outputs/{run_number[:5]}/{run_number}.json"
                 f.write(f"{full_path}\n")
