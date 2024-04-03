@@ -20,9 +20,17 @@ for run, biosample in run_to_biosample.values:
         biosample_run_lists[biosample] = []
     biosample_run_lists[biosample].append(run)
 
-# Write the lists of run numbers to separate biosample.txt files
+# Separate biosamples for number of runs
+multiple_output_dir = 'data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run'
+single_output_dir = 'data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run'
+
 for biosample, run_list in biosample_run_lists.items():
-    with open(f'data/dog_microbiome_archive_otu_tables/run_to_biosample/{biosample}_runs_list.txt', 'w') as f:
-        for run_number in run_list:
-            full_path=f"../renew_outputs/{run_number[:5]}/{run_number}.json"
-            f.write(f"{full_path}\n")
+    with open(os.path.join(multiple_output_dir, f'{biosample}_runs_list.txt'), 'w') as f:
+        if len(run_list) == 1:
+            single_output_file = os.path.join(single_output_dir, f'{biosample}_runs_list.txt')
+            with open(single_output_file, 'w') as single_f:
+                single_f.write(f"../renew_outputs/{run_list[0][:5]}/{run_list[0]}.json\n")
+        else:
+            for run_number in run_list:
+                full_path = f"../renew_outputs/{run_number[:5]}/{run_number}.json"
+                f.write(f"{full_path}\n")
