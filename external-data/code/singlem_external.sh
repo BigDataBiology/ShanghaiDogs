@@ -22,6 +22,19 @@ conda activate singleM
 export SINGLEM_METAPACKAGE_PATH='/data/yiqian/databases/singlem/S3.2.1.GTDB_r214.metapackage_20231006.smpkg.zb'
 
 cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run
+
+# From Coelho_2018 study remove SRR51 runs (16S)
+for ls in *.txt
+  do
+    sed -i '/SRR51/d' $ls
+  done
+
+# manually removed ../../renew_outputs/ERR40/ERR4083939.json from SAMEA6809553
+# mv /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run/SAMEA6809553_runs_list.txt \
+# /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run/SAMEA6809553_runs_list.txt
+
+# manually remove ../../renew_outputs/SRR29/SRR2937753.json from SAMN04262589 (16S)
+
 for ls in *.txt
   do
     prefix=$(echo "$ls" | cut -d '_' -f 1)
@@ -29,9 +42,13 @@ for ls in *.txt
     echo $prefix
     # collapse otu tables from the same Biosample
     singlem summarise --input-archive-otu-table $(cat $ls) \
-    --output-archive-otu-table ../otu_tab_by_biosample/$prefix.json \
+    --output-archive-otu-table ../../otu_tab_by_biosample/$prefix.json \
     --collapse-to-sample-name $prefix
   done
+
+# Check if there are more 'empty' json files
+# that could not be collapsed because some run_id was missing
+# find . -type f -empty
 
 cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run
 for ls in *.txt
@@ -40,7 +57,7 @@ for ls in *.txt
     head $ls
     echo $prefix
     # rename otu tables from unique run_id to to Biosample
-    cp $(cat $ls) ../otu_tab_by_biosample/$prefix.json
+    cp $(cat $ls) ../../otu_tab_by_biosample/$prefix.json
   done
 
 # Reannotate the archive OTU tables from Sandpiper
