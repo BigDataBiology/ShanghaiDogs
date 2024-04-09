@@ -23,17 +23,11 @@ export SINGLEM_METAPACKAGE_PATH='/data/yiqian/databases/singlem/S3.2.1.GTDB_r214
 
 cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run
 
-# From Coelho_2018 study remove SRR51 runs (16S)
-for ls in *.txt
-  do
-    sed -i '/SRR51/d' $ls
-  done
-
-# manually removed ../../renew_outputs/ERR40/ERR4083939.json from SAMEA6809553
-# mv /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run/SAMEA6809553_runs_list.txt \
-# /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run/SAMEA6809553_runs_list.txt
-
-# manually remove ../../renew_outputs/SRR29/SRR2937753.json from SAMN04262589 (16S)
+# find if there are empty files
+find . -type f -empty
+# find files with 1-line and move it to single_run folder
+find . -maxdepth 1 -type f -exec bash -c \
+'lines=$(wc -l < "$1"); if [ "$lines" -eq 1 ]; then mv "$1" ../single_run; fi' bash {} \;
 
 for ls in *.txt
   do
@@ -46,11 +40,13 @@ for ls in *.txt
     --collapse-to-sample-name $prefix
   done
 
-# Check if there are more 'empty' json files
-# that could not be collapsed because some run_id was missing
-# find . -type f -empty
-
 cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run
+find . -type f -empty
+# All PRJNA481475 biosamples (Xu_2019), dogs with diahorrea - are not in Sandpiper
+# SAMEA5953195 (Allaway) & SAMN19735736 (Yarlagadda)
+
+find . -type f -empty -delete
+
 for ls in *.txt
   do
     prefix=$(echo "$ls" | cut -d '_' -f 1)
@@ -71,3 +67,16 @@ for json in *.json
     --taxonomic-profile-krona ${prefix}_krona.html
   done
 
+# OPTIONAL: Some .json tables were empty, had to re-run re-annotation of pending tables
+# Check pending .json tables
+dir1="/data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample"
+dir2="/data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done"
+for file1 in "$dir1"/*; do
+    file2="$dir2/$(basename "$file1")"
+    if [ -e "$file2" ]; then
+        echo "File $(basename "$file1") is present in both directories."
+        rm $file1
+    else
+        echo "File $(basename "$file1") is not present in the second directory."
+    fi
+done
