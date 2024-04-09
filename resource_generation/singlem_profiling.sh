@@ -37,17 +37,22 @@ for n in {10..52}
 
 # Summarize taxonomic profiles at genus and species level
 
-cd /data/anna/animal_metagenome/long-mg-dog/singlem_profiling/00_profiles/
+cd /data/Projects/ShanghaiDogs/
 
-singlem summarise --input-taxonomic-profiles */*profile.tsv \
---output-species-by-site-relative-abundance tax-profile-genus.tsv \
+singlem summarise --input-taxonomic-profiles external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*profile.tsv \
+intermediate-outputs/singlem_profiling/D*/*profile.tsv \
+--output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/all-dog-tax-profile-genus.tsv \
 --output-species-by-site-level genus
 
-singlem summarise --input-taxonomic-profiles */*profile.tsv \
---output-species-by-site-relative-abundance tax-profile-species.tsv \
+singlem summarise --input-taxonomic-profiles external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*profile.tsv \
+intermediate-outputs/singlem_profiling/D*/*profile.tsv \
+--output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/all-dog-tax-profile-species.tsv \
 --output-species-by-site-level species
 
 # Summarize otu tables
 
-singlem summarise --input-otu-tables */*_otutable.tsv \
---output-otu-table combined.otu_table.csv
+singlem summarise --input-archive-otu-tables external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*.json \
+--input-otu-tables intermediate-outputs/singlem_profiling/D*/*_otutable.tsv \
+--output-otu-table intermediate-outputs/singlem_profiling/all-dog-combined-otu_table.csv
+
+
