@@ -26,12 +26,11 @@ single_output_dir = 'data/dog_microbiome_archive_otu_tables/run_to_biosample/sin
 
 for biosample, run_list in biosample_run_lists.items():
     if len(run_list) == 1:
-        single_output_file = os.path.join(single_output_dir, f'{biosample}_runs_list.txt')
-        with open(single_output_file, 'w') as single_f:
-            single_f.write(f"../../renew_outputs/{run_list[0][:5]}/{run_list[0]}.json\n")
+        output_file = os.path.join(single_output_dir, f'{biosample}_runs_list.txt')
     elif len(run_list) > 1:
-        multiple_output_file = os.path.join(multiple_output_dir, f'{biosample}_runs_list.txt')
-        with open(multiple_output_file, 'w') as multiple_f:
-            for run_number in run_list:
-                full_path = f"../../renew_outputs/{run_number[:5]}/{run_number}.json"
-                multiple_f.write(f"{full_path}\n")
+        output_file = os.path.join(multiple_output_dir, f'{biosample}_runs_list.txt')
+    with open(output_file, 'w') as ofile:
+        for run_number in run_list:
+            json_file = f"renew_outputs/{run_number[:5]}/{run_number}.json"
+            if os.path.exists(f'data/dog_microbiome_archive_otu_tables/{json_file}'):
+                ofile.write(f"../../{json_file}\n")
