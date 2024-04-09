@@ -39,20 +39,37 @@ for n in {10..52}
 
 cd /data/Projects/ShanghaiDogs/
 
-singlem summarise --input-taxonomic-profiles external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*profile.tsv \
-intermediate-outputs/singlem_profiling/D*/*profile.tsv \
---output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/all-dog-tax-profile-genus.tsv \
+singlem summarise --input-taxonomic-profiles intermediate-outputs/singlem_profiling/D*/*profile.tsv \
+--output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/tax-profiles/SHD-tax-profile-genus.tsv \
 --output-species-by-site-level genus
 
 singlem summarise --input-taxonomic-profiles external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*profile.tsv \
 intermediate-outputs/singlem_profiling/D*/*profile.tsv \
---output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/all-dog-tax-profile-species.tsv \
+--output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/tax-profiles/all-dog-tax-profile-genus.tsv \
+--output-species-by-site-level genus
+
+singlem summarise --input-taxonomic-profiles intermediate-outputs/singlem_profiling/D*/*profile.tsv \
+--output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/tax-profiles/SHD-tax-profile-species.tsv \
+--output-species-by-site-level species
+
+singlem summarise --input-taxonomic-profiles external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*profile.tsv \
+intermediate-outputs/singlem_profiling/D*/*profile.tsv \
+--output-species-by-site-relative-abundance intermediate-outputs/singlem_profiling/tax-profiles/all-dog-tax-profile-species.tsv \
 --output-species-by-site-level species
 
 # Summarize otu tables
 
+singlem summarise --input-otu-tables intermediate-outputs/singlem_profiling/D*/*_otutable.tsv \
+--output-otu-table intermediate-outputs/singlem_profiling/beta-div/SHD-combined-otu_table.csv
+
 singlem summarise --input-archive-otu-tables external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done/*.json \
 --input-otu-tables intermediate-outputs/singlem_profiling/D*/*_otutable.tsv \
---output-otu-table intermediate-outputs/singlem_profiling/all-dog-combined-otu_table.csv
+--output-otu-table intermediate-outputs/singlem_profiling/beta-div/all-dog-combined-otu_table.csv
 
+# Beta diversity
 
+singlem summarise --input-otu-table intermediate-outputs/singlem_profiling/beta-div/all-dog-combined-otu_table.csv \
+--unifrac-by-otu intermediate-outputs/singlem_profiling/beta-div/all-otu_table
+
+convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/all-otu_table.S3.5.ribosomal_protein_S2_rpsB.unifrac \
+intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd
