@@ -14,9 +14,10 @@ import matplotlib.pyplot as plt
 os.chdir('/data/Projects/ShanghaiDogs')
 
 # IMPORT INPUT FILES
-metadata = pd.read_csv('data/ShanghaiDogsMetadata/ALL_metadata_formatted.csv', \
+metadata = pd.read_csv('data/ShanghaiDogsMetadata/ALL_canid_felid_metadata.csv', \
                        sep=',', encoding= 'unicode_escape', index_col=0)
-print(metadata.shape)
+metadata_dog = metadata[(metadata['Genus']=='Canis')]
+metadata_rep = metadata_dog[(metadata_dog['Representative']=='Yes')]
 
 otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd', \
                       sep='\t', index_col=0)
@@ -49,7 +50,7 @@ def filt_samples_low_OTU(OTUs_tab,min):
     otus_filt_LOW = pd.merge(otus_filt_LOW,metadata,right_index=True,left_index=True)
     return otus_filt, otus_filt_LOW
 
-otus_all_filt, otus_all_filt_low = filt_samples_low_OTU(otu_tab, 200)
+otus_all_filt, otus_all_filt_low = filt_samples_low_OTU(otu_tab, 100)
 
 # Remove 0 columns and rows
 
@@ -100,7 +101,7 @@ otus_all_RA_filt = rm_low_mean_otus(otus_all_RA,0.00001)
 
 # Filter metadata and otu_tab to contain info for only the samples that are in the PCoA plot
 samples_id = list(otus_all_RA_filt.columns)
-metadata_filt = metadata[metadata.index.isin(samples_id)]
+metadata_filt = metadata_rep[metadata_rep.index.isin(samples_id)]
 samples_id = list(metadata_filt.index)
 otus_all_RA_filt = otus_all_RA_filt.T
 otus_all_RA_filt_2 = otus_all_RA_filt[otus_all_RA_filt.index.isin(samples_id)]
@@ -141,15 +142,17 @@ log_otus_all_tab, otus_all_rows, otus_all_cols, otus_all_F = otus_transform(otus
 
 bc_div = skbio.diversity.beta_diversity('braycurtis', log_otus_all_tab, ids=otus_all_rows, validate=True)
 bc_pcoa = skbio.stats.ordination.pcoa(bc_div)
-bc_pcoa.plot(metadata,'Study',axis_labels=('PC 1', 'PC 2', 'PC 3'),
-             title='Samples colored by Study', cmap='tab20', s=18)
+bc_pcoa.plot(metadata_filt,'Study',axis_labels=('PC 1', 'PC 2', 'PC 3'),
+             title='Samples colored by Study', cmap='tab20', s=24)
 plt.tight_layout()
-plt.show()
+#plt.show()
+plt.savefig('analysis/figures/PCoA_all_study_id.svg')
 
 bc_div = skbio.diversity.beta_diversity('braycurtis', log_otus_all_tab, ids=otus_all_rows, validate=True)
 bc_pcoa = skbio.stats.ordination.pcoa(bc_div)
-bc_pcoa.plot(metadata,'env_classification',axis_labels=('PC 1', 'PC 2', 'PC 3'),
-             title='Samples colored by env_classification', cmap='tab20', s=18)
+bc_pcoa.plot(metadata_filt,'env_classification',axis_labels=('PC 1', 'PC 2', 'PC 3'),
+             title='Samples colored by env_classification', cmap='Dark2', s=24)
 plt.tight_layout()
-plt.show()
+#plt.show()
+plt.savefig('analysis/figures/PCoA_all_env_classification.svg')
 
