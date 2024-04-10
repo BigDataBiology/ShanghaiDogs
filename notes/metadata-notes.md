@@ -1,6 +1,14 @@
-# Metadata subsets
+# Metadata
+
+- __ALL_canid_felid_metadata.csv__  
+This metadata table includes all canids and felids initially considered, and their basic metadata.  
+Filter by 'Representative' column to get one representative metagenome per animal.
 
 
+- __SH_Dog_metadata_red.csv__  
+This metadata includes the Shanghai Dogs and their extensive questionnaire information.
+
+### Subsets
 - __ALL_metadata_XXXX.csv__  
 These metadata subsets include all the animals that have information regarding a specific variable (e.g. SIZE)
 
