@@ -24,3 +24,11 @@ for n in {00..52}
     ln -s /data/anna/animal_metagenome/long-mg-dog/06_ARG/00_RGI_CARD/D0${n}/D0${n}_ARG_strict_matches.txt.gz \
     /data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/D0${n}/RGI_CARD/D0${n}_ARG_strict_matches.txt.gz
   done
+
+mkdir /data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/Allobaculum_CheckM2_general_model
+ln -s /data/anna/animal_metagenome/long-mg-dog/05_dereplication/00_dastool/Allobaculum_CheckM2_general_model/Allobaculum_general_quality_report.tsv \
+/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/Allobaculum_CheckM2_general_model/Allo_quality_report.tsv
+
+mkdir /data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/tRNA_scan_output
+ln -s /data/anna/animal_metagenome/long-mg-dog/08_tRNAs/00_tRNA_scan_output/* \
+/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/tRNA_scan_output
