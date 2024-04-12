@@ -12,7 +12,7 @@ import pandas as pd
 # Import checkm2, contig count
 
 checkm = pd.read_csv('/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/checkm2/quality_report.tsv',sep='\t')
-checkm_sub = checkm[['Name','Completeness','Contamination']]
+checkm_sub = checkm[['Name','Completeness','Contamination','Genome_Size']]
 checkm_sub['Quality'] = 'low-quality'  # Default value
 checkm_sub.loc[(checkm_sub['Completeness'] >= 50) & (checkm_sub['Contamination'] < 10), 'Quality'] = 'medium-quality'
 checkm_sub.loc[(checkm_sub['Completeness'] >= 90) & (checkm_sub['Contamination'] < 5), 'Quality'] = 'high-quality'

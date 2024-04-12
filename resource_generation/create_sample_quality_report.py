@@ -20,7 +20,7 @@ tigs = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_das
 
 with open(checkm, 'r') as file:
   checkm = pd.read_csv(file, delimiter='\t',header=0,index_col=0)
-  checkm_sub = checkm[['Completeness','Contamination']]
+  checkm_sub = checkm[['Completeness','Contamination','Genome_Size']]
   checkm_sub.index=checkm_sub.index.str.replace('.fa.gz','')
   suffix='_'+sample_id
   checkm_sub.index=checkm_sub.index.str.replace(suffix,'')
@@ -48,7 +48,8 @@ qual_report['sample_id']=sample_id
 
 qual_report['complete_ID']=qual_report.index+'_'+qual_report['sample_id']
 qual_report=qual_report.reset_index()
-qual_report.columns = ['Bin ID','Completeness','Contamination','Classification','fastani_reference','Nr contigs', 'Quality', 'Sample', 'Complete ID']
+qual_report.columns = ['Bin ID','Completeness','Contamination','Genome_Size','Classification','fastani_reference',\
+                       'Nr contigs', 'Quality', 'Sample', 'Complete ID']
 
 # Add ribosomal genes
 rib = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/"+sample_id+"/barrnap_out/"+sample_id+"_ALL.txt"
@@ -88,7 +89,7 @@ else:
   pivot_rib['5S']=pivot_rib['5S ribosomal RNA']
 
 pivot_rib = pivot_rib[['16S','23S','5S','16S ribosomal RNA partial','23S ribosomal RNA partial','5S ribosomal RNA partial']]
-pivot_rib.columns = ['16S','23S','5S','16S partial','23S partial','5S partial']
+pivot_rib.columns = ['16S total','23S total','5S total','16S partial','23S partial','5S partial']
 qual_report_rib = pd.merge(qual_report, pivot_rib,left_on='Bin ID',right_index=True,how='outer')
 
 dest_folder = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/"+sample_id+"/"+sample_id+"_qual_report.csv"
