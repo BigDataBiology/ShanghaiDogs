@@ -102,3 +102,36 @@ for index, row in merged_MIMAG.iterrows():
 
 ribosomals = pd.DataFrame(counts, index=['ShanghaiDogs: 16S-23S-5S', 'RefSeq: 16S-23S-5S'])
 
+# Compare 16S rRNA genes
+df_16S =  merged_MIMAG[['Classification','16S total_x','16S total_y','23S total_x','23S total_y','Nr contigs','Number']]
+df_16S['Dif_16S']=df_16S['16S total_x'] - df_16S['16S total_y']
+df_16S['Dif_23S']=df_16S['23S total_x'] - df_16S['23S total_y']
+df_16S['Dif_Sum']=df_16S['Dif_16S']+df_16S['Dif_23S']
+df_16S = df_16S.sort_values(by='Dif_16S')
+df_16S = df_16S.drop(columns=['Dif_Sum'])
+
+df_16S['Species']=df_16S['Classification'].str.replace(r'^.*s__', '', regex=True)
+
+# Plotting
+labels = df_16S['Species']
+values = df_16S['Dif_16S']
+plt.figure(figsize=(8, 20))
+bars = plt.barh(labels, values, color=['green' if value > 0 else 'red' for value in values],edgecolor='black',linewidth=0.5)
+
+contiguity_ref = df_16S['Number']
+for bar, value in zip(bars, contiguity):
+    if value == 1:
+        bar_position = bar.get_y() + bar.get_height() / 2
+        plt.plot(-6, bar_position, marker='_', markersize=10, color='black', linestyle='None')
+
+contiguity_SHD = df_16S['Nr contigs']
+for bar, value in zip(bars, contiguity_SHD):
+    if value == 1:
+        bar_position = bar.get_y() + bar.get_height() / 2
+        plt.plot(-5, bar_position, marker='_', markersize=10, color='black', linestyle='None')
+
+plt.xlabel('Dif in N# of 16S genes')
+plt.title('16S rRNA counts')
+plt.gca().invert_yaxis()  # Invert y-axis to have the highest value on top
+plt.tight_layout()
+plt.show()
