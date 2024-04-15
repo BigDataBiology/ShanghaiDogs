@@ -119,7 +119,7 @@ plt.figure(figsize=(8, 20))
 bars = plt.barh(labels, values, color=['green' if value > 0 else 'red' for value in values],edgecolor='black',linewidth=0.5)
 
 contiguity_ref = df_16S['Number']
-for bar, value in zip(bars, contiguity):
+for bar, value in zip(bars, contiguity_ref):
     if value == 1:
         bar_position = bar.get_y() + bar.get_height() / 2
         plt.plot(-6, bar_position, marker='_', markersize=10, color='black', linestyle='None')
