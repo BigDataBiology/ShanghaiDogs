@@ -74,5 +74,6 @@ fig.savefig('analysis/figures/SHDvsRef_16S_histogram.svg')
 
 # Compare the genomes/MAGs that pass MIMAG criteria
 GTDB_qual_MIMAG = GTDB_qual[GTDB_qual['MIMAG']=='Yes']
+GTDB_qual_MIMAG = GTDB_qual_MIMAG[GTDB_qual_MIMAG['Name'].str.contains('GCF')] # only Ref_seq genome assemblies
 SHD_qual_MIMAG = SHD_qual_rep[SHD_qual_rep['MIMAG']=='Yes']
 merged_MIMAG = pd.merge(SHD_qual_MIMAG,GTDB_qual_MIMAG,left_on='GTDBtk fastani Ref',right_on='Name') # only shared
