@@ -77,3 +77,28 @@ GTDB_qual_MIMAG = GTDB_qual[GTDB_qual['MIMAG']=='Yes']
 GTDB_qual_MIMAG = GTDB_qual_MIMAG[GTDB_qual_MIMAG['Name'].str.contains('GCF')] # only Ref_seq genome assemblies
 SHD_qual_MIMAG = SHD_qual_rep[SHD_qual_rep['MIMAG']=='Yes']
 merged_MIMAG = pd.merge(SHD_qual_MIMAG,GTDB_qual_MIMAG,left_on='GTDBtk fastani Ref',right_on='Name') # only shared
+
+# Evaluate the number of ribosomal genes
+# First col will store SHD values, second col RefSeq values
+
+counts = {'same_count_ribosomals': [0, 0],
+          'two_count_ribosomals': [0, 0],
+          'diff_count_ribosomals': [0, 0]}
+
+# Iterate over each row of the dataframe
+for index, row in merged_MIMAG.iterrows():
+    if row['16S total_x'] == row['23S total_x'] == row['5S total_x']:
+        counts['same_count_ribosomals'][0] += 1
+    elif row['16S total_x'] == row['23S total_x'] or row['16S total_x'] == row['5S total_x'] or row['23S total_x'] == row['23S total_x']:
+        counts['two_count_ribosomals'][0] += 1
+    else:
+        counts['diff_count_ribosomals'][0] += 1
+    if row['16S total_y'] == row['23S total_y'] == row['5S total_y']:
+        counts['same_count_ribosomals'][1] += 1
+    elif row['16S total_y'] == row['23S total_y'] or row['16S total_y'] == row['5S total_y'] or row['23S total_y'] == row['23S total_y']:
+        counts['two_count_ribosomals'][1] += 1
+    else:
+        counts['diff_count_ribosomals'][1] += 1
+
+ribosomals = pd.DataFrame(counts, index=['ShanghaiDogs: 16S-23S-5S', 'RefSeq: 16S-23S-5S'])
+
