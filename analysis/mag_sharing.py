@@ -14,15 +14,15 @@ household['D000'] = household['D008']
 
 data['ref_sample'] = data.reference.str.split('.').str[0].str.split('_').str[-1]
 data['qry_sample'] = data.querry.str.split('.').str[0].str.split('_').str[-1]
-data = data[data['alignment_coverage']>0.50]
-data = data[data['ani']>0.95]
+data = data.query('alignment_coverage > 0.50')
+data = data.query('ani > 0.95')
 
 paired = data.groupby(['ref_sample', 'qry_sample'])['ani'].apply(list)
 paired = paired.reset_index()
 paired['shared_sp'] = paired['ani'].apply(lambda x: sum(x > 0.95 for x in x))
 paired['shared_st'] = paired['ani'].apply(lambda x: sum(x > 0.99 for x in x))
 paired = paired[['ref_sample', 'qry_sample', 'shared_sp', 'shared_st']]
-paired.query('ref_sample == "D000" and qry_sample == "D008"')
+
 paired.eval('fraction_shared_st = shared_st/shared_sp', inplace=True)
 paired['is_same_household'] = paired[['ref_sample', 'qry_sample']].apply(lambda x: household[x[0]] == household[x[1]], axis=1)
 paired = paired.query('ref_sample < qry_sample')
@@ -61,12 +61,10 @@ data_tax = data_tax[~(data_tax['reference'].str.contains('D000'))]
 data_tax = data_tax[~(data_tax['querry'].str.contains('D000'))]
 
 # Keep within species comparisons only (according to GTDB-tk)
-diffs = data_tax['Ref Classification'] != data_tax['Qry Classification']
-diffs = data_tax[diffs]
+diffs = data_tax.query('`Ref Classification` != `Qry Classification`')
 print(diffs)
 
-same_sp = data_tax['Ref Classification'] == data_tax['Qry Classification']
-data_tax_sp = data_tax[same_sp]
+data_tax_sp = data_tax.query('`Ref Classification` == `Qry Classification`')
 
 # Proportion of same strain within the same species
 data_tax_99 = data_tax_sp[data_tax_sp['ani']>0.99]
@@ -85,18 +83,18 @@ merged_tax_sorted = merged_tax.sort_values(by='% ani >=99% if same sp', ascendin
 high_st_sharing = merged_tax_sorted[merged_tax_sorted['% ani >=99% if same sp']>70]
 low_st_sharing = merged_tax_sorted[merged_tax_sorted['% ani >=99% if same sp']<10]
 
-plt.figure(figsize=(8, 4))
+fig,ax = plt.subplots(figsize=(8,4))
 order_colors = {phylum: plt.cm.Dark2(i) for i, phylum in enumerate(merged_tax_sorted['Phylum'].unique())}
-plt.bar(high_st_sharing['Species'], high_st_sharing['% ani >=99% if same sp'], \
+ax.bar(high_st_sharing['Species'], high_st_sharing['% ani >=99% if same sp'], \
         color=[order_colors[order] for order in high_st_sharing['Phylum']])
-plt.xticks(rotation=30, ha='right')
-plt.ylim(0,100)
-plt.tight_layout()
-plt.ylabel('% comparisons with ANI >= 99%')
-plt.gca().spines['top'].set_visible(False)
-plt.gca().spines['right'].set_visible(False)
+ax.set_xticks(rotation=30, ha='right')
+ax.set_ylim(0,100)
+ax.tight_layout()
+ax.set_ylabel('% comparisons with ANI >= 99%')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
 #plt.show()
-plt.savefig('figures/species_high_ANI.svg')
+fig.savefig('figures/species_high_ANI.svg')
 
 ## Filter an specific genus only & plot boxplots
 
@@ -122,6 +120,6 @@ sns.stripplot(data=data_tax_genus_filt[data_tax_genus_filt['is_same_household'] 
 
 sns.despine(fig, trim=True)
 ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-plt.tight_layout()
+fig.tight_layout()
 #plt.show()
 fig.savefig('figures/Blautia_ANI.svg')
