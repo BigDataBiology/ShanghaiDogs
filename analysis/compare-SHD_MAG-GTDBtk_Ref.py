@@ -17,8 +17,7 @@ SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep='
 GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
 
 # Filter Representative genomes from Shanghai dogs
-SHD_qual_rep = SHD_qual[SHD_qual['Representative']=='Yes']
-SHD_qual_rep = SHD_qual_rep[SHD_qual_rep['Quality']=='high-quality']
+SHD_qual_rep = SHD_qual.query('Representative=="Yes" and Quality=="high-quality"')
 
 # Merge the the two qual_report
 merged = pd.merge(SHD_qual_rep,GTDB_qual,left_on='GTDBtk fastani Ref',right_on='Name') # include only those that are shared
@@ -73,9 +72,9 @@ plt.tight_layout()
 fig.savefig('analysis/figures/SHDvsRef_16S_histogram.svg')
 
 # Compare the genomes/MAGs that pass MIMAG criteria
-GTDB_qual_MIMAG = GTDB_qual[GTDB_qual['MIMAG']=='Yes']
+GTDB_qual_MIMAG = GTDB_qual.query("MIMAG =='Yes'")
 GTDB_qual_MIMAG = GTDB_qual_MIMAG[GTDB_qual_MIMAG['Name'].str.contains('GCF')] # only Ref_seq genome assemblies
-SHD_qual_MIMAG = SHD_qual_rep[SHD_qual_rep['MIMAG']=='Yes']
+SHD_qual_MIMAG = SHD_qual_rep.query("MIMAG =='Yes'")
 merged_MIMAG = pd.merge(SHD_qual_MIMAG,GTDB_qual_MIMAG,left_on='GTDBtk fastani Ref',right_on='Name') # only shared
 
 # Evaluate the number of ribosomal genes

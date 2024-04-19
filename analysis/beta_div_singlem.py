@@ -16,8 +16,7 @@ os.chdir('/data/Projects/ShanghaiDogs')
 # IMPORT INPUT FILES
 metadata = pd.read_csv('data/ShanghaiDogsMetadata/ALL_canid_felid_metadata.csv', \
                        sep=',', encoding= 'unicode_escape', index_col=0)
-metadata_dog = metadata[(metadata['Genus']=='Canis')]
-metadata_rep = metadata_dog[(metadata_dog['Representative']=='Yes')]
+metadata_rep = metadata.query('Genus == "Canis" and Representative=="Yes"')
 
 otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd', \
                       sep='\t', index_col=0)

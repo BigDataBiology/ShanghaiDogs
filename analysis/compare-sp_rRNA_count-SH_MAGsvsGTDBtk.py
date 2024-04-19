@@ -17,7 +17,7 @@ SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep='
 GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
 
 # Filter 'MIMAG' genomes from Shanghai dogs
-SHD_qual_HQ = SHD_qual[SHD_qual['Quality']=='high-quality']
+SHD_qual_HQ = SHD_qual.query("Quality =='high-quality'")
 count_sp = SHD_qual_HQ.groupby('Classification').size().reset_index()
 
 # Create Genus and Species column
