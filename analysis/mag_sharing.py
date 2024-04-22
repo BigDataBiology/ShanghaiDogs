@@ -72,7 +72,7 @@ tax_grouping_99 = data_tax_99['Ref Classification'].value_counts().reset_index()
 tax_grouping = data_tax['Ref Classification'].value_counts().reset_index()
 
 merged_tax = pd.merge(tax_grouping_99,tax_grouping,right_on='Ref Classification',left_on='Ref Classification')
-merged_tax = merged_tax[merged_tax['count_y'] > 100]
+merged_tax = merged_tax.query('count_y > 100')
 merged_tax['comparisons >99 ANI'] = merged_tax['count_x']/merged_tax['count_y']*100
 merged_tax.columns = ['Classification','ani >=99%','ani >=95%','% ani >=99% if same sp']
 
@@ -87,12 +87,12 @@ fig,ax = plt.subplots(figsize=(8,4))
 order_colors = {phylum: plt.cm.Dark2(i) for i, phylum in enumerate(merged_tax_sorted['Phylum'].unique())}
 ax.bar(high_st_sharing['Species'], high_st_sharing['% ani >=99% if same sp'], \
         color=[order_colors[order] for order in high_st_sharing['Phylum']])
-ax.set_xticks(rotation=30, ha='right')
+ax.set_xticklabels(high_st_sharing['Species'],rotation=30, ha='right')
 ax.set_ylim(0,100)
-ax.tight_layout()
 ax.set_ylabel('% comparisons with ANI >= 99%')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
+fig.tight_layout()
 #plt.show()
 fig.savefig('figures/species_high_ANI.svg')
 

@@ -29,22 +29,23 @@ x_SHD = merged['16S total_x']
 y_Ref = merged['Number']
 x_Ref = merged['16S total_y']
 
-plt.scatter(x_Ref, y_Ref, label='Genbank/RefSeq genomes',alpha=0.5)
-plt.scatter(x_SHD, y_SHD, label='Shanghai Dogs',alpha=0.5)
-plt.xlabel('16S genes')
-plt.ylabel('Nr contigs')
-plt.title('Scatterplot of Contiguity vs 16S genes')
-plt.legend()
+fig, ax = plt.subplots()
+ax.scatter(x_Ref, y_Ref, label='Genbank/RefSeq genomes',alpha=0.5)
+ax.scatter(x_SHD, y_SHD, label='Shanghai Dogs',alpha=0.5)
+ax.set_xlabel('16S genes')
+ax.set_ylabel('Nr contigs')
+ax.set_title('Scatterplot of Contiguity vs 16S genes')
+ax.legend()
 #plt.show()
-plt.savefig('analysis/figures/SHDvsRef_16S_scatterplot.svg')
+fig.savefig('analysis/figures/SHDvsRef_16S_scatterplot.svg')
 
 # Boxplot
 fig, ax = plt.subplots()
 ax.clear()
 sns.boxplot(data=[x_Ref, x_SHD], palette="Dark2",ax=ax)
-plt.ylabel('Nr 16S genes')
-plt.xticks(ticks=[0, 1], labels=['Ref genomes', 'SHD MAGs (here)'])
-sns.despine(fig, trim=False)
+ax.set_ylabel('Nr 16S genes')
+ax.set_xticklabels(labels=['Ref genomes', 'SHD MAGs (here)'])
+sns.despine(trim=False)
 #plt.show()
 
 fig.savefig('analysis/figures/SHDvsRef_16S_boxplot.svg')
@@ -114,23 +115,24 @@ df_16S['Species']=df_16S['Classification'].str.replace(r'^.*s__', '', regex=True
 # Plotting
 labels = df_16S['Species']
 values = df_16S['Dif_16S']
-plt.figure(figsize=(8, 20))
-bars = plt.barh(labels, values, color=['green' if value > 0 else 'red' for value in values],edgecolor='black',linewidth=0.5)
+
+fig, ax = plt.subplots(figsize=(8, 20))
+bars = ax.barh(labels, values, color=['green' if value > 0 else 'red' for value in values], edgecolor='black', linewidth=0.5)
 
 contiguity_ref = df_16S['Number']
 for bar, value in zip(bars, contiguity_ref):
     if value == 1:
         bar_position = bar.get_y() + bar.get_height() / 2
-        plt.plot(-6, bar_position, marker='_', markersize=10, color='black', linestyle='None')
+        ax.plot(-6, bar_position, marker='_', markersize=10, color='black', linestyle='None')
 
 contiguity_SHD = df_16S['Nr contigs']
 for bar, value in zip(bars, contiguity_SHD):
     if value == 1:
         bar_position = bar.get_y() + bar.get_height() / 2
-        plt.plot(-5, bar_position, marker='_', markersize=10, color='black', linestyle='None')
+        ax.plot(-5, bar_position, marker='_', markersize=10, color='black', linestyle='None')
 
-plt.xlabel('Dif in N# of 16S genes')
-plt.title('16S rRNA counts')
-plt.gca().invert_yaxis()  # Invert y-axis to have the highest value on top
+ax.set_xlabel('Dif in N# of 16S genes')
+ax.set_title('16S rRNA counts')
+ax.invert_yaxis()  # Invert y-axis to have the highest value on top
 plt.tight_layout()
 plt.show()

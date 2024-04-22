@@ -26,7 +26,7 @@ count_sp['Genus'] = count_sp['Genus'].str.replace(r';s__.*', '', regex=True)
 count_sp['Species'] = count_sp['Classification'].str.replace(r'^.*s__', '', regex=True)
 count_sp['Species'] = count_sp['Species'].replace('', 'unclassified')
 
-abd_sp = count_sp[(count_sp[0] >= 20) & (count_sp['Species'] != 'unclassified')]
+abd_sp = count_sp.query('@count_sp[0] >= 20 and Species != "unclassified"')
 abd_sp_ls = list(abd_sp['Species'])
 
 # Stripplot of certain species

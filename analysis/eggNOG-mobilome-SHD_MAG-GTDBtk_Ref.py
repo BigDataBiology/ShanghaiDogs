@@ -69,18 +69,16 @@ a.drop('Bin ID',axis=1,inplace=True)
 
 all_COGs=pd.merge(a,ext_mobilome_df,left_on=['GTDBtk fastani Ref','eggNOG_OGs'],right_on=['Name','eggNOG_OGs'],how='outer')
 all_COGs.fillna(0, inplace=True)
-all_COGs['Count_x']=(all_COGs['Count_x']).astype(float)
-all_COGs['Count_y']=(all_COGs['Count_y']).astype(float)
 
 all_COGs['COG_id']=all_COGs['eggNOG_OGs'].str.split('@').str[0]
 all_COGs_descript = pd.merge(all_COGs,COG_X[['COG','Annotation']],left_on='COG_id',right_on='COG',how='left')
 all_COGs_descript.drop(['COG','eggNOG_OGs','Name_y'],axis=1,inplace=True)
-all_COGs_descript = all_COGs_descript[all_COGs_descript['GTDBtk fastani Ref'] != '0']
+all_COGs_descript = all_COGs_descript.query('`GTDBtk fastani Ref` != "0"')
 all_COGs_descript = all_COGs_descript[['COG_id','Name_x','GTDBtk fastani Ref','Count_x','Count_y','Annotation']]
 
 # Count 'hits' within each technique by COG category (use only Rep genomes from SHD)
 Rep_COGs = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Representative']],left_on='Name_x',right_on='Bin ID')
-Rep_COGs = Rep_COGs[Rep_COGs['Representative']=='Yes']
+Rep_COGs = Rep_COGs.query('Representative == "Yes"')
 
 mobilome_counts_COG = Rep_COGs.groupby('COG_id')[['Count_x','Count_y']].sum().reset_index()
 mobilome_counts_COG.columns = ['COG_id','SHD Counts','GTDBtk Ref Counts']
@@ -104,7 +102,6 @@ plt.show()
 # Heatmap
 sub_mob_counts_COG = sub_mob_counts_COG.set_index('COG_id')
 
-# Create the heatmap
 fig,ax = plt.subplots(figsize=(7,9))
 sns.heatmap(
         sub_mob_counts_COG[['SHD Counts', 'GTDBtk Ref Counts']],
