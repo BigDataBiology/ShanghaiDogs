@@ -115,13 +115,12 @@ plt.show()
 #fig.savefig('analysis/figures/heatmap_COGs.svg')
 
 # Add taxonomic information to all_COGs and assess mobilome info by species
-# Performed with genomes that fulfill MIMAG criteria (ref, and SHD)
-
 all_COGs_w_tax = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Classification','MIMAG']],left_on='Name_x',right_on='Bin ID')
 all_COGs_MIMAG = all_COGs_w_tax.query('MIMAG == "Yes"')
 all_COGs_MIMAG.drop(['Bin ID','MIMAG'],axis=1,inplace=True)
 all_COGs_MIMAG = all_COGs_MIMAG[all_COGs_MIMAG['GTDBtk fastani Ref'].isin(GTDB_MIMAG_ls)]
 
+# Performed with genomes that fulfill MIMAG criteria (ref, and SHD)
 SHD_MIMAG = SHD_qual.query('MIMAG == "Yes"')
 count_sp = SHD_MIMAG[('Classification')].value_counts().reset_index()
 abd_sp = count_sp.query('count > 30')
@@ -142,20 +141,50 @@ ext_COGs_count = pd.merge(ext_COGs_count,SHD_qual[['GTDBtk fastani Ref','Classif
                           left_index=True,right_on='GTDBtk fastani Ref',how='left')
 ext_COGs_count = ext_COGs_count.drop_duplicates()
 ext_COGs_count['Species'] = ext_COGs_count['Classification'].str.split(';').str[-1].str.split('__').str[-1]
-ext_COGs_count = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_ls)]
+ext_COGs_count_filt = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_ls)]
 
 # check contig number of Ref_GTDB genomes
-check = pd.merge(ext_COGs_count,GTDB_qual[['Name','Number']],left_on='GTDBtk fastani Ref',right_on='Name')
+check = pd.merge(ext_COGs_count_filt,GTDB_qual[['Name','Number']],left_on='GTDBtk fastani Ref',right_on='Name')
 
 # Plot Boxplot + add ext_ref dots
 
 fig,ax = plt.subplots(figsize=(5,10))
 sns.boxplot(x=SHD_COGs_count['Species'],y=SHD_COGs_count['Count_x'],ax=ax)
 sns.stripplot(x=SHD_COGs_count['Species'], y=SHD_COGs_count['Count_x'], color='black', size=4, ax=ax)
-sns.stripplot(x=ext_COGs_count['Species'], y=ext_COGs_count['Count'], color='red', size=4, ax=ax)
+sns.stripplot(x=ext_COGs_count_filt['Species'], y=ext_COGs_count_filt['Count'], color='red', size=4, ax=ax)
 ax.set_xticklabels(ax.get_xticklabels(), rotation=30,ha='right')
 ax.set_xlabel('Species (>30 SHD MAGs)')
 ax.set_ylabel('Hits to Mobilome (COG IDs)')
 plt.tight_layout()
 plt.show()
 
+### Check 'Mobilome' of the MIMAG Ref Genomes that have >50 contigs
+
+GTDB_MIMAG_multiple_contigs = GTDB_MIMAG.query('Number > 50')
+GTDB_MIMAG_multiple_contigs_ls = list(GTDB_MIMAG_multiple_contigs['Name'])
+abd_sp = count_sp.query('count > 10')
+abd_sp_ls = list(abd_sp['Classification'])
+
+# Get the mobilome counts for SHD genomes
+all_COGs_MIMAG_filt = all_COGs_MIMAG[all_COGs_MIMAG['GTDBtk fastani Ref'].isin(GTDB_MIMAG_multiple_contigs_ls)]
+all_COGs_MIMAG_filt = all_COGs_MIMAG_filt[all_COGs_MIMAG['Classification'].isin(abd_sp_ls)]
+SHD_COGs_count = all_COGs_MIMAG_filt[['Name_x','Count_x']]
+SHD_COGs_count = SHD_COGs_count.groupby('Name_x').sum()
+SHD_COGs_count = pd.merge(SHD_COGs_count,SHD_qual[['Bin ID','Classification']],left_index=True,right_on='Bin ID',how='left')
+SHD_COGs_count['Species'] = SHD_COGs_count['Classification'].str.split(';').str[-1].str.split('__').str[-1]
+SHD_COGs_ls = list(set(SHD_COGs_count['Classification']))
+
+# Get the mobilome counts for Ref_GTDB genomes
+ext_COGs_count_filt = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_ls)]
+
+# Plot Boxplot + add ext_ref dots
+
+fig,ax = plt.subplots(figsize=(5,10))
+sns.boxplot(x=SHD_COGs_count['Species'],y=SHD_COGs_count['Count_x'],ax=ax)
+sns.stripplot(x=SHD_COGs_count['Species'], y=SHD_COGs_count['Count_x'], color='black', size=4, ax=ax)
+sns.stripplot(x=ext_COGs_count_filt['Species'], y=ext_COGs_count_filt['Count'], color='red', size=4, ax=ax)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=30,ha='right')
+ax.set_xlabel('Species (>5 SHD MAGs)')
+ax.set_ylabel('Hits to Mobilome (COG IDs)')
+plt.tight_layout()
+plt.show()
