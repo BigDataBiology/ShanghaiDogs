@@ -14,15 +14,16 @@ import seaborn as sns
 
 os.chdir('/data/Projects/ShanghaiDogs/')
 
-# Import qual_report
+# Import qual_reports
 SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep=',')
 SHD_qual['Bin ID'] = SHD_qual['Bin ID'].str.replace('.fna.gz','')
 SHD_Ref = SHD_qual[['Bin ID','GTDBtk fastani Ref']]
-
+GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
+GTDB_MIMAG= GTDB_qual.query('MIMAG == "Yes"')
+GTDB_MIMAG_ls = list(GTDB_MIMAG['Name'])
 
 ### NO 'X' COG Category in eggNOG!!!!
 ### https://github.com/eggnogdb/eggnog-mapper/issues/424
-
 # Import COG_ids for COG_category X according to NCBI
 COG_X = pd.read_csv('external-data/data/NCBI_genomes_ref/eggNOG-annot/NCBI_cog_X_table.tsv',sep='\t')
 COG_X_ls = list(COG_X['COG'])
@@ -112,3 +113,45 @@ plt.tight_layout()
 plt.show()
 
 #fig.savefig('analysis/figures/heatmap_COGs.svg')
+
+# Add taxonomic information to all_COGs and assess mobilome info by species
+# Performed with genomes that fulfill MIMAG criteria (ref, and SHD)
+
+all_COGs_w_tax = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Classification','MIMAG']],left_on='Name_x',right_on='Bin ID')
+all_COGs_MIMAG = all_COGs_w_tax.query('MIMAG == "Yes"')
+all_COGs_MIMAG.drop(['Bin ID','MIMAG'],axis=1,inplace=True)
+all_COGs_MIMAG = all_COGs_MIMAG[all_COGs_MIMAG['GTDBtk fastani Ref'].isin(GTDB_MIMAG_ls)]
+
+SHD_MIMAG = SHD_qual.query('MIMAG == "Yes"')
+count_sp = SHD_MIMAG[('Classification')].value_counts().reset_index()
+abd_sp = count_sp.query('count > 30')
+abd_sp_ls = list(abd_sp['Classification'])
+
+# Get the mobilome counts for SHD genomes
+all_COGs_MIMAG_filt = all_COGs_MIMAG[all_COGs_MIMAG['Classification'].isin(abd_sp_ls)]
+SHD_COGs_count = all_COGs_MIMAG_filt[['Name_x','Count_x']]
+SHD_COGs_count = SHD_COGs_count.groupby('Name_x').sum()
+SHD_COGs_count = pd.merge(SHD_COGs_count,SHD_qual[['Bin ID','Classification']],left_index=True,right_on='Bin ID',how='left')
+SHD_COGs_count['Species'] = SHD_COGs_count['Classification'].str.split(';').str[-1].str.split('__').str[-1]
+SHD_COGs_ls = list(SHD_COGs_count['Classification'])
+
+# Get the mobilome counts for Ref_GTDB genomes
+ext_COGs_count = ext_mobilome_df[['Name','Count']]
+ext_COGs_count = ext_COGs_count.groupby('Name').sum()
+ext_COGs_count = pd.merge(ext_COGs_count,SHD_qual[['GTDBtk fastani Ref','Classification']],
+                          left_index=True,right_on='GTDBtk fastani Ref',how='left')
+ext_COGs_count = ext_COGs_count.drop_duplicates()
+ext_COGs_count['Species'] = ext_COGs_count['Classification'].str.split(';').str[-1].str.split('__').str[-1]
+ext_COGs_count = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_ls)]
+
+# Plot Boxplot + add ext_ref dots
+
+fig,ax = plt.subplots(figsize=(5,10))
+sns.boxplot(x=SHD_COGs_count['Species'],y=SHD_COGs_count['Count_x'],ax=ax)
+sns.stripplot(x=SHD_COGs_count['Species'], y=SHD_COGs_count['Count_x'], color='black', size=4, ax=ax)
+sns.stripplot(x=ext_COGs_count['Species'], y=ext_COGs_count['Count'], color='red', size=4, ax=ax)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=30,ha='right')
+ax.set_xlabel('Species (>30 SHD MAGs)')
+ax.set_ylabel('Hits to Mobilome (COG IDs)')
+plt.tight_layout()
+plt.show()
