@@ -144,6 +144,9 @@ ext_COGs_count = ext_COGs_count.drop_duplicates()
 ext_COGs_count['Species'] = ext_COGs_count['Classification'].str.split(';').str[-1].str.split('__').str[-1]
 ext_COGs_count = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_ls)]
 
+# check contig number of Ref_GTDB genomes
+check = pd.merge(ext_COGs_count,GTDB_qual[['Name','Number']],left_on='GTDBtk fastani Ref',right_on='Name')
+
 # Plot Boxplot + add ext_ref dots
 
 fig,ax = plt.subplots(figsize=(5,10))
@@ -155,3 +158,4 @@ ax.set_xlabel('Species (>30 SHD MAGs)')
 ax.set_ylabel('Hits to Mobilome (COG IDs)')
 plt.tight_layout()
 plt.show()
+
