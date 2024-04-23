@@ -75,7 +75,7 @@ all_COGs_descript.drop(['COG','eggNOG_OGs','Name_y'],axis=1,inplace=True)
 all_COGs_descript = all_COGs_descript.query('`GTDBtk fastani Ref` != "0"')
 all_COGs_descript = all_COGs_descript[['COG_id','Name_x','GTDBtk fastani Ref','Count_x','Count_y','Annotation']]
 
-# Count 'hits' within each technique by COG category (use only Rep genomes from SHD)
+# Count 'hits' within each technique by COG category (use only Representative genomes from SHD)
 Rep_COGs = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Representative']],left_on='Name_x',right_on='Bin ID')
 Rep_COGs = Rep_COGs.query('Representative == "Yes"')
 
@@ -94,23 +94,23 @@ sns.boxplot(data=[sub_mob_counts_COG['SHD Counts'], sub_mob_counts_COG['GTDBtk R
 plt.ylabel('Mobilome COGs (hits)')
 plt.xticks(ticks=[0, 1], labels=['SHD MAGs (here)','Ref genomes'])
 sns.despine(fig, trim=False)
-plt.show()
+#plt.show()
 
-#fig.savefig('analysis/figures/boxplot_COGs_mobilome.svg')
+fig.savefig('analysis/figures/boxplot_total_COGs_mobilome.svg')
 
 # Heatmap
-sub_mob_counts_COG = sub_mob_counts_COG.set_index('COG_id')
+sub_mob_counts_COG['Tag']=sub_mob_counts_COG['COG_id']+'_'+sub_mob_counts_COG['Annotation']
+sub_mob_counts_COG = sub_mob_counts_COG.set_index('Tag')
 
-fig,ax = plt.subplots(figsize=(7,9))
+fig,ax = plt.subplots(figsize=(10,8))
 sns.heatmap(
         sub_mob_counts_COG[['SHD Counts', 'GTDBtk Ref Counts']],
             cmap='Blues', annot=True, fmt="g", linewidths=0.5,linecolor='black')
-plt.xlabel('Count')
-plt.ylabel('Name')
+plt.ylabel('')
 plt.tight_layout()
-plt.show()
+#plt.show()
 
-#fig.savefig('analysis/figures/heatmap_COGs.svg')
+fig.savefig('analysis/figures/heatmap_specific_COGs_count.svg')
 
 # Add taxonomic information to all_COGs and assess mobilome info by species
 all_COGs_w_tax = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Classification','MIMAG']],left_on='Name_x',right_on='Bin ID')
