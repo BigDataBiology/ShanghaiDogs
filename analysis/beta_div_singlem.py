@@ -10,6 +10,8 @@ import numpy as np
 import skbio
 from skbio.stats.distance import anosim,permanova
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+import seaborn as sns
 
 os.chdir('/data/Projects/ShanghaiDogs')
 
@@ -140,7 +142,7 @@ def otus_transform(OTUs_tab):
 
 log_otus_all_tab, otus_all_rows, otus_all_cols, otus_all_F = otus_transform(otus_all_RA_filt_2)
 
-### COMPUTE AND PLOT BETA DIVERSITY
+### COMPUTE AND PLOT BETA DIVERSITY WITH SKBIO
 
 bc_div = skbio.diversity.beta_diversity('braycurtis', log_otus_all_tab, ids=otus_all_rows, validate=True)
 bc_pcoa = skbio.stats.ordination.pcoa(bc_div)
@@ -158,3 +160,28 @@ plt.tight_layout()
 #plt.show()
 plt.savefig('analysis/figures/PCoA_all_env_classification.svg')
 
+### PCOA PLOTS WITH MATPLOTLIB
+
+a = bc_pcoa.samples # extract the df
+a2 = pd.merge(a,metadata_rep['env_classification'],left_index=True,right_index=True)
+
+order = ['Dog Pet', 'Dog Colony', 'Dog Shelter', 'Dog Street','Dog others', 'Wild Canid','Dog Ancient']  # Update with your desired order
+palette = sns.color_palette("Dark2", len(order))
+col_dict = dict(zip(order, palette))
+
+#Plot 2D scatterplot
+fig, ax = plt.subplots(figsize=(6,3.5))
+scatter = ax.scatter(a2['PC1'], a2['PC2'],c=a2['env_classification'].map(col_dict),s=12)
+ax.set_xlabel('PCo 1')
+ax.set_ylabel('PCo 2')
+
+handles = [Patch(facecolor=col_dict[name]) for name in col_dict]
+plt.legend(handles, col_dict, title=None,
+           bbox_to_anchor=(0.95, 0.7), bbox_transform=plt.gcf().transFigure)
+plt.tick_params(labelleft=False,labelbottom=False,labeltop=False)
+plt.subplots_adjust(right=0.7)
+
+ax.tick_params(which='both', bottom=False, left=False, top=False, right=False)
+sns.despine()
+#plt.show()
+plt.savefig('analysis/figures/PCoA_all_env_classification_2D.svg')
