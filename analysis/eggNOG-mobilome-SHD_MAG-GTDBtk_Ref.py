@@ -28,9 +28,7 @@ GTDB_MIMAG_ls = list(GTDB_MIMAG['Name'])
 COG_X = pd.read_csv('external-data/data/NCBI_genomes_ref/eggNOG-annot/NCBI_cog_X_table.tsv',sep='\t')
 COG_X_ls = list(COG_X['COG'])
 
-# Import eggNOG_annotation
-# count COG categories
-
+# Import eggNOG_annotation & count COG categories
 ext_path = 'external-data/data/NCBI_genomes_ref/eggNOG-annot/'
 ext_mobilome = []
 
@@ -200,5 +198,42 @@ axes[1].set_title('Non-contiguous Ref Genomes (>80 contigs)')
 axes[1].set_ylim(0, 350)
 
 plt.tight_layout()
-fig.save('analysis/figures/Mobilome_by_species.svg')
+fig.savefig('analysis/figures/Mobilome_by_species.svg')
+#plt.show()
+
+### COMPARE MOBILOME COUNTS IN SHDs OF MOST ABUNDANT SPs (ORDERED BY TAXONOMIC CLASSIFICATION)
+SHD_MIMAG = SHD_qual.query('MIMAG == "Yes"')
+count_sp = SHD_MIMAG['Classification'].value_counts().reset_index()
+abd_sp = count_sp.query('count > 20')
+abd_sp_ls = list(abd_sp['Classification'])
+
+all_COGs_w_tax_MIMAG = all_COGs_w_tax[all_COGs_w_tax['Classification'].isin(abd_sp_ls)]
+all_COGs_w_tax_MIMAG = all_COGs_w_tax_MIMAG.query('MIMAG == "Yes"')
+SHD_COGs_count_MIMAG = all_COGs_w_tax_MIMAG.groupby('Name_x')['Count_x'].sum().reset_index()
+SHD_COGs_count_MIMAG = pd.merge(SHD_COGs_count_MIMAG, SHD_MIMAG[['Bin ID', 'Classification']],
+                                     left_on='Name_x', right_on='Bin ID', how='left')
+SHD_COGs_count_MIMAG['Species'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[-1].str.replace('s__','')
+SHD_COGs_count_MIMAG['Genera'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[-2].str.replace('g__','')
+SHD_COGs_count_MIMAG['Family'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[-3].str.replace('f__','')
+SHD_COGs_count_MIMAG['Phylum'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[1].str.replace('p__','')
+
+SHD_COGs_count_MIMAG_sorted = SHD_COGs_count_MIMAG.sort_values(by='Count_x')
+custom_phylum_order = ['Bacillota','Bacillota_A', 'Bacillota_C', 'Bacteroidota','Pseudomonadota',\
+                       'Fusobacteriota','Actinomycetota']
+SHD_COGs_count_MIMAG_sorted['Phylum'] = pd.Categorical(SHD_COGs_count_MIMAG_sorted['Phylum'], categories=custom_phylum_order, ordered=True)
+SHD_COGs_count_MIMAG_sorted = SHD_COGs_count_MIMAG_sorted.sort_values(by='Phylum')
+
+# Plot boxplot
+fig, ax = plt.subplots(figsize=(12, 4))
+sns.boxplot(x=SHD_COGs_count_MIMAG_sorted['Species'], y=SHD_COGs_count_MIMAG_sorted['Count_x'], ax=ax,\
+            hue=SHD_COGs_count_MIMAG_sorted['Phylum'],palette='Dark2',fliersize=0, width=0.65)
+
+ax.set_xlim(ax.get_xlim()[0] - 0.5, ax.get_xlim()[1] + 0.5)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha='right')
+ax.set_xlabel('Species (>20 SHD MAGs)')
+ax.set_ylabel('Mobilome hits')
+ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Phylum')
+
+plt.tight_layout()
+fig.savefig('analysis/figures/Mobilome_by_species_tax.svg')
 #plt.show()
