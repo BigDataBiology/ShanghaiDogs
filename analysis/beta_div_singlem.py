@@ -25,13 +25,13 @@ otu_tab.index = otu_tab.index.str.replace('_350','')
 # Update the index in the otu_tab to the biosample_id
 SRA_metadata = pd.read_csv('external-data/data/dog_microbiome_archive_otu_tables/SRR_Acc_List_Metadata.txt', \
                                sep='|',skiprows=[1],index_col=0)
-run_to_biosample = SRA_metadata[[' biosample      ']]
-run_to_biosample = run_to_biosample.reset_index()
+run_to_biosample = SRA_metadata[[' biosample      ']].reset_index()
 run_to_biosample.columns = ['run','biosample']
 run_to_biosample['run'] = run_to_biosample['run'].str.replace(' ', '', regex=True)
 run_to_biosample['biosample'] = run_to_biosample['biosample'].str.replace(' ', '', regex=True)
 run_to_biosample = run_to_biosample.set_index('run')
 
+# rename run_ids to Biosample_ids
 for idx in otu_tab.index:
     if idx.startswith('SRR') or idx.startswith('ERR'):
         otu_tab.rename(index={idx: run_to_biosample.loc[idx, 'biosample']}, inplace=True)
@@ -44,9 +44,10 @@ def filt_samples_low_OTU(OTUs_tab,min):
     that do not have a min OTU value. It also prints out removed items.
     Index (rows) should contain the samples
     """
+    print(OTUs_tab.index+': these should be the sample IDs')
     otus_filt = OTUs_tab[OTUs_tab.sum(axis=1) >= min]
     otus_filt_LOW = OTUs_tab[OTUs_tab.sum(axis=1) < min].index.to_frame()
-    otus_filt_LOW = pd.merge(otus_filt_LOW,metadata,right_index=True,left_index=True)
+    otus_filt_LOW = pd.merge(otus_filt_LOW,metadata_rep,right_index=True,left_index=True)
     return otus_filt, otus_filt_LOW
 
 otus_all_filt, otus_all_filt_low = filt_samples_low_OTU(otu_tab, 100)
@@ -91,6 +92,7 @@ def rm_low_mean_otus(OTUs_tab,min):
     motus with a lower mean abundance (min).
     """
     OTUs_tab = OTUs_tab.T
+    print(OTUs_tab.index + ': these should be the OTUs')
     OTUs_tab['Mean'] = OTUs_tab.mean(axis=1)
     OTUs_tab_filt = OTUs_tab.loc[OTUs_tab['Mean'].between(min, 1)]
     OTUs_tab_filt = OTUs_tab_filt.drop(['Mean'], axis=1)
@@ -116,6 +118,7 @@ def otus_transform(OTUs_tab):
     Required in OTU_tab: OTUs IDs need to be on the columns.
     """
     OTUs_tab = OTUs_tab.T
+    print(OTUs_tab.index + ': these should be the OTUs')
     OTUs_tab = OTUs_tab * 1000000
     np.set_printoptions(precision=5)
     otus_np = OTUs_tab.to_numpy()
