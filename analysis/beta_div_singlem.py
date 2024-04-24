@@ -102,12 +102,23 @@ def rm_low_mean_otus(OTUs_tab,min):
 
 otus_all_RA_filt = rm_low_mean_otus(otus_all_RA,0.00001)
 
-# Filter metadata and otu_tab to contain info for only the samples that are in the PCoA plot
-samples_id = list(otus_all_RA_filt.columns)
+# Filter metadata to representative samples & remove low mean otus
+samples_id = list(otus_all_RA_filt.columns) # Removed samples with low mean otus
 metadata_filt = metadata_rep[metadata_rep.index.isin(samples_id)]
 samples_id = list(metadata_filt.index)
-otus_all_RA_filt = otus_all_RA_filt.T
-otus_all_RA_filt_2 = otus_all_RA_filt[otus_all_RA_filt.index.isin(samples_id)]
+
+# Filter otu_tab for Maaslin (counts! before RA calculation)
+otus_count_filt = otus_all_filt_wo0[otus_all_filt_wo0.index.isin(samples_id)]
+otus_to_keep = list(otus_all_RA_filt.index) # after removal of low mean abundance OTUs
+otus_count_filt = otus_count_filt.T
+otus_count_filt_abd = otus_count_filt[otus_count_filt.index.isin(otus_to_keep)]
+# Save files for Maaslin2
+otus_count_filt_abd.to_csv('intermediate-outputs/singlem_profiling/otus_tab/REP_OTU_count_filt_S3.5.rib_prot_S2_rpsB.csv')
+metadata_filt.to_csv('intermediate-outputs/singlem_profiling/otus_tab/metadata_filt.csv')
+
+# Filter metadata and RA otu_tab to contain info for only the samples that will be in the PCoA plot
+otus_RA_filt = otus_all_RA_filt.T
+otus_RA_filt_2 = otus_RA_filt[otus_RA_filt.index.isin(samples_id)]
 
 # Log transformation of the OTUs table
 def otus_transform(OTUs_tab):
@@ -140,7 +151,7 @@ def otus_transform(OTUs_tab):
 
     return log_otus_tab, otus_rows, otus_cols, otus_tab_F
 
-log_otus_all_tab, otus_all_rows, otus_all_cols, otus_all_F = otus_transform(otus_all_RA_filt_2)
+log_otus_all_tab, otus_all_rows, otus_all_cols, otus_all_F = otus_transform(otus_RA_filt_2)
 
 ### COMPUTE AND PLOT BETA DIVERSITY WITH SKBIO
 
