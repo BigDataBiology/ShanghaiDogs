@@ -5,3 +5,4 @@ intermediate-outputs/
 analysis/figures/
 resource_generation/Public
 */code/nohup/
+__pycache__/
