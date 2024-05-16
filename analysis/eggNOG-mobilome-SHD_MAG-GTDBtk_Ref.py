@@ -81,12 +81,13 @@ Rep_COGs = Rep_COGs.query('Representative == "Yes"')
 
 mobilome_counts_COG = Rep_COGs.groupby('COG_id')[['Count_x','Count_y']].sum().reset_index()
 mobilome_counts_COG.columns = ['COG_id','SHD Counts','GTDBtk Ref Counts']
-mobilome_counts_COG['prop']=mobilome_counts_COG['GTDBtk Ref Counts']/mobilome_counts_COG['SHD Counts']
+mobilome_counts_COG['prop']=mobilome_counts_COG['SHD Counts']/mobilome_counts_COG['GTDBtk Ref Counts']
 mobilome_counts_COG = pd.merge(mobilome_counts_COG,COG_X[['COG','Annotation']],left_on='COG_id',right_on='COG')
 mobilome_counts_COG.drop('COG',axis=1,inplace=True)
 
 # Boxplot
-sub_mob_counts_COG = mobilome_counts_COG[mobilome_counts_COG['SHD Counts']>=200]
+sub_mob_counts_COG = mobilome_counts_COG.query("`SHD Counts` >= 50 and `GTDBtk Ref Counts` >= 25")
+sub_mob_counts_COG['prop'].mean()
 
 fig, ax = plt.subplots()
 ax.clear()
@@ -101,11 +102,19 @@ fig.savefig('analysis/figures/boxplot_total_COGs_mobilome.svg')
 # Heatmap
 sub_mob_counts_COG['Tag']=sub_mob_counts_COG['COG_id']+'_'+sub_mob_counts_COG['Annotation']
 sub_mob_counts_COG = sub_mob_counts_COG.set_index('Tag')
+sub_mob_counts_COG = sub_mob_counts_COG.sort_values(by='SHD Counts',ascending=False)
 
-fig,ax = plt.subplots(figsize=(10,8))
+fig,ax = plt.subplots(figsize=(11,9))
 sns.heatmap(
-        sub_mob_counts_COG[['SHD Counts', 'GTDBtk Ref Counts']],
-            cmap='Blues', annot=True, fmt="g", linewidths=0.5,linecolor='black')
+    sub_mob_counts_COG[['SHD Counts', 'GTDBtk Ref Counts']],
+    cmap='Blues',
+    annot=True,
+    fmt="g",
+    linewidths=0.5,
+    linecolor='black',
+    ax=ax,
+    cbar_kws={'shrink': 0.5})
+ax.set_aspect('auto')
 plt.ylabel('')
 plt.tight_layout()
 #plt.show()
