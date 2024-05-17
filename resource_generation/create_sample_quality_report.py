@@ -67,29 +67,19 @@ with open(rib, 'r') as file:
 
 pivot_rib = rib.pivot_table(index=['bin_id'], columns='Ribosomal gene',aggfunc='size', fill_value=0)
 
-# 16S
-if '16S ribosomal RNA partial' in pivot_rib.columns:
-  pivot_rib['16S'] = pivot_rib['16S ribosomal RNA'] + pivot_rib['16S ribosomal RNA partial']
-else:
-  pivot_rib['16S ribosomal RNA partial']=0
-  pivot_rib['16S']=pivot_rib['16S ribosomal RNA']
+if '16S ribosomal RNA partial' not in pivot_rib.columns:
+  pivot_rib['16S ribosomal RNA partial'] = 0
 
-# 23S
-if '23S ribosomal RNA partial' in pivot_rib.columns:
-  pivot_rib['23S'] = pivot_rib['23S ribosomal RNA'] + pivot_rib['23S ribosomal RNA partial']
-else:
-  pivot_rib['23S ribosomal RNA partial']=0
-  pivot_rib['23S']=pivot_rib['23S ribosomal RNA']
+if '23S ribosomal RNA partial' not in pivot_rib.columns:
+  pivot_rib['23S ribosomal RNA partial'] = 0
 
-# 5S
-if '5S ribosomal RNA partial' in pivot_rib.columns:
-  pivot_rib['5S'] = pivot_rib['5S ribosomal RNA'] + pivot_rib['5S ribosomal RNA partial']
-else:
-  pivot_rib['5S ribosomal RNA partial']=0
-  pivot_rib['5S']=pivot_rib['5S ribosomal RNA']
+if '5S ribosomal RNA partial' not in pivot_rib.columns:
+  pivot_rib['5S ribosomal RNA partial'] = 0
 
-pivot_rib = pivot_rib[['16S','23S','5S','16S ribosomal RNA partial','23S ribosomal RNA partial','5S ribosomal RNA partial']]
-pivot_rib.columns = ['16S total','23S total','5S total','16S partial','23S partial','5S partial']
+pivot_rib = pivot_rib[['16S ribosomal RNA','23S ribosomal RNA','5S ribosomal RNA',\
+                       '16S ribosomal RNA partial','23S ribosomal RNA partial','5S ribosomal RNA partial']]
+pivot_rib.columns = ['16S rRNA','23S rRNA','5S rRNA','16S partial','23S partial','5S partial']
+
 qual_report_rib = pd.merge(qual_report, pivot_rib,left_on='Bin ID',right_index=True,how='outer')
 
 dest_folder = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/"+sample_id+"/"+sample_id+"_qual_report.csv"

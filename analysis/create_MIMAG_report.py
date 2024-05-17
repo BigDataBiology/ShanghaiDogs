@@ -19,13 +19,6 @@ qual_report = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication
 qual_report = pd.read_csv(qual_report, delimiter=',',header=0,index_col=0)
 qual_report = qual_report[~qual_report['Quality'].str.contains('low_quality')]
 
-# Calculate % of partial ribosomal genes
-qual_report['%16S partial'] = qual_report['16S partial'] / qual_report['16S total'] * 100
-qual_report['%23S partial'] = qual_report['23S partial'] / qual_report['23S total'] * 100
-qual_report['%5S partial'] = qual_report['5S partial'] / qual_report['5S total'] * 100
-qual_report.drop(['16S partial','23S partial','5S partial'],axis=1,inplace=True)
-qual_report = qual_report.fillna(0)
-
 # Import list of species-level bins
 sp_level = pd.read_csv("/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/ShanghaiDogsMAGs_ANI95_sp.txt",\
                      header=None,names=["Complete ID"])
@@ -80,8 +73,8 @@ tRNA_count.drop(['complete_id'],axis=1,inplace=True)
 
 qual_report_final=pd.merge(qual_report_intermediate,tRNA_count,left_on='Complete ID',right_index=True)
 qual_report_final.columns = ['Genome Size','Classification','GTDBtk fastani Ref','Nr contigs','Quality','Sample',
-                             'Original ID','16S total','23S total','5S total','%16S partial','%23S partial',
-                             '%5S partial','Representative','Bin ID','Completeness','Contamination','Unique tRNAs',
+                             'Original ID','16S rRNA','23S rRNA','5S rRNA','16S partial','23S partial',
+                             '5S partial','Representative','Bin ID','Completeness','Contamination','Unique tRNAs',
                              'Total tRNAs']
 
 # Loop through each row in the DataFrame
@@ -89,13 +82,13 @@ qual_report_final.columns = ['Genome Size','Classification','GTDBtk fastani Ref'
 qual_report_final['MIMAG']='No'
 
 for index, row in qual_report_final.iterrows():
-    if row['Quality'] == 'high-quality' and row['16S total'] > 0 and row['Unique tRNAs'] > 19 and row['23S total'] > 0 :
+    if row['Quality'] == 'high-quality' and row['16S rRNA'] > 0 and row['23S rRNA'] > 0 and row['Unique tRNAs'] > 19:
             print(row['Quality'])
             qual_report_final.loc[index, 'MIMAG'] = 'Yes'
 
 qual_report_final = qual_report_final[['Bin ID','Representative','Completeness','Contamination','Genome Size','Quality',
-                                       'Nr contigs','Classification','GTDBtk fastani Ref','16S total','23S total',
-                                       '5S total','%16S partial','%23S partial','%5S partial','Unique tRNAs','Total tRNAs',
+                                       'Nr contigs','Classification','GTDBtk fastani Ref','16S rRNA','23S rRNA',
+                                       '5S rRNA','16S partial','23S partial','5S partial','Unique tRNAs','Total tRNAs',
                                        'MIMAG','Sample','Original ID']]
 
 qual_report_final.to_csv("/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv",index=False)

@@ -49,15 +49,9 @@ pivot_rRNA=all_rRNAs_df.pivot_table(index=['Name'],columns='Ribosomal gene',aggf
 pivot_rRNA = pivot_rRNA.reset_index()
 
 # Total includes all detected, complete + partial
-pivot_rRNA['16S total'] = pivot_rRNA['16S ribosomal RNA'] + pivot_rRNA['16S ribosomal RNA partial']
-pivot_rRNA['23S total'] = pivot_rRNA['23S ribosomal RNA'] + pivot_rRNA['23S ribosomal RNA partial']
-pivot_rRNA['5S total'] = pivot_rRNA['5S ribosomal RNA'] + pivot_rRNA['5S ribosomal RNA partial']
-
-pivot_rRNA['%16S partial'] = pivot_rRNA['16S ribosomal RNA partial'] / pivot_rRNA['16S total'] * 100
-pivot_rRNA['%23S partial'] = pivot_rRNA['23S ribosomal RNA partial'] / pivot_rRNA['23S total'] * 100
-pivot_rRNA['%5S partial'] = pivot_rRNA['5S ribosomal RNA partial'] / pivot_rRNA['5S total'] * 100
-
-pivot_rRNA = pivot_rRNA[['Name','16S total','23S total','5S total','%16S partial','%23S partial','%5S partial']]
+pivot_rRNA = pivot_rRNA[['Name','16S ribosomal RNA','23S ribosomal RNA','5S ribosomal RNA',\
+                         '16S ribosomal RNA partial','23S ribosomal RNA partial','5S ribosomal RNA partial']]
+pivot_rRNA.columns = ['Name','16S rRNA','23S rRNA','5S rRNA','16S partial','23S partial','5S partial']
 
 qual_report = pd.merge(qual_report,pivot_rRNA,left_on='Name',right_on='Name',how='outer')
 qual_report = qual_report.fillna(0)
@@ -87,7 +81,7 @@ qual_report_final = pd.merge(qual_report,tRNA_count,left_on='Name',right_on='Nam
 qual_report_final['MIMAG']='No'
 
 for index, row in qual_report_final.iterrows():
-    if row['Quality'] == 'high-quality' and row['16S total'] > 0 and row['Unique tRNAs'] > 19:
+    if row['Quality'] == 'high-quality' and row['16S rRNA'] > 0 and row['23S rRNA'] > 0 and row['Unique tRNAs'] > 19:
             print(row['Quality'])
             qual_report_final.loc[index, 'MIMAG'] = 'Yes'
 
