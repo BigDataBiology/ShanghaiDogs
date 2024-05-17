@@ -25,9 +25,9 @@ merged = pd.merge(SHD_qual_rep,GTDB_qual,left_on='GTDBtk fastani Ref',right_on='
 # Plots
 # Scatterplot
 y_SHD = merged['Nr contigs']
-x_SHD = merged['16S total_x']
+x_SHD = merged['16S rRNA_x']
 y_Ref = merged['Number']
-x_Ref = merged['16S total_y']
+x_Ref = merged['16S rRNA_y']
 
 fig, ax = plt.subplots()
 ax.scatter(x_Ref, y_Ref, label='Genbank/RefSeq genomes',alpha=0.5)
@@ -74,12 +74,12 @@ fig.savefig('analysis/figures/SHDvsRef_16S_histogram.svg')
 
 # Compare the genomes/MAGs that pass MIMAG criteria
 GTDB_qual_MIMAG = GTDB_qual.query("MIMAG =='Yes'")
-GTDB_qual_MIMAG = GTDB_qual_MIMAG[GTDB_qual_MIMAG['Name'].str.contains('GCF')] # only Ref_seq genome assemblies
+#GTDB_qual_MIMAG = GTDB_qual_MIMAG[GTDB_qual_MIMAG['Name'].str.contains('GCF')] # only Ref_seq genome assemblies
 SHD_qual_MIMAG = SHD_qual_rep.query("MIMAG =='Yes'")
 merged_MIMAG = pd.merge(SHD_qual_MIMAG,GTDB_qual_MIMAG,left_on='GTDBtk fastani Ref',right_on='Name') # only shared
 
 # Evaluate the number of ribosomal genes
-# First col will store SHD values, second col RefSeq values
+# First col will store SHD values, second col Reference values
 
 counts = {'same_count_ribosomals': [0, 0],
           'two_count_ribosomals': [0, 0],
@@ -87,15 +87,15 @@ counts = {'same_count_ribosomals': [0, 0],
 
 # Iterate over each row of the dataframe
 for index, row in merged_MIMAG.iterrows():
-    if row['16S total_x'] == row['23S total_x'] == row['5S total_x']:
+    if row['16S rRNA_x'] == row['23S rRNA_x'] == row['5S rRNA_x']:
         counts['same_count_ribosomals'][0] += 1
-    elif row['16S total_x'] == row['23S total_x'] or row['16S total_x'] == row['5S total_x'] or row['23S total_x'] == row['23S total_x']:
+    elif row['16S rRNA_x'] == row['23S rRNA_x'] or row['16S rRNA_x'] == row['5S rRNA_x'] or row['23S rRNA_x'] == row['23S rRNA_x']:
         counts['two_count_ribosomals'][0] += 1
     else:
         counts['diff_count_ribosomals'][0] += 1
-    if row['16S total_y'] == row['23S total_y'] == row['5S total_y']:
+    if row['16S rRNA_y'] == row['23S rRNA_y'] == row['5S rRNA_y']:
         counts['same_count_ribosomals'][1] += 1
-    elif row['16S total_y'] == row['23S total_y'] or row['16S total_y'] == row['5S total_y'] or row['23S total_y'] == row['23S total_y']:
+    elif row['16S rRNA_y'] == row['23S rRNA_y'] or row['16S rRNA_y'] == row['5S rRNA_y'] or row['23S rRNA_y'] == row['23S rRNA_y']:
         counts['two_count_ribosomals'][1] += 1
     else:
         counts['diff_count_ribosomals'][1] += 1
@@ -103,9 +103,9 @@ for index, row in merged_MIMAG.iterrows():
 ribosomals = pd.DataFrame(counts, index=['ShanghaiDogs: 16S-23S-5S', 'RefSeq: 16S-23S-5S'])
 
 # Compare 16S rRNA genes
-df_16S =  merged_MIMAG[['Classification','16S total_x','16S total_y','23S total_x','23S total_y','Nr contigs','Number']]
-df_16S['Dif_16S']=df_16S['16S total_x'] - df_16S['16S total_y']
-df_16S['Dif_23S']=df_16S['23S total_x'] - df_16S['23S total_y']
+df_16S =  merged_MIMAG[['Classification','16S rRNA_x','16S rRNA_y','23S rRNA_x','23S rRNA_y','Nr contigs','Number']]
+df_16S['Dif_16S']=df_16S['16S rRNA_x'] - df_16S['16S rRNA_y']
+df_16S['Dif_23S']=df_16S['23S rRNA_x'] - df_16S['23S rRNA_y']
 df_16S['Dif_Sum']=df_16S['Dif_16S']+df_16S['Dif_23S']
 df_16S = df_16S.sort_values(by='Dif_16S')
 df_16S = df_16S.drop(columns=['Dif_Sum'])
@@ -131,8 +131,12 @@ for bar, value in zip(bars, contiguity_SHD):
         bar_position = bar.get_y() + bar.get_height() / 2
         ax.plot(-5, bar_position, marker='_', markersize=10, color='black', linestyle='None')
 
-ax.set_xlabel('Dif in N# of 16S genes')
-ax.set_title('16S rRNA counts')
+ax.set_xlabel('Dif in N# of 16S genes',size=14)
+ax.set_title('16S rRNA counts',size=18)
+ax.set_xlim(-7,15)
+ax.set_xticks(range(-4, 16, 2))
 ax.invert_yaxis()  # Invert y-axis to have the highest value on top
 plt.tight_layout()
-plt.show()
+sns.despine(trim=False)
+fig.savefig('analysis/figures/16S_diff_count_species.svg')
+#plt.show()
