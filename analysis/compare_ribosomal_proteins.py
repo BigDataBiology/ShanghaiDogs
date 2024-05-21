@@ -46,6 +46,13 @@ def compare_all_pairwise(ifile, name_filter, min_length=None):
 
     return identity
 
+def mean_nz_value(vals):
+    from scipy import spatial
+    import numpy as np
+    if len(vals) <= 1:
+        return np.nan
+    return spatial.distance.squareform(vals).mean()
+
 def min_nz_value(vals):
     from scipy import spatial
     import numpy as np
@@ -54,14 +61,36 @@ def min_nz_value(vals):
     return spatial.distance.squareform(vals).min()
 
 @TaskGenerator
-def build_results_table(fs, mv_16, mv_23, mv_5):
+def build_results_table(fs, mv_16, avg_16, mv_23, mv_5):
     import pandas as pd
     mags = [f.split('/')[-1] for f in fs]
     return pd.DataFrame({
         'min_id_16s': mv_16,
+        'mean_id_16s': avg_16,
         'min_id_23s': mv_23,
         'min_id_5s': mv_5,
         }, index=mags)
+
+@TaskGenerator
+def save_final_table(final):
+    import pandas as pd
+    oname = '../intermediate-outputs/ribosomal_gene_ids.tsv'
+
+    bins_meta = pd.read_csv('../data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv')
+    bins_meta['ribosomal_file'] = \
+            bins_meta.Sample + "_" + \
+            bins_meta['Original ID'].str.split('_').str[:-1].map(lambda c: '_'.join(c)) + \
+            '_ribosomal.fa'
+    bins_meta['Bin ID'] = bins_meta['Bin ID'].str.split('.').str[0]
+    final['Bin ID'] = final.index.map(
+            bins_meta[['Bin ID', 'ribosomal_file']].set_index('ribosomal_file').squeeze())
+    final   \
+            .reset_index()\
+            .rename(columns={'index':'ribosomal_file'})\
+            .set_index('Bin ID')\
+            .to_csv(oname, sep='\t')
+    return oname
+
 
 ribosomal_files = cached_glob(f'{RIBOSOMAL_DIR}/*/*_ribosomal.fa')
 ids_16s = []
@@ -75,7 +104,9 @@ for ifile in ribosomal_files:
     ids_5s .append(compare_all_pairwise(ifile,  '5S_rRNA'))
 
 min_vals_16s = mapreduce.map(min_nz_value, ids_16s, map_step=64)
+mean_vals_16s = mapreduce.map(mean_nz_value, ids_16s, map_step=64)
 min_vals_23s = mapreduce.map(min_nz_value, ids_23s, map_step=64)
 min_vals_5s  = mapreduce.map(min_nz_value,  ids_5s, map_step=64)
 
-final = build_results_table(ribosomal_files, min_vals_16s, min_vals_23s, min_vals_5s)
+final = build_results_table(ribosomal_files, min_vals_16s, mean_vals_16s, min_vals_23s, min_vals_5s)
+save_final_table(final)
