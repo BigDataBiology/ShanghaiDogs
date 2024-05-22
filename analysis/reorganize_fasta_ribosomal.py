@@ -50,7 +50,10 @@ def process_files(barrnap_file, fasta_file):
                     match = re.match(r'>(.*)::(.*):(\d+)-(\d+)\((.)\)', header)
                     if match:
                         rRNA_type, contig, start, end, strand = match.groups()
-                        current_key = f"{contig}:{int(start) + 1}-{end}"  # Adjust the start position by +1
+                        if '5S' in rRNA_type:
+                            current_key = None  # Skip this entry
+                        else:
+                            current_key = f"{contig}:{int(start) + 1}-{end}" 
                         current_seq = []
                     else:
                         print(f"Skipping malformed header in fasta file: {header}")
@@ -77,7 +80,7 @@ def process_files(barrnap_file, fasta_file):
         end = entry['end']
         strand = entry['strand']
         attributes = entry['attributes']
-        key = f"{contig}:{start}-{end}"  # Adjust the start position by -1
+        key = f"{contig}:{start}-{end}"
         sequence = fasta_data.get(key)
 
         if sequence:
