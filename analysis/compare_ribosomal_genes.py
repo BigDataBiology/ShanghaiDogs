@@ -28,6 +28,7 @@ def compare_all_pairwise(ifile, name_filter, min_length=None):
 
     Returns a matrix of identities
     '''
+    from scipy import spatial
     import numpy as np
     from fasta import fasta_iter
     import skbio.sequence
@@ -44,21 +45,19 @@ def compare_all_pairwise(ifile, name_filter, min_length=None):
             identity[i,j] = compare_seqs(selected[i], selected[j])
     identity += identity.T
 
-    return identity
+    return spatial.distance.squareform(identity)
 
 def mean_nz_value(vals):
-    from scipy import spatial
     import numpy as np
     if len(vals) <= 1:
         return np.nan
-    return spatial.distance.squareform(vals).mean()
+    return vals.mean()
 
 def min_nz_value(vals):
-    from scipy import spatial
     import numpy as np
     if len(vals) <= 1:
         return np.nan
-    return spatial.distance.squareform(vals).min()
+    return vals.min()
 
 @TaskGenerator
 def build_results_table(fs, mv_16, avg_16, mv_23, mv_5):
