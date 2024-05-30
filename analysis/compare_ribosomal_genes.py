@@ -60,14 +60,14 @@ def min_nz_value(vals):
     return vals.min()
 
 @TaskGenerator
-def build_results_table(fs, mv_16, avg_16, mv_23, mv_5):
+def build_results_table(fs, mv_16, avg_16, mv_23, avg_23):
     import pandas as pd
     mags = [f.split('/')[-1] for f in fs]
     return pd.DataFrame({
         'min_id_16s': mv_16,
         'mean_id_16s': avg_16,
         'min_id_23s': mv_23,
-        'min_id_5s': mv_5,
+        'mean_id_23s': avg_23,
         }, index=mags)
 
 @TaskGenerator
@@ -91,21 +91,19 @@ def save_final_table(final):
     return oname
 
 
-ribosomal_files = cached_glob(f'{RIBOSOMAL_DIR}/*/*_ribosomal.fa')
+ribosomal_files = cached_glob(f'{RIBOSOMAL_DIR}/*/full-ribosomal/*_full.fa')
 ids_16s = []
-ids_16s_full = []
 ids_23s = []
-ids_5s  = []
 for ifile in ribosomal_files:
-    ids_16s.append(compare_all_pairwise(ifile, '16S_rRNA', min_length=1200))
-    ids_16s_full.append(compare_all_pairwise(ifile, '16S_rRNA'))
+    ids_16s.append(compare_all_pairwise(ifile, '16S_rRNA'))
     ids_23s.append(compare_all_pairwise(ifile, '23S_rRNA'))
-    ids_5s .append(compare_all_pairwise(ifile,  '5S_rRNA'))
 
 min_vals_16s = mapreduce.map(min_nz_value, ids_16s, map_step=64)
 mean_vals_16s = mapreduce.map(mean_nz_value, ids_16s, map_step=64)
 min_vals_23s = mapreduce.map(min_nz_value, ids_23s, map_step=64)
-min_vals_5s  = mapreduce.map(min_nz_value,  ids_5s, map_step=64)
+mean_vals_23s = mapreduce.map(mean_nz_value, ids_23s, map_step=64)
 
-final = build_results_table(ribosomal_files, min_vals_16s, mean_vals_16s, min_vals_23s, min_vals_5s)
+final = build_results_table(ribosomal_files,
+            min_vals_16s, mean_vals_16s,
+            min_vals_23s, mean_vals_23s)
 save_final_table(final)
