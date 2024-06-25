@@ -181,7 +181,6 @@ plt.tight_layout()
 plt.savefig('analysis/figures/PCoA_all_env_classification.svg')
 
 ### PCOA PLOTS WITH MATPLOTLIB
-
 a = bc_pcoa.samples  # extract the df
 a2 = pd.merge(a, metadata_rep['env_classification'], left_index=True, right_index=True)
 
@@ -209,11 +208,11 @@ for idx, row in a2.iterrows():
         marker = '^'  # Use triangle marker for entries with 'D0' in index and 'Dog Pet' classification
     else:
         marker = 'o'  # Use circle marker for other entries
-    ax.scatter(row['PC1'], row['PC2'], c=col_dict[row['env_classification']], s=40, alpha=0.7, marker=marker)
+    ax.scatter(row['PC1'], row['PC2'], c=col_dict[row['env_classification']], s=40, alpha=0.6, marker=marker)
 
 # Ensure 'Pet dogs' are plotted last (in front of other points)
 pet_dogs_data = a2[(a2['env_classification'] == 'Dog Pet') & (a2.index.str.contains('D0'))]
-ax.scatter(pet_dogs_data['PC1'], pet_dogs_data['PC2'], c=col_dict['Dog Pet'], s=40, alpha=0.1, marker='^')
+ax.scatter(pet_dogs_data['PC1'], pet_dogs_data['PC2'], c=col_dict['Dog Pet'], s=40, alpha=0.3, marker='^')
 
 ax.set_xlabel('PCo 1')
 ax.set_ylabel('PCo 2')
@@ -228,4 +227,32 @@ plt.subplots_adjust(right=0.7)
 ax.tick_params(which='both', bottom=False, left=False, top=False, right=False)
 sns.despine()
 #plt.show()
-plt.savefig('analysis/figures/PCoA_all_env_classification_2D')
+plt.savefig('analysis/figures/PCoA_all_env_classification_2D.svg')
+
+### PCOA PLOTS WITH MATPLOTLIB STUDY
+
+a = bc_pcoa.samples # extract the df
+a2 = pd.merge(a,metadata_rep['Study'],left_index=True,right_index=True)
+
+# Create a color palette
+unique_studies = a2['Study'].unique()
+palette = sns.color_palette("tab20", len(unique_studies))
+col_dict = dict(zip(unique_studies, palette))
+
+#Plot 2D scatterplot
+fig, ax = plt.subplots(figsize=(7.5,3.5))
+scatter = ax.scatter(a2['PC1'], a2['PC2'],c=a2['Study'].map(col_dict),s=40,alpha=0.7)
+ax.set_xlabel('PCo 1')
+ax.set_ylabel('PCo 2')
+
+# Create legend handles
+handles = [Patch(facecolor=col_dict[study], label=study) for study in unique_studies]
+plt.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left', title=None)
+
+plt.tick_params(labelleft=False, labelbottom=False, labeltop=False)
+plt.subplots_adjust(right=0.8)
+
+ax.tick_params(which='both', bottom=False, left=False, top=False, right=False)
+sns.despine()
+plt.tight_layout()
+plt.show()
