@@ -38,7 +38,6 @@ for idx in otu_tab.index:
     if idx.startswith('SRR') or idx.startswith('ERR'):
         otu_tab.rename(index={idx: run_to_biosample.loc[idx, 'biosample']}, inplace=True)
 
-
 # Filter out samples with low OTU count
 def filt_samples_low_OTU(OTUs_tab,min):
     """
@@ -85,6 +84,7 @@ def rel_ab_otu(OTUs_tab):
     return otus_RA
 
 otus_all_RA = rel_ab_otu(otus_all_filt_wo0)
+otus_all_RA.to_csv('intermediate-outputs/singlem_profiling/otus_tab/ALL_OTU_RA_filt_S3.5.rib_prot_S2_rpsB.csv')
 
 # Remove OTUs with low mean relative abundance
 def rm_low_mean_otus(OTUs_tab,min):
@@ -119,6 +119,7 @@ metadata_filt.to_csv('intermediate-outputs/singlem_profiling/otus_tab/metadata_f
 # Filter metadata and RA otu_tab to contain info for only the samples that will be in the PCoA plot
 otus_RA_filt = otus_all_RA_filt.T
 otus_RA_filt_2 = otus_RA_filt[otus_RA_filt.index.isin(samples_id)]
+otus_RA_filt_SHD = otus_RA_filt[otus_RA_filt.index.str.contains('D0')]
 
 # Log transformation of the OTUs table
 def otus_transform(OTUs_tab):
@@ -152,13 +153,21 @@ def otus_transform(OTUs_tab):
     return log_otus_tab, otus_rows, otus_cols, otus_tab_F
 
 log_otus_all_tab, otus_all_rows, otus_all_cols, otus_all_F = otus_transform(otus_RA_filt_2)
+log_otus_SHD_tab, otus_SHD_rows, otus_SHD_cols, otus_SHD_F = otus_transform(otus_RA_filt_SHD)
 
 ### COMPUTE AND PLOT BETA DIVERSITY WITH SKBIO
 
+# Simplify metadata for plotting
+variable = 'Breed_subspecies'
+mask_unique_var = metadata_filt[variable].value_counts() <= 2
+unique_var = mask_unique_var[mask_unique_var].index
+metadata_filt[variable] = metadata_filt[variable].apply(lambda x: 'n<=2' if x in unique_var else x)
+
+# Compute beta diversity
 bc_div = skbio.diversity.beta_diversity('braycurtis', log_otus_all_tab, ids=otus_all_rows, validate=True)
 bc_pcoa = skbio.stats.ordination.pcoa(bc_div)
-bc_pcoa.plot(metadata_filt,'Study',axis_labels=('PC 1', 'PC 2', 'PC 3'),
-             title='Samples colored by Study', cmap='tab20', s=24)
+bc_pcoa.plot(metadata_filt,'Breed_subspecies',axis_labels=('PC 1', 'PC 2', 'PC 3'),
+             title='Samples colored by Breed', cmap='tab20', s=24)
 plt.tight_layout()
 #plt.show()
 plt.savefig('analysis/figures/PCoA_all_study_id.svg')
@@ -173,26 +182,50 @@ plt.savefig('analysis/figures/PCoA_all_env_classification.svg')
 
 ### PCOA PLOTS WITH MATPLOTLIB
 
-a = bc_pcoa.samples # extract the df
-a2 = pd.merge(a,metadata_rep['env_classification'],left_index=True,right_index=True)
+a = bc_pcoa.samples  # extract the df
+a2 = pd.merge(a, metadata_rep['env_classification'], left_index=True, right_index=True)
 
-order = ['Dog Pet', 'Dog Colony', 'Dog Shelter', 'Dog Street','Dog others', 'Wild Canid','Dog Ancient']  # Update with your desired order
+# Updated order with 'Dogs unknown' instead of 'Dog others'
+order = ['Dog Pet', 'Dog Colony', 'Dog Shelter', 'Dog Street', 'Wild Canid', 'Dog Ancient','Dogs unknown']
 palette = sns.color_palette("Dark2", len(order))
+
+# Replace the color for 'Dogs unknown' with grey
+palette[order.index('Dogs unknown')] = 'grey'
+palette[order.index('Dog Street')] = '#EF8DB0'
+palette[order.index('Wild Canid')] = '#1f78b4'
+palette[order.index('Dog Ancient')] = '#e6ab02'
+
 col_dict = dict(zip(order, palette))
 
-#Plot 2D scatterplot
-fig, ax = plt.subplots(figsize=(6,3.5))
-scatter = ax.scatter(a2['PC1'], a2['PC2'],c=a2['env_classification'].map(col_dict),s=12)
+# Update the 'env_classification' column in a2 to match the col_dict keys
+a2['env_classification'] = a2['env_classification'].replace('Dog others', 'Dogs unknown')
+
+# Plot 2D scatterplot with larger and slightly transparent markers
+fig, ax = plt.subplots(figsize=(6, 3.5))
+
+# Plot each point individually with appropriate marker and size
+for idx, row in a2.iterrows():
+    if 'D0' in idx and row['env_classification'] == 'Dog Pet':
+        marker = '^'  # Use triangle marker for entries with 'D0' in index and 'Dog Pet' classification
+    else:
+        marker = 'o'  # Use circle marker for other entries
+    ax.scatter(row['PC1'], row['PC2'], c=col_dict[row['env_classification']], s=40, alpha=0.7, marker=marker)
+
+# Ensure 'Pet dogs' are plotted last (in front of other points)
+pet_dogs_data = a2[(a2['env_classification'] == 'Dog Pet') & (a2.index.str.contains('D0'))]
+ax.scatter(pet_dogs_data['PC1'], pet_dogs_data['PC2'], c=col_dict['Dog Pet'], s=40, alpha=0.1, marker='^')
+
 ax.set_xlabel('PCo 1')
 ax.set_ylabel('PCo 2')
 
-handles = [Patch(facecolor=col_dict[name]) for name in col_dict]
-plt.legend(handles, col_dict, title=None,
+# Create legend with "Dogs unknown" last
+handles = [Patch(facecolor=col_dict[name]) for name in order]
+plt.legend(handles, order, title=None,
            bbox_to_anchor=(0.95, 0.7), bbox_transform=plt.gcf().transFigure)
-plt.tick_params(labelleft=False,labelbottom=False,labeltop=False)
+plt.tick_params(labelleft=False, labelbottom=False, labeltop=False)
 plt.subplots_adjust(right=0.7)
 
 ax.tick_params(which='both', bottom=False, left=False, top=False, right=False)
 sns.despine()
 #plt.show()
-plt.savefig('analysis/figures/PCoA_all_env_classification_2D.svg')
+plt.savefig('analysis/figures/PCoA_all_env_classification_2D')
