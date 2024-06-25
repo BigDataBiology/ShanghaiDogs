@@ -109,6 +109,8 @@ data_tax_genus_filt.loc[:, 'Species'] = data_tax_genus_filt['Ref Classification'
 data_tax_genus_filt.loc[:, 'Species'] = data_tax_genus_filt['Species'].str.replace('s__','')
 data_tax_genus_filt['is_same_household'] = data_tax_genus_filt[['ref_sample', 'qry_sample']].apply(lambda x: household[x[0]] == household[x[1]], axis=1)
 
+data_tax_genus_filt['ani'] = data_tax_genus_filt['ani']*100
+# Boxplot specific genus
 fig, ax = plt.subplots()
 ax.clear()
 
@@ -119,7 +121,9 @@ sns.stripplot(data=data_tax_genus_filt[data_tax_genus_filt['is_same_household'] 
               x='Species', y='ani', ax=ax, alpha=0.6, color='green')
 
 sns.despine(fig, trim=True)
-ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=45,horizontalalignment='right')
+ax.set_ylabel('ANI')
+ax.set_xlabel('')
 fig.tight_layout()
 #plt.show()
 fig.savefig('figures/Blautia_ANI.svg')
