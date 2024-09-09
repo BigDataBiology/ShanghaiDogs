@@ -82,7 +82,7 @@ qual_report_final.columns = ['Genome Size','Classification','GTDBtk fastani Ref'
 qual_report_final['MIMAG']='No'
 
 for index, row in qual_report_final.iterrows():
-    if row['Quality'] == 'high-quality' and row['16S rRNA'] > 0 and row['23S rRNA'] > 0 and row['Unique tRNAs'] > 19:
+    if row['Quality'] == 'high-quality' and row['16S rRNA'] > 0 and row['23S rRNA'] > 0 and row['Unique tRNAs'] > 17:
             print(row['Quality'])
             qual_report_final.loc[index, 'MIMAG'] = 'Yes'
 
