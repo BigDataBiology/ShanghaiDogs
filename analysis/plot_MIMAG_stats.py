@@ -230,7 +230,7 @@ plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_quality.svg")
 
-### CONTIGUITY: GCA, vs GCF
+### CONTIGUITY: GCA vs GCF
 species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
 color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
@@ -277,3 +277,47 @@ plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contiguity_boxplot.svg")
 
+### RIBOSOMALS: GCA, vs GCF
+order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
+color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
+
+SHD_ribosomal_df = species_catalog_HQ[['16S rRNA','ref_new','GTDBtk fastani Ref']].reset_index()
+ALL_ribosomal_df = pd.merge(SHD_ribosomal_df,GTDB_qual[['Name','16S rRNA']],right_on='Name',left_on='GTDBtk fastani Ref')
+ALL_ribosomal = ALL_ribosomal_df [['Bin ID','16S rRNA_x','16S rRNA_y','ref_new']]
+ALL_ribosomal.columns = ['Bin ID','MAG','REF','ref_new']
+
+ALL_ribosomal_melted = pd.melt(ALL_ribosomal, id_vars=['Bin ID','ref_new'],
+                    value_vars=['MAG', 'REF'],
+                    var_name='Genome', value_name='Count')
+ALL_ribosomal_melted['category']=ALL_ribosomal_melted['Genome']+'_'+ALL_ribosomal_melted['ref_new']
+ALL_ribosomal_melted['category'] = pd.Categorical(ALL_ribosomal_melted['category'], categories=order, ordered=True)
+ALL_ribosomal_melted = ALL_ribosomal_melted.sort_values('category')
+
+# Plot boxplot 16S rRNA GCA vs GCF
+width_mm = 50
+height_mm = 40
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+sns.boxplot(data=ALL_ribosomal_melted,
+            x='category',y='Count',
+            palette=['#a6761d', '#1b9e77', '#e6ab02','#1b9e77'],
+            ax=ax,
+            width=0.7,
+            linewidth=1,
+            flierprops={
+                'marker': 'd',  # Shape of outliers
+                'color': 'gray',  # Color of outliers
+                'markersize': 2,  # Size of outliers
+                'linestyle': 'none'  # No connecting line for outliers
+    })
+ax.set_ylabel('')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+# plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_16S_boxplot.svg")
