@@ -230,7 +230,7 @@ plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_quality.svg")
 
-### CONTIGUITY: GCA vs GCF
+### CONTIGUITY:  MAGs vs REF (GCA & GCF)
 species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
 color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
@@ -277,7 +277,7 @@ plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contiguity_boxplot.svg")
 
-### RIBOSOMALS: GCA, vs GCF
+### RIBOSOMALS:  MAGs vs REF (GCA & GCF)
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
 color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
 
@@ -321,3 +321,50 @@ sns.despine(fig, trim=False)
 plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_16S_boxplot.svg")
+
+### tRNAs: MAGs vs REF (GCA & GCF)
+order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
+color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
+
+SHD_tRNAs_df = species_catalog_HQ[['Unique tRNAs','ref_new','GTDBtk fastani Ref']].reset_index()
+ALL_tRNAs_df = pd.merge(SHD_tRNAs_df,GTDB_qual[['Name','Unique tRNAs']],right_on='Name',left_on='GTDBtk fastani Ref')
+ALL_tRNAs = ALL_tRNAs_df [['Bin ID','Unique tRNAs_x','Unique tRNAs_y','ref_new']]
+ALL_tRNAs.columns = ['Bin ID','MAG','REF','ref_new']
+
+ALL_tRNAs_melted = pd.melt(ALL_tRNAs, id_vars=['Bin ID','ref_new'],
+                    value_vars=['MAG', 'REF'],
+                    var_name='Genome', value_name='Count')
+ALL_tRNAs_melted['category']=ALL_tRNAs_melted['Genome']+'_'+ALL_tRNAs_melted['ref_new']
+ALL_tRNAs_melted['category'] = pd.Categorical(ALL_tRNAs_melted['category'], categories=order, ordered=True)
+ALL_tRNAs_melted = ALL_tRNAs_melted.sort_values('category')
+
+# Plot boxplot tRNAs GCA vs GCF
+width_mm = 50
+height_mm = 40
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+sns.boxplot(data=ALL_tRNAs_melted,
+               x='category',y='Count',
+               palette=color_palette,
+               ax=ax,
+               width=0.7,
+               linewidth=1,
+               flierprops={
+                   'marker': 'd',  # Shape of outliers
+                   'color': 'gray',  # Color of outliers
+                   'markersize': 2,  # Size of outliers
+                   'linestyle': 'none'  # No connecting line for outliers
+    })
+ax.set_ylabel('')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+ax.set_ylim(0,30)
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+# plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_boxplot.svg")
+
