@@ -229,3 +229,51 @@ ax.set_xlabel('N# of species-level MAGs',fontsize=10)
 plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_quality.svg")
+
+### CONTIGUITY: GCA, vs GCF
+species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
+order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
+color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
+
+### Contiguity by Ref quality vs MAG
+SHD_contiguity_df = species_catalog_HQ[['Nr contigs','ref_new','GTDBtk fastani Ref']].reset_index()
+ALL_contiguity_df = pd.merge(SHD_contiguity_df,GTDB_qual[['Name','Number']],right_on='Name',left_on='GTDBtk fastani Ref')
+ALL_contiguity = ALL_contiguity_df [['Bin ID','Nr contigs','Number','ref_new']]
+ALL_contiguity.columns = ['Bin ID','MAG','REF','ref_new']
+
+ALL_contiguity_melted = pd.melt(ALL_contiguity, id_vars=['Bin ID','ref_new'],
+                    value_vars=['MAG', 'REF'],
+                    var_name='Genome', value_name='Count')
+ALL_contiguity_melted['category']=ALL_contiguity_melted['Genome']+'_'+ALL_contiguity_melted['ref_new']
+ALL_contiguity_melted['category'] = pd.Categorical(ALL_contiguity_melted['category'], categories=order, ordered=True)
+ALL_contiguity_melted = ALL_contiguity_melted.sort_values('category')
+
+# Plot boxplot contiguity GCA vs GCF
+width_mm = 50
+height_mm = 40
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+sns.boxplot(data=ALL_contiguity_melted,
+              x='category', y='Count',
+              palette=['#a6761d', '#1b9e77', '#e6ab02','#1b9e77'],
+              ax=ax,
+               width=0.8,
+               linewidth=1,
+               flierprops={
+                   'marker': 'd',  # Shape of outliers
+                   'color': 'gray',  # Color of outliers
+                   'markersize': 2.5,  # Size of outliers
+                   'linestyle': 'none'  # No connecting line for outliers
+                })
+ax.set_ylabel('')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+# plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contiguity_boxplot.svg")
+
