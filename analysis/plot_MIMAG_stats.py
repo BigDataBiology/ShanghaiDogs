@@ -368,3 +368,28 @@ plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_boxplot.svg")
 
+### SWARMPLOTS
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+df=ALL_tRNAs_melted
+
+sns.swarmplot(data=df,
+              x='category', y='Count',
+              ax=ax,
+              hue='category',
+              palette=color_palette,
+              size=2.5,             # Size of the dots
+              alpha=0.5)            # Transparency of the dots
+
+
+ax.legend_.remove()
+ax.set_ylabel('')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+ax.set_ylim(0, 30)
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+#plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_swarmplot.svg")
