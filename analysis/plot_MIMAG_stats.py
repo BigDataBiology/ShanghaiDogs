@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
 import numpy as np
+import squarify
 
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
@@ -436,3 +437,76 @@ plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contigs_boxplot-strip.svg")
 
+### NOVEL SPECIES PLOT
+species_catalog_novel = species_catalog.query('ref_new == "Novel species"')
+species_catalog_novel = species_catalog_novel[['Family','Genus']]
+
+novel_df = species_catalog_novel.pivot_table(
+    index='Family',
+    aggfunc='count',
+    fill_value=0
+)
+
+novel_df = novel_df.sort_values(by='Genus',ascending=False)
+
+# Create other_tax category
+other_tax = novel_df[novel_df['Genus'] < 5]['Genus'].sum()
+other_row = pd.DataFrame({'Family': ['Other tax (<5 species)'], 'Genus': [other_tax]})
+
+# Filter out rows with counts less than 4
+novel_df = novel_df.reset_index()
+novel_df_filtered = novel_df[novel_df['Genus'] >= 5]
+
+# Append the "Other tax" row
+final_df = pd.concat([novel_df_filtered, other_row], ignore_index=True)
+
+# Donut plot
+width_mm = 110
+height_mm = 50
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+
+genus_counts=list(final_df['Genus'])
+family_labels=list(final_df['Family'])
+
+# Create a pieplot
+plt.pie(genus_counts,labels=family_labels,
+        colors=['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d','#D3D3D3'],
+        wedgeprops = { 'linewidth' : 3, 'edgecolor' : 'white' },
+        textprops={'fontsize': 10})
+
+# add a circle at the center to transform it in a donut chart
+my_circle=plt.Circle( (0,0), 0.7, color='white')
+p=plt.gcf()
+p.gca().add_artist(my_circle)
+
+plt.tight_layout()
+#plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/novel_tax_donutplot.svg")
+
+### Tree plot
+# Set up the figure
+width_mm = 160
+height_mm = 50
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+
+
+# Draw the treemap
+squarify.plot(sizes=genus_counts,
+              label=family_labels,
+              ax=ax,
+              color=['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e','#e6ab02','#a6761d','#D3D3D3'],
+              text_kwargs={'fontsize':9})
+
+# Customize the plot
+ax.set_axis_off()  # Hide the axes
+
+# Display the plot
+plt.tight_layout()
+#plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/novel_tax_squarify.svg")
