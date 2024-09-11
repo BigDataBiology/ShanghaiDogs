@@ -1,0 +1,430 @@
+basedir: ../../external-data/data/Yarlagadda/
+samples:
+  SAMN19735661:
+  - paired:
+    - SAMN19735661/SRR14842426.pair.1.fq.gz
+    - SAMN19735661/SRR14842426.pair.2.fq.gz
+  SAMN19735662:
+  - paired:
+    - SAMN19735662/SRR14842425.pair.1.fq.gz
+    - SAMN19735662/SRR14842425.pair.2.fq.gz
+  SAMN19735663:
+  - paired:
+    - SAMN19735663/SRR14842407.pair.1.fq.gz
+    - SAMN19735663/SRR14842407.pair.2.fq.gz
+  SAMN19735664:
+  - paired:
+    - SAMN19735664/SRR14842396.pair.1.fq.gz
+    - SAMN19735664/SRR14842396.pair.2.fq.gz
+  SAMN19735665:
+  - paired:
+    - SAMN19735665/SRR14842385.pair.1.fq.gz
+    - SAMN19735665/SRR14842385.pair.2.fq.gz
+  SAMN19735666:
+  - paired:
+    - SAMN19735666/SRR14842374.pair.1.fq.gz
+    - SAMN19735666/SRR14842374.pair.2.fq.gz
+  SAMN19735667:
+  - paired:
+    - SAMN19735667/SRR14842363.pair.1.fq.gz
+    - SAMN19735667/SRR14842363.pair.2.fq.gz
+  SAMN19735668:
+  - paired:
+    - SAMN19735668/SRR14842352.pair.1.fq.gz
+    - SAMN19735668/SRR14842352.pair.2.fq.gz
+  SAMN19735669:
+  - paired:
+    - SAMN19735669/SRR14842341.pair.1.fq.gz
+    - SAMN19735669/SRR14842341.pair.2.fq.gz
+  SAMN19735670:
+  - paired:
+    - SAMN19735670/SRR14842330.pair.1.fq.gz
+    - SAMN19735670/SRR14842330.pair.2.fq.gz
+  SAMN19735671:
+  - paired:
+    - SAMN19735671/SRR14842424.pair.1.fq.gz
+    - SAMN19735671/SRR14842424.pair.2.fq.gz
+  SAMN19735672:
+  - paired:
+    - SAMN19735672/SRR14842416.pair.1.fq.gz
+    - SAMN19735672/SRR14842416.pair.2.fq.gz
+  SAMN19735673:
+  - paired:
+    - SAMN19735673/SRR14842415.pair.1.fq.gz
+    - SAMN19735673/SRR14842415.pair.2.fq.gz
+  SAMN19735674:
+  - paired:
+    - SAMN19735674/SRR14842414.pair.1.fq.gz
+    - SAMN19735674/SRR14842414.pair.2.fq.gz
+  SAMN19735675:
+  - paired:
+    - SAMN19735675/SRR14842413.pair.1.fq.gz
+    - SAMN19735675/SRR14842413.pair.2.fq.gz
+  SAMN19735676:
+  - paired:
+    - SAMN19735676/SRR14842412.pair.1.fq.gz
+    - SAMN19735676/SRR14842412.pair.2.fq.gz
+  SAMN19735677:
+  - paired:
+    - SAMN19735677/SRR14842411.pair.1.fq.gz
+    - SAMN19735677/SRR14842411.pair.2.fq.gz
+  SAMN19735678:
+  - paired:
+    - SAMN19735678/SRR14842410.pair.1.fq.gz
+    - SAMN19735678/SRR14842410.pair.2.fq.gz
+  SAMN19735679:
+  - paired:
+    - SAMN19735679/SRR14842409.pair.1.fq.gz
+    - SAMN19735679/SRR14842409.pair.2.fq.gz
+  SAMN19735680:
+  - paired:
+    - SAMN19735680/SRR14842408.pair.1.fq.gz
+    - SAMN19735680/SRR14842408.pair.2.fq.gz
+  SAMN19735681:
+  - paired:
+    - SAMN19735681/SRR14842406.pair.1.fq.gz
+    - SAMN19735681/SRR14842406.pair.2.fq.gz
+  SAMN19735682:
+  - paired:
+    - SAMN19735682/SRR14842405.pair.1.fq.gz
+    - SAMN19735682/SRR14842405.pair.2.fq.gz
+  SAMN19735683:
+  - paired:
+    - SAMN19735683/SRR14842404.pair.1.fq.gz
+    - SAMN19735683/SRR14842404.pair.2.fq.gz
+  SAMN19735684:
+  - paired:
+    - SAMN19735684/SRR14842403.pair.1.fq.gz
+    - SAMN19735684/SRR14842403.pair.2.fq.gz
+  SAMN19735685:
+  - paired:
+    - SAMN19735685/SRR14842402.pair.1.fq.gz
+    - SAMN19735685/SRR14842402.pair.2.fq.gz
+  SAMN19735686:
+  - paired:
+    - SAMN19735686/SRR14842401.pair.1.fq.gz
+    - SAMN19735686/SRR14842401.pair.2.fq.gz
+  SAMN19735687:
+  - paired:
+    - SAMN19735687/SRR14842400.pair.1.fq.gz
+    - SAMN19735687/SRR14842400.pair.2.fq.gz
+  SAMN19735688:
+  - paired:
+    - SAMN19735688/SRR14842399.pair.1.fq.gz
+    - SAMN19735688/SRR14842399.pair.2.fq.gz
+  SAMN19735689:
+  - paired:
+    - SAMN19735689/SRR14842398.pair.1.fq.gz
+    - SAMN19735689/SRR14842398.pair.2.fq.gz
+  SAMN19735690:
+  - paired:
+    - SAMN19735690/SRR14842397.pair.1.fq.gz
+    - SAMN19735690/SRR14842397.pair.2.fq.gz
+  SAMN19735691:
+  - paired:
+    - SAMN19735691/SRR14842395.pair.1.fq.gz
+    - SAMN19735691/SRR14842395.pair.2.fq.gz
+  SAMN19735692:
+  - paired:
+    - SAMN19735692/SRR14842394.pair.1.fq.gz
+    - SAMN19735692/SRR14842394.pair.2.fq.gz
+  SAMN19735693:
+  - paired:
+    - SAMN19735693/SRR14842393.pair.1.fq.gz
+    - SAMN19735693/SRR14842393.pair.2.fq.gz
+  SAMN19735694:
+  - paired:
+    - SAMN19735694/SRR14842392.pair.1.fq.gz
+    - SAMN19735694/SRR14842392.pair.2.fq.gz
+  SAMN19735695:
+  - paired:
+    - SAMN19735695/SRR14842391.pair.1.fq.gz
+    - SAMN19735695/SRR14842391.pair.2.fq.gz
+  SAMN19735696:
+  - paired:
+    - SAMN19735696/SRR14842390.pair.1.fq.gz
+    - SAMN19735696/SRR14842390.pair.2.fq.gz
+  SAMN19735697:
+  - paired:
+    - SAMN19735697/SRR14842389.pair.1.fq.gz
+    - SAMN19735697/SRR14842389.pair.2.fq.gz
+  SAMN19735698:
+  - paired:
+    - SAMN19735698/SRR14842388.pair.1.fq.gz
+    - SAMN19735698/SRR14842388.pair.2.fq.gz
+  SAMN19735699:
+  - paired:
+    - SAMN19735699/SRR14842387.pair.1.fq.gz
+    - SAMN19735699/SRR14842387.pair.2.fq.gz
+  SAMN19735700:
+  - paired:
+    - SAMN19735700/SRR14842386.pair.1.fq.gz
+    - SAMN19735700/SRR14842386.pair.2.fq.gz
+  SAMN19735701:
+  - paired:
+    - SAMN19735701/SRR14842384.pair.1.fq.gz
+    - SAMN19735701/SRR14842384.pair.2.fq.gz
+  SAMN19735702:
+  - paired:
+    - SAMN19735702/SRR14842383.pair.1.fq.gz
+    - SAMN19735702/SRR14842383.pair.2.fq.gz
+  SAMN19735703:
+  - paired:
+    - SAMN19735703/SRR14842382.pair.1.fq.gz
+    - SAMN19735703/SRR14842382.pair.2.fq.gz
+  SAMN19735704:
+  - paired:
+    - SAMN19735704/SRR14842381.pair.1.fq.gz
+    - SAMN19735704/SRR14842381.pair.2.fq.gz
+  SAMN19735705:
+  - paired:
+    - SAMN19735705/SRR14842380.pair.1.fq.gz
+    - SAMN19735705/SRR14842380.pair.2.fq.gz
+  SAMN19735706:
+  - paired:
+    - SAMN19735706/SRR14842379.pair.1.fq.gz
+    - SAMN19735706/SRR14842379.pair.2.fq.gz
+  SAMN19735707:
+  - paired:
+    - SAMN19735707/SRR14842378.pair.1.fq.gz
+    - SAMN19735707/SRR14842378.pair.2.fq.gz
+  SAMN19735708:
+  - paired:
+    - SAMN19735708/SRR14842377.pair.1.fq.gz
+    - SAMN19735708/SRR14842377.pair.2.fq.gz
+  SAMN19735709:
+  - paired:
+    - SAMN19735709/SRR14842376.pair.1.fq.gz
+    - SAMN19735709/SRR14842376.pair.2.fq.gz
+  SAMN19735710:
+  - paired:
+    - SAMN19735710/SRR14842375.pair.1.fq.gz
+    - SAMN19735710/SRR14842375.pair.2.fq.gz
+  SAMN19735711:
+  - paired:
+    - SAMN19735711/SRR14842373.pair.1.fq.gz
+    - SAMN19735711/SRR14842373.pair.2.fq.gz
+  SAMN19735712:
+  - paired:
+    - SAMN19735712/SRR14842372.pair.1.fq.gz
+    - SAMN19735712/SRR14842372.pair.2.fq.gz
+  SAMN19735713:
+  - paired:
+    - SAMN19735713/SRR14842371.pair.1.fq.gz
+    - SAMN19735713/SRR14842371.pair.2.fq.gz
+  SAMN19735714:
+  - paired:
+    - SAMN19735714/SRR14842370.pair.1.fq.gz
+    - SAMN19735714/SRR14842370.pair.2.fq.gz
+  SAMN19735715:
+  - paired:
+    - SAMN19735715/SRR14842369.pair.1.fq.gz
+    - SAMN19735715/SRR14842369.pair.2.fq.gz
+  SAMN19735716:
+  - paired:
+    - SAMN19735716/SRR14842368.pair.1.fq.gz
+    - SAMN19735716/SRR14842368.pair.2.fq.gz
+  SAMN19735717:
+  - paired:
+    - SAMN19735717/SRR14842367.pair.1.fq.gz
+    - SAMN19735717/SRR14842367.pair.2.fq.gz
+  SAMN19735718:
+  - paired:
+    - SAMN19735718/SRR14842366.pair.1.fq.gz
+    - SAMN19735718/SRR14842366.pair.2.fq.gz
+  SAMN19735719:
+  - paired:
+    - SAMN19735719/SRR14842365.pair.1.fq.gz
+    - SAMN19735719/SRR14842365.pair.2.fq.gz
+  SAMN19735720:
+  - paired:
+    - SAMN19735720/SRR14842364.pair.1.fq.gz
+    - SAMN19735720/SRR14842364.pair.2.fq.gz
+  SAMN19735721:
+  - paired:
+    - SAMN19735721/SRR14842362.pair.1.fq.gz
+    - SAMN19735721/SRR14842362.pair.2.fq.gz
+  SAMN19735722:
+  - paired:
+    - SAMN19735722/SRR14842361.pair.1.fq.gz
+    - SAMN19735722/SRR14842361.pair.2.fq.gz
+  SAMN19735723:
+  - paired:
+    - SAMN19735723/SRR14842360.pair.1.fq.gz
+    - SAMN19735723/SRR14842360.pair.2.fq.gz
+  SAMN19735724:
+  - paired:
+    - SAMN19735724/SRR14842359.pair.1.fq.gz
+    - SAMN19735724/SRR14842359.pair.2.fq.gz
+  SAMN19735725:
+  - paired:
+    - SAMN19735725/SRR14842358.pair.1.fq.gz
+    - SAMN19735725/SRR14842358.pair.2.fq.gz
+  SAMN19735726:
+  - paired:
+    - SAMN19735726/SRR14842357.pair.1.fq.gz
+    - SAMN19735726/SRR14842357.pair.2.fq.gz
+  SAMN19735727:
+  - paired:
+    - SAMN19735727/SRR14842356.pair.1.fq.gz
+    - SAMN19735727/SRR14842356.pair.2.fq.gz
+  SAMN19735728:
+  - paired:
+    - SAMN19735728/SRR14842355.pair.1.fq.gz
+    - SAMN19735728/SRR14842355.pair.2.fq.gz
+  SAMN19735729:
+  - paired:
+    - SAMN19735729/SRR14842354.pair.1.fq.gz
+    - SAMN19735729/SRR14842354.pair.2.fq.gz
+  SAMN19735730:
+  - paired:
+    - SAMN19735730/SRR14842353.pair.1.fq.gz
+    - SAMN19735730/SRR14842353.pair.2.fq.gz
+  SAMN19735731:
+  - paired:
+    - SAMN19735731/SRR14842351.pair.1.fq.gz
+    - SAMN19735731/SRR14842351.pair.2.fq.gz
+  SAMN19735732:
+  - paired:
+    - SAMN19735732/SRR14842350.pair.1.fq.gz
+    - SAMN19735732/SRR14842350.pair.2.fq.gz
+  SAMN19735733:
+  - paired:
+    - SAMN19735733/SRR14842349.pair.1.fq.gz
+    - SAMN19735733/SRR14842349.pair.2.fq.gz
+  SAMN19735734:
+  - paired:
+    - SAMN19735734/SRR14842348.pair.1.fq.gz
+    - SAMN19735734/SRR14842348.pair.2.fq.gz
+  SAMN19735735:
+  - paired:
+    - SAMN19735735/SRR14842347.pair.1.fq.gz
+    - SAMN19735735/SRR14842347.pair.2.fq.gz
+  SAMN19735736:
+  - paired:
+    - SAMN19735736/SRR14842346.pair.1.fq.gz
+    - SAMN19735736/SRR14842346.pair.2.fq.gz
+  SAMN19735737:
+  - paired:
+    - SAMN19735737/SRR14842345.pair.1.fq.gz
+    - SAMN19735737/SRR14842345.pair.2.fq.gz
+  SAMN19735738:
+  - paired:
+    - SAMN19735738/SRR14842344.pair.1.fq.gz
+    - SAMN19735738/SRR14842344.pair.2.fq.gz
+  SAMN19735739:
+  - paired:
+    - SAMN19735739/SRR14842343.pair.1.fq.gz
+    - SAMN19735739/SRR14842343.pair.2.fq.gz
+  SAMN19735740:
+  - paired:
+    - SAMN19735740/SRR14842342.pair.1.fq.gz
+    - SAMN19735740/SRR14842342.pair.2.fq.gz
+  SAMN19735741:
+  - paired:
+    - SAMN19735741/SRR14842340.pair.1.fq.gz
+    - SAMN19735741/SRR14842340.pair.2.fq.gz
+  SAMN19735742:
+  - paired:
+    - SAMN19735742/SRR14842339.pair.1.fq.gz
+    - SAMN19735742/SRR14842339.pair.2.fq.gz
+  SAMN19735743:
+  - paired:
+    - SAMN19735743/SRR14842338.pair.1.fq.gz
+    - SAMN19735743/SRR14842338.pair.2.fq.gz
+  SAMN19735744:
+  - paired:
+    - SAMN19735744/SRR14842337.pair.1.fq.gz
+    - SAMN19735744/SRR14842337.pair.2.fq.gz
+  SAMN19735745:
+  - paired:
+    - SAMN19735745/SRR14842336.pair.1.fq.gz
+    - SAMN19735745/SRR14842336.pair.2.fq.gz
+  SAMN19735746:
+  - paired:
+    - SAMN19735746/SRR14842335.pair.1.fq.gz
+    - SAMN19735746/SRR14842335.pair.2.fq.gz
+  SAMN19735747:
+  - paired:
+    - SAMN19735747/SRR14842334.pair.1.fq.gz
+    - SAMN19735747/SRR14842334.pair.2.fq.gz
+  SAMN19735748:
+  - paired:
+    - SAMN19735748/SRR14842333.pair.1.fq.gz
+    - SAMN19735748/SRR14842333.pair.2.fq.gz
+  SAMN19735749:
+  - paired:
+    - SAMN19735749/SRR14842332.pair.1.fq.gz
+    - SAMN19735749/SRR14842332.pair.2.fq.gz
+  SAMN19735750:
+  - paired:
+    - SAMN19735750/SRR14842331.pair.1.fq.gz
+    - SAMN19735750/SRR14842331.pair.2.fq.gz
+  SAMN19735751:
+  - paired:
+    - SAMN19735751/SRR14842329.pair.1.fq.gz
+    - SAMN19735751/SRR14842329.pair.2.fq.gz
+  SAMN19735752:
+  - paired:
+    - SAMN19735752/SRR14842328.pair.1.fq.gz
+    - SAMN19735752/SRR14842328.pair.2.fq.gz
+  SAMN19735753:
+  - paired:
+    - SAMN19735753/SRR14842327.pair.1.fq.gz
+    - SAMN19735753/SRR14842327.pair.2.fq.gz
+  SAMN19735754:
+  - paired:
+    - SAMN19735754/SRR14842326.pair.1.fq.gz
+    - SAMN19735754/SRR14842326.pair.2.fq.gz
+  SAMN19735755:
+  - paired:
+    - SAMN19735755/SRR14842325.pair.1.fq.gz
+    - SAMN19735755/SRR14842325.pair.2.fq.gz
+  SAMN19735756:
+  - paired:
+    - SAMN19735756/SRR14842324.pair.1.fq.gz
+    - SAMN19735756/SRR14842324.pair.2.fq.gz
+  SAMN19735757:
+  - paired:
+    - SAMN19735757/SRR14842323.pair.1.fq.gz
+    - SAMN19735757/SRR14842323.pair.2.fq.gz
+  SAMN19735758:
+  - paired:
+    - SAMN19735758/SRR14842322.pair.1.fq.gz
+    - SAMN19735758/SRR14842322.pair.2.fq.gz
+  SAMN19735759:
+  - paired:
+    - SAMN19735759/SRR14842321.pair.1.fq.gz
+    - SAMN19735759/SRR14842321.pair.2.fq.gz
+  SAMN19735760:
+  - paired:
+    - SAMN19735760/SRR14842320.pair.1.fq.gz
+    - SAMN19735760/SRR14842320.pair.2.fq.gz
+  SAMN19735761:
+  - paired:
+    - SAMN19735761/SRR14842423.pair.1.fq.gz
+    - SAMN19735761/SRR14842423.pair.2.fq.gz
+  SAMN19735762:
+  - paired:
+    - SAMN19735762/SRR14842422.pair.1.fq.gz
+    - SAMN19735762/SRR14842422.pair.2.fq.gz
+  SAMN19735763:
+  - paired:
+    - SAMN19735763/SRR14842421.pair.1.fq.gz
+    - SAMN19735763/SRR14842421.pair.2.fq.gz
+  SAMN19735764:
+  - paired:
+    - SAMN19735764/SRR14842420.pair.1.fq.gz
+    - SAMN19735764/SRR14842420.pair.2.fq.gz
+  SAMN19735765:
+  - paired:
+    - SAMN19735765/SRR14842419.pair.1.fq.gz
+    - SAMN19735765/SRR14842419.pair.2.fq.gz
+  SAMN19735766:
+  - paired:
+    - SAMN19735766/SRR14842418.pair.1.fq.gz
+    - SAMN19735766/SRR14842418.pair.2.fq.gz
+  SAMN19735767:
+  - paired:
+    - SAMN19735767/SRR14842417.pair.1.fq.gz
+    - SAMN19735767/SRR14842417.pair.2.fq.gz

@@ -5,7 +5,7 @@ SH_DOGS_MAGS = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGs
 SH_DOGS_MAGS_SP = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGsSpecies.fna.gz'
 DOG_GENOME = '../../external-data/data/dog_genome/GCA_000002285.4_Dog10K_Boxer_Tasha_genomic.fna'
 
-input = run_for_all_samples(load_sample_list('berlin_dogs.yaml'))
+input = run_for_all_samples(load_sample_list(ARGV[1]))
 input = preprocess(input) using |read|:
     read = substrim(read, min_quality=25)
     if len(read) < 45:
