@@ -2,6 +2,7 @@ ngless "1.5"
 import "parallel" version "1.1"
 
 SH_DOGS_MAGS = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGs.fna.gz'
+SH_DOGS_MAGS_SP = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGsSpecies.fna.gz'
 DOG_GENOME = '../../external-data/data/dog_genome/GCA_000002285.4_Dog10K_Boxer_Tasha_genomic.fna'
 
 DATA_BASEDIR = '../../external-data/data/Coelho_dogs_2018/'
@@ -32,6 +33,14 @@ mapped = select(mapped) using |mr|:
 
 write(mapstats(mapped),
     ofile='outputs' </> sample + '_shd_mapstats.txt')
+
+mapped_sp = map(input, fafile=SH_DOGS_MAGS_SP)
+
+mapped_sp = select(mapped_sp) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+
+write(mapstats(mapped_sp),
+    ofile='outputs' </> sample + '_shd_sp_mapstats.txt')
 
 write(qcstats({fastq}),
     ofile='outputs' </> sample + '_fqstats.txt')
