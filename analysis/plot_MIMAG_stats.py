@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
+import numpy as np
 
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
@@ -164,6 +165,8 @@ for n in species_catalog.index:
         species_catalog.loc[n, 'ref_new'] = 'GenBank reference (GCA)'
 
 species_catalog['Phylum'] = species_catalog['Classification'].str.extract(r'p__([^;]+)')
+species_catalog['Family'] = species_catalog['Classification'].str.extract(r'f__([^;]+)')
+species_catalog['Genus'] = species_catalog['Classification'].str.extract(r'g__([^;]+)')
 
 ### Phylum-level MAG counts by reference genome / novelty
 phylum_ref = species_catalog.pivot_table(
@@ -231,12 +234,12 @@ plt.tight_layout()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_quality.svg")
 
 ### CONTIGUITY:  MAGs vs REF (GCA & GCF)
-species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
+# species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
 color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
 
 ### Contiguity by Ref quality vs MAG
-SHD_contiguity_df = species_catalog_HQ[['Nr contigs','ref_new','GTDBtk fastani Ref']].reset_index()
+SHD_contiguity_df = species_catalog[['Nr contigs','ref_new','GTDBtk fastani Ref']].reset_index()
 ALL_contiguity_df = pd.merge(SHD_contiguity_df,GTDB_qual[['Name','Number']],right_on='Name',left_on='GTDBtk fastani Ref')
 ALL_contiguity = ALL_contiguity_df [['Bin ID','Nr contigs','Number','ref_new']]
 ALL_contiguity.columns = ['Bin ID','MAG','REF','ref_new']
@@ -247,16 +250,17 @@ ALL_contiguity_melted = pd.melt(ALL_contiguity, id_vars=['Bin ID','ref_new'],
 ALL_contiguity_melted['category']=ALL_contiguity_melted['Genome']+'_'+ALL_contiguity_melted['ref_new']
 ALL_contiguity_melted['category'] = pd.Categorical(ALL_contiguity_melted['category'], categories=order, ordered=True)
 ALL_contiguity_melted = ALL_contiguity_melted.sort_values('category')
+ALL_contiguity_melted['log count'] = np.log10(ALL_contiguity_melted['Count'])
 
 # Plot boxplot contiguity GCA vs GCF
-width_mm = 50
+width_mm = 55
 height_mm = 40
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
 ax.clear()
 sns.boxplot(data=ALL_contiguity_melted,
-              x='category', y='Count',
+              x='category', y='log count',
               palette=['#a6761d', '#1b9e77', '#e6ab02','#1b9e77'],
               ax=ax,
                width=0.8,
@@ -267,7 +271,8 @@ sns.boxplot(data=ALL_contiguity_melted,
                    'markersize': 2.5,  # Size of outliers
                    'linestyle': 'none'  # No connecting line for outliers
                 })
-ax.set_ylabel('')
+ax.set_ylabel('Log10 counts')
+ax.set_ylim(-0.2,3)
 ax.set_xlabel('')
 ax.set_xticklabels([])
 ax.tick_params(axis='x', bottom=False)
@@ -275,7 +280,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contiguity_boxplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contiguity_boxplot_log_mq-HQ.svg")
 
 ### RIBOSOMALS:  MAGs vs REF (GCA & GCF)
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
@@ -371,25 +376,63 @@ plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_bo
 ### SWARMPLOTS
 fig, ax = plt.subplots(figsize=figsize_inch)
 ax.clear()
-df=ALL_tRNAs_melted
+df=ALL_contiguity_melted
 
 sns.swarmplot(data=df,
-              x='category', y='Count',
+              x='category', y='log count',
               ax=ax,
               hue='category',
               palette=color_palette,
               size=2.5,             # Size of the dots
               alpha=0.5)            # Transparency of the dots
 
-
 ax.legend_.remove()
 ax.set_ylabel('')
 ax.set_xlabel('')
 ax.set_xticklabels([])
-ax.set_ylim(0, 30)
+ax.set_ylim(-0.2, 3)
 ax.tick_params(axis='x', bottom=False)
 sns.despine(fig, trim=False)
 
 plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_swarmplot.svg")
+
+### STRIPPLOT
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+
+df=ALL_contiguity_melted
+categories = df['category'].unique()
+
+# Adding individual data points using stripplot with increased jitter
+sns.stripplot(data=df,
+              x='category', y='log count',
+              ax=ax,
+              hue='category',
+              palette=color_palette,
+              size=3,
+              alpha=0.3,  # Transparency of the dots
+              jitter=0.2,  # Increase jitter to spread out the dots
+              order=categories)
+
+sns.boxplot(data=df,
+            x='category', y='log count',
+            ax=ax,
+            width=0.7,
+            palette=[(1, 1, 1, 0) for _ in color_palette], # Transparent boxplot
+            linewidth=1,
+            fliersize=0) # Hide the outlier markers
+
+ax.legend_.remove()
+ax.set_ylabel('Log10 counts')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+ax.set_ylim(-0.2, 3)
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+#plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contigs_boxplot-strip.svg")
+
