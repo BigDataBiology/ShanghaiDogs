@@ -6,3 +6,5 @@ analysis/figures/
 resource_generation/Public
 */code/nohup/
 __pycache__/
+resource_generation/localDB/
+resource_generation/nohup/
