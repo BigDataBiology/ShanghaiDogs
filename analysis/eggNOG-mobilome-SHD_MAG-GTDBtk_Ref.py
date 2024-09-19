@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 os.chdir('/data/Projects/ShanghaiDogs/')
+plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import qual_reports
 SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep=',')
@@ -244,5 +245,65 @@ ax.set_ylabel('Mobilome hits')
 ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Phylum')
 
 plt.tight_layout()
+
 fig.savefig('analysis/figures/Mobilome_by_species_tax.svg')
 #plt.show()
+
+###### Plot Mobilome boxplots by GCA, vs GCF
+all_COGs_w_tax_ = pd.merge(all_COGs_w_tax, SHD_qual[['Quality','Bin ID','Representative']],left_on='Bin ID',right_on='Bin ID')
+all_COGs_w_tax_ = all_COGs_w_tax_.query('`GTDBtk fastani Ref` != 0 and Representative =="Yes"')
+all_COGs_w_tax_['ref_qual']=all_COGs_w_tax_['GTDBtk fastani Ref']
+
+for n in all_COGs_w_tax_.index:
+    ref_value = all_COGs_w_tax_.loc[n, 'ref_qual']
+    if 'GCF' in ref_value:
+        all_COGs_w_tax_.loc[n, 'ref_qual'] = 'RefSeq reference (GCF)'
+    elif 'GCA' in ref_value:
+        all_COGs_w_tax_.loc[n, 'ref_qual'] = 'GenBank reference (GCA)'
+
+### Mobilome COG counts by reference genome assembly quality
+
+mobilome_MAGs = all_COGs_w_tax_.groupby(['Bin ID','ref_qual'])[['Count_x', 'Count_y']].sum()
+mobilome_MAGs = mobilome_MAGs.reset_index()
+
+mobilome_melted = pd.melt(mobilome_MAGs, id_vars=['Bin ID','ref_qual'],
+                    value_vars=['Count_x', 'Count_y'],
+                    var_name='Genome', value_name='Count')
+
+mobilome_melted['category']=mobilome_melted['Genome']+'_'+mobilome_melted['ref_qual']
+mobilome_melted['category']=mobilome_melted['category'].str.replace('Count_x','MAG')
+mobilome_melted['category']=mobilome_melted['category'].str.replace('Count_y','REF')
+
+order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
+mobilome_melted['category'] = pd.Categorical(mobilome_melted['category'], categories=order, ordered=True)
+mobilome_melted = mobilome_melted.sort_values('category')
+mobilome_melted['log counts']=np.log10(mobilome_melted['Count'])
+
+# Plot boxplot mobilome GCA vs GCF
+width_mm = 55
+height_mm = 40
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+sns.boxplot(data=mobilome_melted,
+            x='category',y='Count',
+            palette=['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77'],
+            ax=ax,
+            width=0.7,
+            linewidth=1,
+            flierprops={
+                'marker': 'd',  # Shape of outliers
+                'color': 'gray',  # Color of outliers
+                'markersize': 2,  # Size of outliers
+                'linestyle': 'none'  # No connecting line for outliers
+    })
+ax.set_ylabel('')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+# plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_mobilome_boxplot.svg")
