@@ -20,8 +20,15 @@ metadata = pd.read_csv('data/ShanghaiDogsMetadata/ALL_canid_felid_metadata.csv',
                        sep=',', encoding= 'unicode_escape', index_col=0)
 metadata_rep = metadata.query('Genus == "Canis" and Representative=="Yes"')
 
-otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd', \
+#otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd', \
+#                      sep='\t', index_col=0)
+#otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.1.ribosomal_protein_L2_rplB.ebd', \
+#                      sep='\t', index_col=0)
+#otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.54.serS.ebd', \
+#                      sep='\t', index_col=0)
+otu_tab = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.18.EIF_2_alpha.ebd', \
                       sep='\t', index_col=0)
+
 otu_tab.index = otu_tab.index.str.replace('_350','')
 
 # Update the index in the otu_tab to the biosample_id
@@ -227,7 +234,10 @@ plt.subplots_adjust(right=0.7)
 ax.tick_params(which='both', bottom=False, left=False, top=False, right=False)
 sns.despine()
 #plt.show()
-plt.savefig('analysis/figures/PCoA_all_env_classification_2D.svg')
+#plt.savefig('analysis/figures/PCoA_all_env_classification_2D_S3.5.rib_prot_S2_rpsB.svg')
+#plt.savefig('analysis/figures/PCoA_all_env_classification_2D_S3.1.ribosomal_protein_L2_rplB.svg')
+#plt.savefig('analysis/figures/PCoA_all_env_classification_2D_S3.54.serS.svg')
+plt.savefig('analysis/figures/PCoA_all_env_classification_2D_S3.14.hisS.svg')
 
 ### PCOA PLOTS WITH MATPLOTLIB STUDY
 
