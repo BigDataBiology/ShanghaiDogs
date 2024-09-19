@@ -383,8 +383,8 @@ ALL_tRNAs_melted['category'] = pd.Categorical(ALL_tRNAs_melted['category'], cate
 ALL_tRNAs_melted = ALL_tRNAs_melted.sort_values('category')
 
 # Plot boxplot tRNAs GCA vs GCF
-width_mm = 55
-height_mm = 40
+width_mm = 65
+height_mm = 60
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
@@ -458,12 +458,13 @@ sns.stripplot(data=df,
 sns.boxplot(data=df,
             x='category', y='Count',
             ax=ax,
-            width=0.7,
+            width=0.8,
             palette=[(1, 1, 1, 0) for _ in color_palette], # Transparent boxplot
             linewidth=1,
             fliersize=0) # Hide the outlier markers
 
 ax.legend_.remove()
+ax.set_title('Number of tRNAs')
 ax.set_ylabel('Counts')
 ax.set_xlabel('')
 ax.set_xticklabels([])
