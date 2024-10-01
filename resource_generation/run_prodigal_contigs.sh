@@ -5,8 +5,9 @@ conda activate prodigal
 set -e
 set -v
 
-contigs="/data/Projects/ShanghaiDogs/data/ShanghaiDogsAssemblies"
-output_folder="/data/Projects/ShanghaiDogs/intermediate-outputs/Prodigal"
+contigs="../data/ShanghaiDogsAssemblies"
+output_folder="../intermediate-outputs/Prodigal"
+temp_folder=$(mktemp -d)
 
 for n in {00..52}
   do
@@ -15,9 +16,13 @@ for n in {00..52}
     fi
     echo D0${n}
     mkdir ${output_folder}/D0${n}/
-    gunzip ${contigs}/D0${n}_PP1_PolcaCorr.fna.gz
-    prodigal -i ${contigs}/D0${n}_PP1_PolcaCorr.fna \
-    -o ${output_folder}/D0${n}/D0${n}_coords.gbk \
-    -a ${output_folder}/D0${n}/D0${n}_proteins.faa -p meta
-    gzip ${contigs}/D0${n}_PP1_PolcaCorr.fna
+    temp_fna=$temp_folder/D0${n}.fna
+    zcat ${contigs}/D0${n}_PP1_PolcaCorr.fna.gz >$temp_fna
+    prodigal -i ${temp_fna} \
+        -o ${output_folder}/D0${n}/D0${n}_coords.gbk \
+        -a ${output_folder}/D0${n}/D0${n}_proteins.faa \
+        -d ${output_folder}/D0${n}/D0${n}_orfs.fna -p meta
+
+    rm $temp_fna
   done
+rm -rf $temp_folder
