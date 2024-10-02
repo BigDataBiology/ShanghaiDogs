@@ -1,5 +1,6 @@
 import fasta
 from jug import TaskGenerator
+EX_BINS_BASEDIR = '../../external-data/data/Coelho_2018_bins/'
 
 @TaskGenerator
 def generate_contigs_binned_table():
@@ -35,7 +36,6 @@ def semibin_binned_fraction():
     from macrel import fasta
     from glob import glob
 
-    EX_BINS_BASEDIR = '../../external-data/data/Coelho_2018_bins/'
 
     samples = sorted([path.basename(f) for f in glob(f'{EX_BINS_BASEDIR}/S3N2Bin/*')])
     contig_data = []
@@ -62,6 +62,28 @@ def semibin_binned_fraction():
     contig_data.to_csv(ofile, index=False)
     return ofile
 
+@TaskGenerator
+def quantify_spire_mags():
+    import pandas as pd
+    from glob import glob
+
+    spire_meta = pd.read_csv(f'{EX_BINS_BASEDIR}spire_v1_genome_metadata.tsv.gz', index_col=0, sep='\t')
+
+    fas = sorted(glob(f'{EX_BINS_BASEDIR}/Coelho_2018_dog/*-assembled.fa.gz'))
+    contig_data = []
+    for fa in fas:
+        sample = fa.split('/')[-1].split('-')[0]
+        binned = set()
+        for sp in spire_meta.query('derived_from_sample == @sample').index:
+            for h, _ in fasta.fasta_iter(f'{EX_BINS_BASEDIR}/Coelho_2018_dog/{sp}.fa.gz'):
+                binned.add(h)
+        for h,seq in fasta.fasta_iter(f'{EX_BINS_BASEDIR}/Coelho_2018_dog/{sample}-assembled.fa.gz'):
+            contig_data.append((sample, h, len(seq), h in binned))
+    contig_data = pd.DataFrame(contig_data, columns=['Sample', 'Header', 'Length', 'Binned'])
+    ofile = '../../intermediate-outputs/Tables/Coelho_2018_contigs_spire_binned.csv'
+    contig_data.to_csv(ofile, index=False)
+    return ofile
+
 generate_contigs_binned_table()
 semibin_binned_fraction()
-
+quantify_spire_mags()
