@@ -4,6 +4,12 @@ def fasta_iter(fname, full_header=False):
     if fname.endswith('.gz'):
         import gzip
         op = gzip.open
+    elif fname.endswith('.bz2'):
+        import bz2
+        op = bz2.open
+    elif fname.endswith('.xz'):
+        import lzma
+        op = lzma.open
     else:
         op = open
     with op(fname, 'rt') as f:
