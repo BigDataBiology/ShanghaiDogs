@@ -4,7 +4,7 @@ import gzip
 
 from lib import pad9, xz_out
 
-seqs = list(fasta.fasta_iter('../intermediate-outputs/Prodigal/SHD_orfs.fna.gz'))
+seqs = list(fasta.fasta_iter('../intermediate-outputs/Prodigal/SHD.ORF.fna.xz'))
 def k(h_s):
     h,s = h_s
     return (len(s), s, h)
@@ -41,17 +41,20 @@ print(f'Deduped: {len(deduped)}')
 for ix, (h, seq) in enumerate(deduped):
     if ix % 100_000 == 0:
         print(pad9('Dedupe iteration', ix))
+
+    candidates = set()
     for ha in set(rolling_hashes(seq, min_len)):
-        for ix2 in hash_matches[ha]:
-            if ix2 in eliminated:
-                continue
-            h2, seq2 = deduped[ix2]
-            assert ix2 < ix
-            if seq2 in seq:
-                matches.append((h2, 'C', h))
-                assert h2 != h
-                eliminated.add(ix2)
-        hash_matches[ha].append(ix)
+       candidates.update(hash_matches[ha])
+       hash_matches[ha].append(ix)
+    for ix2 in candidates:
+        if ix2 in eliminated:
+            continue
+        h2, seq2 = deduped[ix2]
+        assert ix2 < ix
+        if seq2 in seq:
+            matches.append((h2, 'C', h))
+            assert h2 != h
+            eliminated.add(ix2)
 
 
 with xz_out('../intermediate-outputs/Prodigal/SHD.100NT.fna.xz') as f:
