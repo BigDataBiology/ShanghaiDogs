@@ -42,17 +42,15 @@ def collate_orfs(fnafiles):
     import lib
     ofile = f'{BASE_PRODIGAL}/SHD.ORF.fna.xz'
     ix = 0
-    metadata = []
     with lib.xz_out(ofile) as out:
-        for f in fnafiles:
-            for h,seq in fasta.fasta_iter(f):
-                orf_id = 'SHD.ORF.'+pad9(ix)
-                sample = f.split('/')[-1].split('_')[0]
-                ix += 1
-                metadata.append((orf_id, sample, h))
-                out.write(f'>{orf_id}\n{seq}\n'.encode('ascii'))
-    metadata = pd.DataFrame(metadata, columns=['orf_id', 'sample', 'orig_id'])
-    metadata.to_csv(f'{BASE_PRODIGAL}/SHD.ORF.orig.tsv.xz', sep='\t')
+        with lib.xz_out(f'{BASE_PRODIGAL}/SHD.ORF.orig.tsv.xz') as o_out:
+            for f in fnafiles:
+                for h,seq in fasta.fasta_iter(f):
+                    orf_id = 'SHD.ORF.'+pad9(ix)
+                    sample = f.split('/')[-1].split('_')[0]
+                    ix += 1
+                    o_out.write(f'{orf_id}\t{sample}\t{h}\n'.encode('ascii'))
+                    out.write(f'>{orf_id}\n{seq}\n'.encode('ascii'))
     return ofile
 
 
