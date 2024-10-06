@@ -39,19 +39,20 @@ def recover_fna_from_prodigal_faa(sample):
 @TaskGenerator
 def collate_orfs(fnafiles):
     import pandas as pd
-    ofile = f'{BASE_PRODIGAL}/SHD_orfs.fna.gz'
+    import lib
+    ofile = f'{BASE_PRODIGAL}/SHD.ORF.fna.xz'
     ix = 0
     metadata = []
-    with gzip.open(ofile, 'wt') as out:
+    with lib.xz_out(ofile) as out:
         for f in fnafiles:
             for h,seq in fasta.fasta_iter(f):
-                orf_id = 'SHD_ORF.'+pad9(ix)
+                orf_id = 'SHD.ORF.'+pad9(ix)
                 sample = f.split('/')[-1].split('_')[0]
                 ix += 1
                 metadata.append((orf_id, sample, h))
-                out.write(f'>{orf_id}\n{seq}\n')
+                out.write(f'>{orf_id}\n{seq}\n'.encode('ascii'))
     metadata = pd.DataFrame(metadata, columns=['orf_id', 'sample', 'orig_id'])
-    metadata.to_csv(f'{BASE_PRODIGAL}/SHD_orfs.orig.tsv.gz', sep='\t')
+    metadata.to_csv(f'{BASE_PRODIGAL}/SHD.ORF.orig.tsv.xz', sep='\t')
     return ofile
 
 
