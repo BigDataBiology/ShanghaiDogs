@@ -84,6 +84,41 @@ def quantify_spire_mags():
     contig_data.to_csv(ofile, index=False)
     return ofile
 
+@TaskGenerator
+def unigene_binned_fraction():
+    import pandas as pd
+    binned = pd.read_csv('../../intermediate-outputs/Tables/SHD_contigs_binned.csv', )
+    binned['SampleHeader'] = binned['Sample'] + '__' + binned['Header']
+    binned.set_index('SampleHeader', inplace=True)
+
+    orfs = pd.read_csv('../../intermediate-outputs/Prodigal/SHD.ORF.orig.tsv.xz',
+                        sep='\t', names=['ORF', 'Sample', 'Header'])
+    orfs['Contig'] = orfs['Header'].str.rsplit('_').str[:-1].str.join('_')
+    orfs['SampleHeader'] = orfs['Sample'] + '__' + orfs['Contig']
+
+    orfs = orfs.join(binned[['Binned']], on='SampleHeader')
+
+    clusters = pd.read_csv('../../intermediate-outputs/Prodigal/SHD.clusters.tsv.xz', sep='\t', names=['ORF', 'rel100', 'rep100', 'rel95', 'rep95'])
+
+    orfs.set_index('ORF', inplace=True)
+    clusters.set_index('ORF', inplace=True)
+    clusters = clusters.join(orfs[['Binned']])
+
+    results = {
+            'count' : [
+                len(clusters),
+                len(set(clusters['rep100'])),
+                len(set(clusters['rep95'])),
+                ],
+            'fraction_binned' : [
+                clusters['Binned'].mean(),
+                clusters.groupby('rep100')['Binned'].any().mean(),
+                clusters.groupby('rep95')['Binned'].any().mean(),
+                ],
+            }
+    return pd.DataFrame(results, index=['ORF', '100NT', '95NT'])
+
 generate_contigs_binned_table()
 semibin_binned_fraction()
 quantify_spire_mags()
+unigene_binned_fraction()
