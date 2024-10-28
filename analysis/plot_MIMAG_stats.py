@@ -177,12 +177,40 @@ MIMAG_report_species = MIMAG_report.dropna(subset=['species'])
 # Create a pivot table with counts based on 'Family' and 'Quality'
 prevalent_sp = MIMAG_report_species.pivot_table(
     index='species',
-    columns='Quality',
+    columns='Quality_det',
     values='Classification',
     aggfunc='count').fillna(0)
 
-prevalent_sp['Total']=prevalent_sp['high-quality']+prevalent_sp['medium-quality']
-prevalent_sp = prevalent_sp.sort_values(['Total'],ascending=False)
+prevalent_sp['Total']=prevalent_sp['high-quality']+prevalent_sp['medium-quality']+prevalent_sp['single-contig HQ']
+prevalent_sp = prevalent_sp.sort_values(by='Total', ascending=False).head(10)
+prevalent_sp_perc = prevalent_sp.div(prevalent_sp['Total'], axis=0) * 100
+prevalent_sp_perc = prevalent_sp_perc.sort_values(by='medium-quality',ascending=False)
+
+# Plotting
+# Fig_size
+width_mm = 80
+height_mm = 65
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+prevalent_sp_perc[['single-contig HQ','high-quality', 'medium-quality']].plot(
+    kind='barh',
+    stacked=True,
+    color=['#1E3F20','#1B9E77', '#EDB458'],
+    ax=ax,
+    width=0.8
+)
+ax.set_xlabel('Percentage (%)',fontsize=10)
+ax.set_ylabel('')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+ax.get_legend().remove()
+#fig.legend(loc='lower left', bbox_to_anchor=(0.01, 0.01))
+
+plt.tight_layout()
+plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/prevalent_sp-MAGs_qual.svg")
 
 ### Phylum-level MAG counts by reference genome / novelty
 phylum_ref = species_catalog.pivot_table(
