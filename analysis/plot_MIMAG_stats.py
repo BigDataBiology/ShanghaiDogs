@@ -168,6 +168,21 @@ plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/total_MAGs_qual_MIMAG.svg")
 
+### Most prevalent species in dog cohort
+# Create 'species' column
+MIMAG_report['species'] = MIMAG_report['Classification'].str.extract(r's__([^;]+)')
+print(MIMAG_report[['Classification', 'species']].head())
+MIMAG_report_species = MIMAG_report.dropna(subset=['species'])
+
+# Create a pivot table with counts based on 'Family' and 'Quality'
+prevalent_sp = MIMAG_report_species.pivot_table(
+    index='species',
+    columns='Quality',
+    values='Classification',
+    aggfunc='count').fillna(0)
+
+prevalent_sp['Total']=prevalent_sp['high-quality']+prevalent_sp['medium-quality']
+prevalent_sp = prevalent_sp.sort_values(['Total'],ascending=False)
 
 ### Phylum-level MAG counts by reference genome / novelty
 phylum_ref = species_catalog.pivot_table(
