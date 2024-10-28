@@ -188,7 +188,7 @@ prevalent_sp_perc = prevalent_sp_perc.sort_values(by='medium-quality',ascending=
 
 # Plotting
 # Fig_size
-width_mm = 80
+width_mm = 85
 height_mm = 65
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
@@ -198,9 +198,11 @@ prevalent_sp_perc[['single-contig HQ','high-quality', 'medium-quality']].plot(
     stacked=True,
     color=['#1E3F20','#1B9E77', '#EDB458'],
     ax=ax,
-    width=0.8
+    width=0.7
 )
-ax.set_xlabel('Percentage (%)',fontsize=10)
+ax.set_xlabel('',fontsize=10)
+ax.set_xticks([0, 50, 100])
+ax.set_xticklabels(['0%','50%','100%'])
 ax.set_ylabel('')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -209,7 +211,7 @@ ax.get_legend().remove()
 #fig.legend(loc='lower left', bbox_to_anchor=(0.01, 0.01))
 
 plt.tight_layout()
-plt.show()
+#plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/prevalent_sp-MAGs_qual.svg")
 
 ### Phylum-level MAG counts by reference genome / novelty
@@ -221,13 +223,15 @@ phylum_ref = species_catalog.pivot_table(
 )
 
 phylum_ref['Total']=phylum_ref.sum(axis=1)
-phylum_ref=phylum_ref.sort_values(by='Total')
+phylum_ref=phylum_ref.sort_values(by='Total',ascending=True)
 phylum_ref = phylum_ref[['RefSeq reference (GCF)','GenBank reference (GCA)','Novel species']]
+phylum_ref = phylum_ref.tail(8)
+phylum_ref.columns = ['RefSeq reference', 'GenBank reference', 'Novel species']
 
 # Plot horizontal stacked barplot
 # Fig_size
-width_mm = 130
-height_mm = 70
+width_mm = 110
+height_mm = 65
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 ax = phylum_ref.plot(kind='barh', stacked=True,  figsize=figsize_inch,
@@ -235,12 +239,12 @@ ax = phylum_ref.plot(kind='barh', stacked=True,  figsize=figsize_inch,
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.legend(title='', loc='lower right',fontsize=10)
-ax.set_ylabel('Phylum',fontsize=10)
+ax.set_ylabel('',fontsize=10)
 ax.set_xlabel('N# of species-level MAGs',fontsize=10)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_novelty.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_novelty_red.svg")
 
 ### Phylum-level MAG counts by quality
 species_catalog['Quality_det']=species_catalog['Quality']+"_"+species_catalog['MIMAG']
