@@ -45,8 +45,9 @@ cd ${reads_path}
 for fq in *.gz
   do
     a=$(basename $fq | sed 's/_.*//')
+    file=$(basename $fq | sed 's/_[12].*//')
     mkdir ${output_path}/"$a"
-    singlem pipe -1 ${a}_1.fq.gz -2 ${a}_2.fq.gz \
+    singlem pipe -1 ${file}_1.fq.gz -2 ${file}_2.fq.gz \
     --threads 24 -p ${output_path}/"$a"/"$a".profile.tsv \
     --otu-table ${output_path}/"$a"/"$a"_otutable.tsv \
     --taxonomic-profile-krona ${output_path}/"$a"/"$a"_krona.html
