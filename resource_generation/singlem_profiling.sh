@@ -85,7 +85,7 @@ singlem summarise --input-otu-table intermediate-outputs/singlem_profiling/beta-
 --unifrac-by-otu intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu_table
 
 # Total marker gene counts by marker gene
-cd intermediate-outputs/singlem_profiling/beta-div/
+cd intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/
 for f in *.unifrac
   do
     echo $f >> total_counts_by_otu_marker.txt
@@ -96,9 +96,9 @@ for f in *.unifrac
 # Archaeal markers have low counts in general for our dogs
 
 cd /data/Projects/ShanghaiDogs/
-convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/all-otu_table.S3.5.ribosomal_protein_S2_rpsB.unifrac \
-intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd # bacterial & archaeal
-convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/all-otu_table.S3.1.ribosomal_protein_L2_rplB.unifrac \
-intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.1.ribosomal_protein_L2_rplB.ebd # bacterial & archaeal
-convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/all-otu_table.S3.42.RNA_pol_A_bac.unifrac \
-intermediate-outputs/singlem_profiling/beta-div/all-otu-table.S3.42.RNA_pol_A_bac.ebd
+convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu_table.S3.5.ribosomal_protein_S2_rpsB.unifrac \
+intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu-table.S3.5.rib_prot_S2_rpsB.ebd # bacterial & archaeal
+convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu_table.S3.1.ribosomal_protein_L2_rplB.unifrac \
+intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu-table.S3.1.ribosomal_protein_L2_rplB.ebd # bacterial & archaeal
+convertToEBD.py intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu_table.S3.42.RNA_pol_A_bac.unifrac \
+intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu-table.S3.42.RNA_pol_A_bac.ebd
