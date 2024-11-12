@@ -112,7 +112,6 @@ palette = ['#1b9e77', '#d95f02', '#7570b3'] #Dark2 colors
 
 # Fig_size
 plt.clf()
-ax.clear()
 
 width_mm = 120
 height_mm = 45
@@ -121,9 +120,10 @@ figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 fig, ax = plt.subplots(figsize=figsize_inch)
 
 sns.boxplot(data=data_filt, x='Reads mapped (%)', y='group', hue='env_classification',
-            order=group_order, palette=palette, ax=ax, boxprops=dict(alpha=.3), showfliers=False)
+            order=group_order, palette=palette, ax=ax, dodge=False, boxprops=dict(alpha=.3),
+            showfliers=False, width=0.7)
 sns.stripplot(data=data_filt, x='Reads mapped (%)', y='group', hue='env_classification',
-              order=group_order, palette=palette, size=2, dodge=True, ax=ax, legend=False)
+              order=group_order, palette=palette, size=2, dodge=False, ax=ax, legend=False)
 
 ax.set_xlabel('Reads mapped (%)',fontsize=10)
 ax.set_ylabel('')
@@ -133,6 +133,6 @@ ax.get_legend().remove()
 sns.despine(fig)
 fig.tight_layout()
 
-plt.show() # y-ticks not aligned with boxplots
-#fig.savefig('analysis/figures/reads_mapped_shd_horizontal.svg')
+#plt.show()
+fig.savefig('analysis/figures/reads_mapped_shd_by_env.svg')
 
