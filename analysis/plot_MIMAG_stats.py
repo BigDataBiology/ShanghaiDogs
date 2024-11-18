@@ -182,14 +182,14 @@ prevalent_sp = MIMAG_report_species.pivot_table(
     aggfunc='count').fillna(0)
 
 prevalent_sp['Total']=prevalent_sp['high-quality']+prevalent_sp['medium-quality']+prevalent_sp['single-contig HQ']
-prevalent_sp = prevalent_sp.sort_values(by='Total', ascending=False).head(10)
+prevalent_sp = prevalent_sp.sort_values(by='Total', ascending=False).head(25)
 prevalent_sp_perc = prevalent_sp.div(prevalent_sp['Total'], axis=0) * 100
 prevalent_sp_perc = prevalent_sp_perc.sort_values(by='medium-quality',ascending=False)
 
 # Plotting
 # Fig_size
-width_mm = 85
-height_mm = 65
+width_mm = 95
+height_mm = 110
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
@@ -204,15 +204,12 @@ ax.set_xlabel('',fontsize=10)
 ax.set_xticks([0, 50, 100])
 ax.set_xticklabels(['0%','50%','100%'])
 ax.set_ylabel('')
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
+ax.set_xlim(0,100)
 
 ax.get_legend().remove()
-#fig.legend(loc='lower left', bbox_to_anchor=(0.01, 0.01))
-
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/prevalent_sp-MAGs_qual.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/prevalent_sp-MAGs_qual_30.svg")
 
 ### Phylum-level MAG counts by reference genome / novelty
 phylum_ref = species_catalog.pivot_table(
