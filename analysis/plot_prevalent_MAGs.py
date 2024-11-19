@@ -5,6 +5,8 @@ import pandas as pd
 from scipy.stats import trim_mean
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib.cm import get_cmap
+from matplotlib.colors import to_hex
 
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 os.chdir('/data/Projects/ShanghaiDogs')
@@ -27,34 +29,40 @@ phylum_counts = MIMAG_report['Phylum'].value_counts()
 phylum_large = phylum_counts[phylum_counts >= 100] # At least 100 total MAGs from that phylum
 phylum_small = phylum_counts[phylum_counts < 100]
 phylum_counts_merged = phylum_large.copy()
-phylum_counts_merged['Other phylum (low count)'] = phylum_small.sum()
+phylum_counts_merged['Other phyla'] = phylum_small.sum()
 phylum_counts_merged = phylum_counts_merged.reset_index()
 phylum_counts_merged.columns = ['Phylum','Count']
 
+# Color palette
+dark2_colors = get_cmap("Dark2_r").colors
+custom_palette = [to_hex(color) for i, color in enumerate(dark2_colors) if i not in [2]]  # Exclude green and yellow
+phylum_to_color = {phylum: custom_palette[i % len(custom_palette)] for i, phylum in enumerate(phylum_counts_merged['Phylum'].unique())}
+phylum_colors = phylum_counts_merged['Phylum'].map(phylum_to_color) # Assign colors based on Phylum
+
 # Plotting donutplot
-width_mm = 60
-height_mm = 80
+width_mm = 65
+height_mm = 90
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
-colors = sns.color_palette("Dark2", len(phylum_counts_merged))
+#colors = sns.color_palette("Dark2", len(phylum_counts_merged))
 
 fig, ax = plt.subplots(figsize=figsize_inch)
-ax.set_position([0.05, 0.05, 0.9, 0.9])  # Adjust this as needed for better centering
+ax.set_position([0.05, 0.05, 0.8, 0.8])  # Adjust this as needed for better centering
 wedges, texts, autotexts = ax.pie(
     phylum_counts_merged['Count'],
     startangle=210,
-    colors=colors,
+    colors=phylum_colors,
     autopct='%1.1f%%',
     pctdistance=1.22,
     wedgeprops=dict(width=0.4, edgecolor='white')) # for donutplot
 
 for autotext in autotexts:
     autotext.set_color('black')
-    autotext.set_fontsize(9)
+    autotext.set_fontsize(10)
 
 # Add legend
 ax.legend(wedges, phylum_counts_merged['Phylum'], loc="upper center",
-          bbox_to_anchor=(0.5,0.05), fontsize=9, ncol=1)
+          bbox_to_anchor=(0.5,0.05), fontsize=10, ncol=1)
 
 plt.tight_layout()
 #plt.show()
@@ -63,20 +71,21 @@ fig.savefig('analysis/figures/donutplot_phyla_ver.svg')
 # List of prevalent MAGs (>30 MAGs in SHD)
 sp_MAGs_counts = MIMAG_report['Species'].value_counts().reset_index()
 sp_MAGs_counts_prev = sp_MAGs_counts[sp_MAGs_counts['count']>=30] # Genome assembled >30 times (~30 dogs)
-#sp_MAGs_counts_prev_ls = list(sp_MAGs_counts_prev['Species'])
+
 # order them according to MAG qual graph
-order = ['Blautia sp000432195', 'Fusobacterium_B sp900541465',
- 'Blautia_A caecimuris', 'Blautia_A sp900541345', 'Blautia hansenii',
- 'Oliverpabstia sp000432335', 'Collinsella intestinalis',
- 'Faecalimonas sp900550235', 'Ruminococcus_B gnavus',
- 'Megamonas funiformis', 'Schaedlerella glycyrrhizinilytica_A',
- 'Phocaeicola sp900546645', 'Faecalibacterium sp900540455',
- 'Amedibacterium intestinale', 'Enterocloster sp001517625',
- 'Peptacetobacter hiranonis', 'Thomasclavelia spiroformis_A',
- 'Ventrimonas sp900538475', 'Phocaeicola coprocola',
- 'Sutterella wadsworthensis_A', 'Faecalimonas umbilicata',
- 'Clostridium_Q sp000435655', 'Bacteroides sp900766005',
- 'Amedibacillus dolichus', 'Eisenbergiella sp900539715']
+order = ['Blautia sp000432195', 'Blautia_A caecimuris',
+         'Fusobacterium_B sp900541465', 'Blautia_A sp900541345',
+         'Blautia hansenii', 'Oliverpabstia sp000432335',
+         'Collinsella intestinalis', 'Faecalimonas sp900550235',
+         'Ruminococcus_B gnavus', 'Megamonas funiformis',
+         'Schaedlerella glycyrrhizinilytica_A', 'Phocaeicola sp900546645',
+         'Faecalibacterium sp900540455', 'Amedibacterium intestinale',
+         'Enterocloster sp001517625', 'Peptacetobacter hiranonis',
+         'Thomasclavelia spiroformis_A', 'Ventrimonas sp900538475',
+         'Phocaeicola coprocola',  'Sutterella wadsworthensis_A',
+         'Faecalimonas umbilicata', 'Clostridium_Q sp000435655',
+         'Bacteroides sp900766005', 'Amedibacillus dolichus',
+         'Eisenbergiella sp900539715']
 
 sp_MAGs_counts_prev['Species'] = pd.Categorical(
     sp_MAGs_counts_prev['Species'],
@@ -92,12 +101,9 @@ MIMAG_report_unique_sp = MIMAG_report.drop_duplicates(subset='Species')
 MIMAG_report_unique_sp = MIMAG_report_unique_sp.set_index('Species')
 sp_MAG_prev = pd.merge(sp_MAGs_counts_prev,MIMAG_report_unique_sp['Phylum'],left_index=True,right_index=True)
 
-from matplotlib.cm import get_cmap
-from matplotlib.colors import to_hex
-dark2_colors = get_cmap("Dark2_r").colors
-custom_palette = [to_hex(color) for i, color in enumerate(dark2_colors) if i not in [7, 2]]  # Exclude green and yellow
-phylum_to_color = {phylum: custom_palette[i % len(custom_palette)] for i, phylum in enumerate(sp_MAG_prev['Phylum'].unique())}
-bar_colors = sp_MAG_prev['Phylum'].map(phylum_to_color) # Assign colors based on Phylum
+# Define a default color for phyla not in the dictionary
+default_color = '#1b9e77'  # Other phyla category
+bar_colors = sp_MAG_prev['Phylum'].map(lambda phylum: phylum_to_color.get(phylum, default_color))
 
 # Plot prevalence bar
 width_mm = 90
@@ -108,7 +114,8 @@ fig, ax = plt.subplots(figsize=figsize_inch)
 sp_MAG_prev['Percent'].plot(
     kind='barh',
     stacked=True,
-    color=bar_colors,#['#899499'],
+    color=bar_colors,
+    alpha=0.8,
     ax=ax,
     width=0.7
 )
@@ -116,6 +123,7 @@ sp_MAG_prev['Percent'].plot(
 # Add a line at 50%
 ax.axvline(50, color='black', linestyle='--', linewidth=0.7)
 
+# Axis aesthetics
 ax.set_xlabel('',fontsize=10)
 ax.set_xticks([50, 100])
 ax.set_xticklabels(['50%','100%'])
@@ -133,40 +141,41 @@ prev_ab_MAGs_sp = abundant_MAGs_sp[abundant_MAGs_sp['Species'].isin(order)]
 prev_ab_MAGs_sp['Species'] = pd.Categorical(
     prev_ab_MAGs_sp['Species'],
     categories=order,
-    ordered=True
-)
+    ordered=True)
 prev_ab_MAGs_sp = prev_ab_MAGs_sp.sort_values(by='Species', ascending=True)
 prev_ab_MAGs_sp['Percent'] = prev_ab_MAGs_sp[0]*100
 prev_ab_MAGs_sp = prev_ab_MAGs_sp.set_index('Species')
 
-# Bubbleplot
-# Create figure and axis
+# Plot Bubbleplot
 width_mm = 80
-height_mm = 110
+height_mm = 115
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
-fig, ax = plt.subplots(figsize=figsize_inch)
 
-# Bubble plot with index names on the y-axis
+fig, ax = plt.subplots(figsize=figsize_inch)
 scatter = ax.scatter(
     [1] * len(prev_ab_MAGs_sp),
     prev_ab_MAGs_sp.index,      # Index names on the y-axis
     s=prev_ab_MAGs_sp['Percent'] * 25,  # Scale bubble size
-    alpha=0.7, edgecolors="w", c=bar_colors)
-
-#ax.grid(axis='y', color='lightgrey', linestyle='-', linewidth=0.5, alpha=0.7)
-#ax.set_xticks([])  # Remove x-axis ticks
+    alpha=0.8, edgecolors="#DDDDDD", c=bar_colors)
 
 # Add legend for bubble sizes
 bubble_sizes = [1, 5, 10]
 for size in bubble_sizes:
-    ax.scatter([], [], s=size * 20, color="lightgrey", edgecolors="w", label=f"{size}%")
+    ax.scatter([], [], s=size * 25, color="lightgrey", edgecolors="#DDDDDD", label=f"{size}%")
 
-fig.legend(loc="upper left", fontsize=8, title_fontsize=10)
+fig.legend(loc="upper left", fontsize=10, title_fontsize=10)
+
+# Axis aesthetics
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+ax.spines['left'].set_visible(False)
+ax.spines['bottom'].set_visible(False)
+ax.tick_params(left = False, bottom = False)
 
 # Show the plot
 plt.tight_layout()
 #plt.show()
-plt.savefig('analysis/figures/high_prev-ab_sp_bubble_by_phyla_.svg')
+plt.savefig('analysis/figures/high_prev-ab_sp_bubble_by_phyla__.svg')
 
 
 # Plot abundances distribution of most prevalent MAGs
