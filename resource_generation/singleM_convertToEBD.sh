@@ -1,0 +1,77 @@
+#!/bin/bash
+
+source ~/miniconda3/bin/activate root
+conda activate singleM
+export SINGLEM_METAPACKAGE_PATH='/data/yiqian/databases/singlem/S3.2.1.GTDB_r214.metapackage_20231006.smpkg.zb'
+
+# Define the list
+markers=(
+    "S3.1.ribosomal_protein_L2_rplB"
+    "S3.2.ribosomal_protein_L3_rplC"
+    "S3.3.ribosomal_protein_L14b_L23e_rplN"
+    "S3.4.ribosomal_protein_L16_L10E_rplP"
+    "S3.5.ribosomal_protein_S2_rpsB"
+    "S3.6.ribosomal_protein_S5"
+    "S3.7.ribosomal_protein_S7"
+    "S3.8.ribosomal_protein_S12_S23"
+    "S3.9.ribosomal_protein_S15P_S13e"
+    "S3.10.ribosomal_protein_S19_rpsS"
+    "S3.11.pheS"
+    "S3.12.ribosomal_L1"
+    "S3.13.ribosomal_S9"
+    "S3.14.hisS"
+    "S3.15.glyS_dimeric"
+    "S3.16.SRP_SPB"
+    "S3.17.dph5"
+    "S3.18.EIF_2_alpha"
+    "S3.19.eIF_5A"
+    "S3.20.eS8"
+    "S3.21.Fibrillarin"
+    "S3.22.gatD_arch"
+    "S3.23.KOW_elon_Spt5"
+    "S3.24.Nop"
+    "S3.25.ribosomal_L15e"
+    "S3.26.ribosomal_L19e"
+    "S3.27.ribosomal_L21e"
+    "S3.28.ribosomal_L31e"
+    "S3.29.ribosomal_L32e"
+    "S3.30.ribosomal_S19e"
+    "S3.31.ribosomal_S24e"
+    "S3.32.ribosomal_S28e"
+    "S3.33.ribosomal_S4e"
+    "S3.34.ribosomal_S6e"
+    "S3.35.RNA_SBDS"
+    "S3.36.uL22_arch_euk"
+    "S3.37.uS4_arch"
+    "S3.38.ribosomal_protein_L5_rplE"
+    "S3.39.ribosomal_protein_L6_rplF"
+    "S3.40.ribosomal_protein_L11_rplK"
+    "S3.41.ribosomal_protein_S10_rpsJ"
+    "S3.42.RNA_pol_A_bac"
+    "S3.43.TIGR00042"
+    "S3.44.alaS"
+    "S3.45.NusA"
+    "S3.46.pheT_bact"
+    "S3.47.recR"
+    "S3.48.rplD_bact"
+    "S3.49.rplO_bact"
+    "S3.50.rplT_bact"
+    "S3.51.rplV_bact"
+    "S3.52.rpsC_bact"
+    "S3.53.ruvA"
+    "S3.54.serS"
+    "S3.55.TIGR00006"
+    "S3.56.trmD"
+    "S3.57.TruB"
+    "S3.58.tsf"
+    "S3.59.uS11_bact"
+)
+
+# Loop through each element and execute the command
+for marker in "${markers[@]}"; do
+    input_path="/data/Projects/ShanghaiDogs/intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu_table.${marker}.unifrac"
+    output_path="/data/Projects/ShanghaiDogs/intermediate-outputs/singlem_profiling/beta-div/unifrac-otu/all-otu-table.${marker}.ebd"
+
+    echo "Processing: $marker"
+    convertToEBD.py "$input_path" "$output_path"
+done
