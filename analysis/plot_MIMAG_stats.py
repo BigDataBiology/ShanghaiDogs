@@ -243,41 +243,6 @@ plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_novelty_red.svg")
 
-### Phylum-level MAG counts by quality
-species_catalog['Quality_det']=species_catalog['Quality']+"_"+species_catalog['MIMAG']
-species_catalog['Quality_det']=species_catalog['Quality_det'].str.replace('medium-quality_No','Medium-quality MAGs')
-species_catalog['Quality_det']=species_catalog['Quality_det'].str.replace('high-quality_No','High-quality MAGs')
-species_catalog['Quality_det']=species_catalog['Quality_det'].str.replace('high-quality_Yes','MIMAG High-quality MAGs')
-
-phylum_qual = species_catalog.pivot_table(
-    index='Phylum',
-    columns='Quality_det',
-    aggfunc='size',
-    fill_value=0
-)
-
-phylum_qual['Total']=phylum_qual.sum(axis=1)
-phylum_qual=phylum_qual.sort_values(by='Total')
-phylum_qual = phylum_qual[['MIMAG High-quality MAGs','High-quality MAGs','Medium-quality MAGs']]
-
-# Plot horizontal stacked barplot
-# Fig_size
-width_mm = 130
-height_mm = 70
-figsize_inch = (width_mm / 25.4, height_mm / 25.4)
-
-ax = phylum_qual.plot(kind='barh', stacked=True,  figsize=figsize_inch,
-                     color=['#1E3F20','#1B9E77','#EDB458'],width=0.75)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.legend(title='', loc='lower right',fontsize=10)
-ax.set_ylabel('Phylum',fontsize=10)
-ax.set_xlabel('N# of species-level MAGs',fontsize=10)
-
-plt.tight_layout()
-#plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_quality.svg")
-
 ### CONTIGUITY:  MAGs vs REF (GCA & GCF)
 # species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
@@ -577,7 +542,6 @@ figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
 ax.clear()
-
 
 # Draw the treemap
 squarify.plot(sizes=genus_counts,
