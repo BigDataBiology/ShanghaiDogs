@@ -46,7 +46,7 @@ for sp in abd_sp_ls:
         plt.title(sp)
         sns.despine(fig, trim=False)
         #plt.show()
-        out_path='analysis/figures/rRNA_count_species/rRNAs_'+sp+'.png'
+        out_path='intermediate-outputs/figures/rRNA_count_species/rRNAs_'+sp+'.png'
         plt.savefig(out_path)
     else:
         print(sp + ' is not in the GTDB_qual table')

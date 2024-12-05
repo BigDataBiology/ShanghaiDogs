@@ -98,7 +98,7 @@ plt.xticks(ticks=[0, 1], labels=['SHD MAGs (here)','Ref genomes'])
 sns.despine(fig, trim=False)
 #plt.show()
 
-fig.savefig('analysis/figures/boxplot_total_COGs_mobilome.svg')
+fig.savefig('intermediate-outputs/figures/boxplot_total_COGs_mobilome.svg')
 
 # Heatmap
 sub_mob_counts_COG['Tag']=sub_mob_counts_COG['COG_id']+'_'+sub_mob_counts_COG['Annotation']
@@ -120,7 +120,7 @@ plt.ylabel('')
 plt.tight_layout()
 #plt.show()
 
-fig.savefig('analysis/figures/heatmap_specific_COGs_count.svg')
+fig.savefig('intermediate-outputs/figures/heatmap_specific_COGs_count.svg')
 
 # Add taxonomic information to all_COGs and assess mobilome info by species
 all_COGs_w_tax = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Classification','MIMAG']],left_on='Name_x',right_on='Bin ID')
@@ -208,7 +208,7 @@ axes[1].set_title('Non-contiguous Ref Genomes (>80 contigs)')
 axes[1].set_ylim(0, 350)
 
 plt.tight_layout()
-fig.savefig('analysis/figures/Mobilome_by_species.svg')
+fig.savefig('intermediate-outputs/figures/Mobilome_by_species.svg')
 #plt.show()
 
 ### COMPARE MOBILOME COUNTS IN SHDs OF MOST ABUNDANT SPs (ORDERED BY TAXONOMIC CLASSIFICATION)
@@ -246,7 +246,7 @@ ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Phylum')
 
 plt.tight_layout()
 
-fig.savefig('analysis/figures/Mobilome_by_species_tax.svg')
+fig.savefig('intermediate-outputs/figures/Mobilome_by_species_tax.svg')
 #plt.show()
 
 ###### Plot Mobilome boxplots by GCA, vs GCF
@@ -277,7 +277,6 @@ mobilome_melted['category']=mobilome_melted['category'].str.replace('Count_y','R
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
 mobilome_melted['category'] = pd.Categorical(mobilome_melted['category'], categories=order, ordered=True)
 mobilome_melted = mobilome_melted.sort_values('category')
-mobilome_melted['log counts']=np.log10(mobilome_melted['Count'])
 
 # Plot boxplot mobilome GCA vs GCF
 width_mm = 55
@@ -306,4 +305,4 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_mobilome_boxplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_mobilome_boxplot.svg")

@@ -86,7 +86,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 # Save figure
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/total_MAGs_qual.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual.svg")
 
 
 ### HQ_mq 1-contig
@@ -126,7 +126,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 # Save figure
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/total_MAGs_qual_1tig.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual_1tig.svg")
 
 ### MIMAG high-quality
 
@@ -166,7 +166,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 # Save figure
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/total_MAGs_qual_MIMAG.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual_MIMAG.svg")
 
 ### Most prevalent species in dog cohort
 # Create 'species' column
@@ -209,7 +209,7 @@ ax.set_xlim(0,100)
 ax.get_legend().remove()
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/prevalent_sp-MAGs_qual_30.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/prevalent_sp-MAGs_qual_30.svg")
 
 ### Phylum-level MAG counts by reference genome / novelty
 phylum_ref = species_catalog.pivot_table(
@@ -241,7 +241,7 @@ ax.set_xlabel('N# of species-level MAGs',fontsize=10)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_novelty_red.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_novelty_red.svg")
 
 ### CONTIGUITY:  MAGs vs REF (GCA & GCF)
 # species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
@@ -290,7 +290,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_contiguity_boxplot_log_mq-HQ.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_contiguity_boxplot_log_mq-HQ.svg")
 
 ### RIBOSOMALS:  MAGs vs REF (GCA & GCF)
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
@@ -335,7 +335,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_16S_boxplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_16S_boxplot.svg")
 
 ### Plot histograms for 16S rRNA count
 categories = ALL_ribosomal_melted['category'].unique()
@@ -373,7 +373,7 @@ axes[1].set_xlim(-0.2,17.7)
 sns.despine(fig, trim=False)
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_16S_histograms_v2.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_16S_histograms_v2.svg")
 
 ### tRNAs: MAGs vs REF (GCA & GCF)
 order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
@@ -419,7 +419,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_boxplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_tRNAs_boxplot.svg")
 
 ### SWARMPLOTS
 fig, ax = plt.subplots(figsize=figsize_inch)
@@ -444,7 +444,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_ribosomal_swarmplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_ribosomal_swarmplot.svg")
 
 ### STRIPPLOT
 fig, ax = plt.subplots(figsize=figsize_inch)
@@ -483,7 +483,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/sp_MAG_vs_ref_tRNAs_boxplot-strip.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_tRNAs_boxplot-strip.svg")
 
 ### NOVEL SPECIES PLOT
 species_catalog_novel = species_catalog.query('ref_new == "Novel species"')
@@ -532,7 +532,7 @@ p.gca().add_artist(my_circle)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/novel_tax_donutplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_donutplot.svg")
 
 ### Tree plot
 # Set up the figure
@@ -556,4 +556,4 @@ ax.set_axis_off()  # Hide the axes
 # Display the plot
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/analysis/figures/novel_tax_squarify.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_squarify.svg")

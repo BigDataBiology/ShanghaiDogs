@@ -37,7 +37,7 @@ ax.set_ylabel('Nr contigs')
 ax.set_title('Scatterplot of Contiguity vs 16S genes')
 ax.legend()
 #plt.show()
-fig.savefig('analysis/figures/SHDvsRef_16S_scatterplot.svg')
+fig.savefig('intermediate-outputs/figures/SHDvsRef_16S_scatterplot.svg')
 
 # Boxplot
 fig, ax = plt.subplots()
@@ -48,7 +48,7 @@ ax.set_xticklabels(labels=['Ref genomes', 'SHD MAGs (here)'])
 sns.despine(trim=False)
 #plt.show()
 
-fig.savefig('analysis/figures/SHDvsRef_16S_boxplot.svg')
+fig.savefig('intermediate-outputs/figures/SHDvsRef_16S_boxplot.svg')
 
 # Histogram
 colors = sns.color_palette("Dark2", 2)
@@ -70,7 +70,7 @@ ax[1].set_xlim(0,17)
 
 plt.tight_layout()
 #plt.show()
-fig.savefig('analysis/figures/SHDvsRef_16S_histogram.svg')
+fig.savefig('intermediate-outputs/figures/SHDvsRef_16S_histogram.svg')
 
 # Compare the genomes/MAGs that pass MIMAG criteria
 GTDB_qual_MIMAG = GTDB_qual.query("MIMAG =='Yes'")
@@ -138,5 +138,5 @@ ax.set_xticks(range(-4, 16, 2))
 ax.invert_yaxis()  # Invert y-axis to have the highest value on top
 plt.tight_layout()
 sns.despine(trim=False)
-fig.savefig('analysis/figures/16S_diff_count_species.svg')
+fig.savefig('intermediate-outputs/figures/16S_diff_count_species.svg')
 #plt.show()

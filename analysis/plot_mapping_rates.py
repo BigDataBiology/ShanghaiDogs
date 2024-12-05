@@ -67,7 +67,7 @@ sns.despine(fig)
 fig.tight_layout()
 
 #plt.show()
-fig.savefig('analysis/figures/reads_mapped_shd_vertical.svg')
+fig.savefig('intermediate-outputs/figures/reads_mapped_shd_vertical.svg')
 
 ### Plotting: HORIZONTAL boxplot
 
@@ -98,7 +98,7 @@ sns.despine(fig)
 fig.tight_layout()
 
 #plt.show()
-fig.savefig('analysis/figures/reads_mapped_shd_horizontal.svg')
+fig.savefig('intermediate-outputs/figures/reads_mapped_shd_horizontal.svg')
 
 ### Plotting: HORIZONTAL boxplot w/o species-level MAGs
 
@@ -134,5 +134,5 @@ sns.despine(fig)
 fig.tight_layout()
 
 #plt.show()
-fig.savefig('analysis/figures/reads_mapped_shd_by_env.svg')
+fig.savefig('intermediate-outputs/figures/reads_mapped_shd_by_env.svg')
 

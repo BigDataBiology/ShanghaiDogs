@@ -221,7 +221,7 @@ sns.despine()
 
 # Show/Save figure
 #plt.show()
-pcoa_path = ('analysis/figures/PCoA_all_env_classification_2D_'+ otu_marker +'.svg')
+pcoa_path = ('intermediate-outputs/figures/PCoA_all_env_classification_2D_'+ otu_marker +'.svg')
 plt.savefig(pcoa_path)
 
 # PLOT PCOA OTHER VARIABLES WITH MATPLOTLIB

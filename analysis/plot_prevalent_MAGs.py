@@ -66,7 +66,7 @@ ax.legend(wedges, phylum_counts_merged['Phylum'], loc="upper center",
 
 plt.tight_layout()
 #plt.show()
-fig.savefig('analysis/figures/donutplot_phyla_ver.svg')
+fig.savefig('intermediate-outputs/figures/donutplot_phyla_ver.svg')
 
 # List of prevalent MAGs (>30 MAGs in SHD)
 sp_MAGs_counts = MIMAG_report['Species'].value_counts().reset_index()
@@ -132,7 +132,7 @@ ax.set_xlim(35, 100)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig('analysis/figures/high_prev_species.svg')
+plt.savefig('intermediate-outputs/figures/high_prev_species.svg')
 
 # Calculate abundant MAGs
 median_RA_MAGs = repbin_cov.T.apply(lambda x: x[x != 0].median()).reset_index() # if present, calculate the median RA - ignore 0s
@@ -175,7 +175,7 @@ ax.tick_params(left = False, bottom = False)
 # Show the plot
 plt.tight_layout()
 #plt.show()
-plt.savefig('analysis/figures/high_prev-ab_sp_bubble_by_phyla__.svg')
+plt.savefig('intermediate-outputs/figures/high_prev-ab_sp_bubble_by_phyla__.svg')
 
 
 # Plot abundances distribution of most prevalent MAGs
@@ -210,7 +210,7 @@ CM.ax_cbar.set_position((0.02, 0.78, 0.03, 0.2))
 
 # Save or show plot
 # plt.show()
-CM.savefig('analysis/figures/clustermap_ab_prevalent_species.svg')
+CM.savefig('intermediate-outputs/figures/clustermap_ab_prevalent_species.svg')
 
 
 ### Plot Heatmap

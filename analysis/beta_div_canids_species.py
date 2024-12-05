@@ -125,7 +125,7 @@ bc_pcoa.plot(metadata_filt,'Study',axis_labels=('PC 1', 'PC 2', 'PC 3'),
              title='Samples colored by env_classification', cmap='tab20', s=24)
 plt.tight_layout()
 plt.show()
-#plt.savefig('analysis/figures/PCoA_all_env_classification.svg')
+#plt.savefig('intermediate-outputs/figures/PCoA_all_env_classification.svg')
 
 #PLOT PCOA ENV_CLASSIFICATION WITH MATPLOTLIB
 
@@ -174,7 +174,7 @@ ax.tick_params(which='both', bottom=False, left=False, top=False, right=False)
 sns.despine()
 
 #plt.show()
-plt.savefig('analysis/figures/PCoA_all_env_classification_2D_species_tax_min-RA.svg')
+plt.savefig('intermediate-outputs/figures/PCoA_all_env_classification_2D_species_tax_min-RA.svg')
 
 
 # PLOT PCOA OTHER VARIABLES WITH MATPLOTLIB

@@ -2,7 +2,6 @@ data/
 external-data/data/
 intermediate-outputs/
 *.jugdata/
-analysis/figures/
 resource_generation/Public
 */code/nohup/
 __pycache__/
