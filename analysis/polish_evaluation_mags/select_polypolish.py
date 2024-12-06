@@ -27,5 +27,5 @@ def select(infile,inputdir,assembly_dir,outdir):
 infile = '/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv'
 inputdir = '/data/Projects/ShanghaiDogs/data/ShanghaiDogsMAGs/'
 assembly_dir = '/data/Projects/ShanghaiDogs/intermediate-outputs/polishing_evaluation/polypolish_LR_SR_polished/ALL/'
-outdir = '/data/yiqian/dog/polypolish_bins/'
+outdir = '/data/Projects/ShanghaiDogs/intermediate-outputs/polish_evaluation_mags/polypolish_bins/'
 select(infile,inputdir,assembly_dir,outdir)
