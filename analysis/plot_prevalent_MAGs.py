@@ -34,9 +34,9 @@ phylum_counts_merged = phylum_counts_merged.reset_index()
 phylum_counts_merged.columns = ['Phylum','Count']
 
 # Color palette
-dark2_colors = get_cmap("Dark2_r").colors
-custom_palette = [to_hex(color) for i, color in enumerate(dark2_colors) if i not in [2]]  # Exclude green and yellow
-phylum_to_color = {phylum: custom_palette[i % len(custom_palette)] for i, phylum in enumerate(phylum_counts_merged['Phylum'].unique())}
+#dark2_colors = get_cmap("Dark2").colors
+dark2_custom_ord = ['#a6761d','#66a61e','#d95f02','#7570b3','#e7298a','#1b9e77','#666666']
+phylum_to_color = {phylum: dark2_custom_ord[i % len(dark2_custom_ord)] for i, phylum in enumerate(phylum_counts_merged['Phylum'].unique())}
 phylum_colors = phylum_counts_merged['Phylum'].map(phylum_to_color) # Assign colors based on Phylum
 
 # Plotting donutplot
@@ -67,6 +67,60 @@ ax.legend(wedges, phylum_counts_merged['Phylum'], loc="upper center",
 plt.tight_layout()
 #plt.show()
 fig.savefig('intermediate-outputs/figures/donutplot_phyla_ver.svg')
+
+# Plot stacked barplot instead of donutplot
+
+phylum_counts_merged['Percentage'] = (phylum_counts_merged['Count'] / phylum_counts_merged['Count'].sum()) * 100
+
+width_mm = 60
+height_mm = 160
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+# Create the figure and axes
+fig, ax = plt.subplots(figsize=figsize_inch)
+
+# Create the stacked bar
+cumulative_height = 0
+for i, (percentage, phylum, color) in enumerate(zip(
+        phylum_counts_merged['Percentage'], phylum_counts_merged['Phylum'], phylum_colors
+)):
+    # Add each segment of the bar
+    ax.bar(
+        x=[0],
+        height=[percentage],
+        width=0.8,
+        bottom=cumulative_height,
+        color=[color],
+        edgecolor='black'
+    )
+
+    # Calculate the middle of the segment for label placement
+    middle_height = cumulative_height + percentage / 2
+
+    # Add the label
+    ax.text(
+        x=0,
+        y=middle_height,
+        #s=f"{percentage:.1f}%",
+        s=f"{phylum}\n({percentage:.1f}%)",
+        ha='center',
+        va='center',
+        fontsize=9,
+        color='black'
+    )
+
+    # Update cumulative height
+    cumulative_height += percentage
+
+# Adjust the plot
+ax.set_xlim(-0.6, 0.6)
+ax.set_ylim(0, cumulative_height)
+ax.axis('off')  # Remove axes for a cleaner look
+
+# Tight layout and display
+plt.tight_layout()
+plt.show()
+
 
 # List of prevalent MAGs (>30 MAGs in SHD)
 sp_MAGs_counts = MIMAG_report['Species'].value_counts().reset_index()
@@ -107,7 +161,7 @@ bar_colors = sp_MAG_prev['Phylum'].map(lambda phylum: phylum_to_color.get(phylum
 
 # Plot prevalence bar
 width_mm = 90
-height_mm = 110
+height_mm = 130
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
