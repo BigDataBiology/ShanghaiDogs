@@ -215,7 +215,7 @@ prevalent_sp_perc_phylum = prevalent_sp_perc_phylum.set_index('Species')
 
 # Plotting
 # Fig_size
-width_mm = 100
+width_mm = 95
 height_mm = 120
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
