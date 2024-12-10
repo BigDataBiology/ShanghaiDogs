@@ -179,7 +179,7 @@ plt.savefig('intermediate-outputs/figures/high_prev_species.svg')
 median_RA_MAGs = repbin_cov.T.apply(lambda x: x[x != 0].median()).reset_index() # if present, calculate the median RA - ignore 0s
 abundant_MAGs_sp = pd.merge(median_RA_MAGs,MIMAG_report['Species'],left_on='index',right_index=True)
 
-prev_sp_ls = list(sp_MAGs_counts_prev_phylum['Species'])
+prev_sp_ls = list(sp_MAGs_counts_prev_phylum.index)
 prev_ab_MAGs_sp = abundant_MAGs_sp[abundant_MAGs_sp['Species'].isin(prev_sp_ls)]
 prev_ab_MAGs_sp_phylum = pd.merge(prev_ab_MAGs_sp,MIMAG_report[['Species','Phylum']],right_on='Species',left_on='Species')
 prev_ab_MAGs_sp_phylum = prev_ab_MAGs_sp_phylum.drop_duplicates('Species')
@@ -226,9 +226,8 @@ plt.tight_layout()
 #plt.show()
 plt.savefig('intermediate-outputs/figures/high_prev-ab_sp_bubble_by_phyla.svg')
 
-
-# Plot abundances distribution of most prevalent MAGs
-ls_prev_ab_MAGs_sp = list(prev_ab_MAGs_sp.index)
+### Plot abundances distribution of most prevalent MAGs
+ls_prev_ab_MAGs_sp = list(prev_ab_MAGs_sp_phylum.index)
 prev_ab_species = pd.merge(repbin_cov,MIMAG_report['Species'],left_index=True,right_index=True)
 prev_ab_species = prev_ab_species.set_index('Species')
 prev_ab_species = prev_ab_species[prev_ab_species.index.isin(ls_prev_ab_MAGs_sp)]
