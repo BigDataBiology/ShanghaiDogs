@@ -34,20 +34,17 @@ phylum_counts_merged = phylum_counts_merged.reset_index()
 phylum_counts_merged.columns = ['Phylum','Count']
 
 # Color palette
-#dark2_colors = get_cmap("Dark2").colors
 dark2_custom_ord = ['#a6761d','#66a61e','#d95f02','#7570b3','#e7298a','#1b9e77','#666666']
 phylum_to_color = {phylum: dark2_custom_ord[i % len(dark2_custom_ord)] for i, phylum in enumerate(phylum_counts_merged['Phylum'].unique())}
 phylum_colors = phylum_counts_merged['Phylum'].map(phylum_to_color) # Assign colors based on Phylum
 
-# Plotting donutplot
+### Plotting donutplot for phyla distribution
 width_mm = 65
 height_mm = 90
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
-#colors = sns.color_palette("Dark2", len(phylum_counts_merged))
-
 fig, ax = plt.subplots(figsize=figsize_inch)
-ax.set_position([0.05, 0.05, 0.8, 0.8])  # Adjust this as needed for better centering
+ax.set_position([0.05, 0.05, 0.8, 0.8])  # Adjust this for better centering
 wedges, texts, autotexts = ax.pie(
     phylum_counts_merged['Count'],
     startangle=210,
@@ -68,7 +65,7 @@ plt.tight_layout()
 #plt.show()
 fig.savefig('intermediate-outputs/figures/donutplot_phyla_ver.svg')
 
-### Plot stacked barplot instead of donutplot
+### Plot stacked barplot, instead of donutplot
 
 phylum_counts_merged['Percentage'] = (phylum_counts_merged['Count'] / phylum_counts_merged['Count'].sum()) * 100
 
@@ -101,7 +98,6 @@ for i, (percentage, phylum, color) in enumerate(zip(
     ax.text(
         x=0,
         y=middle_height,
-        #s=f"{percentage:.1f}%",
         s=f"{phylum}\n({percentage:.1f}%)",
         ha='center',
         va='center',
@@ -115,7 +111,7 @@ for i, (percentage, phylum, color) in enumerate(zip(
 # Adjust the plot
 ax.set_xlim(-0.6, 0.6)
 ax.set_ylim(0, cumulative_height)
-ax.axis('off')  # Remove axes for a cleaner look
+ax.axis('off')  # Remove axes
 
 # Tight layout and display
 plt.tight_layout()
@@ -182,14 +178,22 @@ plt.savefig('intermediate-outputs/figures/high_prev_species.svg')
 ### Calculate abundant MAGs (for merging to previous plot)
 median_RA_MAGs = repbin_cov.T.apply(lambda x: x[x != 0].median()).reset_index() # if present, calculate the median RA - ignore 0s
 abundant_MAGs_sp = pd.merge(median_RA_MAGs,MIMAG_report['Species'],left_on='index',right_index=True)
-prev_ab_MAGs_sp = abundant_MAGs_sp[abundant_MAGs_sp['Species'].isin(order)]
-prev_ab_MAGs_sp['Species'] = pd.Categorical(
-    prev_ab_MAGs_sp['Species'],
+
+prev_sp_ls = list(sp_MAGs_counts_prev_phylum['Species'])
+prev_ab_MAGs_sp = abundant_MAGs_sp[abundant_MAGs_sp['Species'].isin(prev_sp_ls)]
+prev_ab_MAGs_sp_phylum = pd.merge(prev_ab_MAGs_sp,MIMAG_report[['Species','Phylum']],right_on='Species',left_on='Species')
+prev_ab_MAGs_sp_phylum = prev_ab_MAGs_sp_phylum.drop_duplicates('Species')
+
+prev_ab_MAGs_sp_phylum['Phylum'] = pd.Categorical(
+    prev_ab_MAGs_sp_phylum['Phylum'],
     categories=order,
     ordered=True)
-prev_ab_MAGs_sp = prev_ab_MAGs_sp.sort_values(by='Species', ascending=True)
-prev_ab_MAGs_sp['Percent'] = prev_ab_MAGs_sp[0]*100
-prev_ab_MAGs_sp = prev_ab_MAGs_sp.set_index('Species')
+
+prev_ab_MAGs_sp_phylum = prev_ab_MAGs_sp_phylum.sort_values(by=['Phylum', 'Species'],
+                                                            ascending=[False, False])
+
+prev_ab_MAGs_sp_phylum['Percent'] = prev_ab_MAGs_sp_phylum[0]*100
+prev_ab_MAGs_sp_phylum = prev_ab_MAGs_sp_phylum.set_index('Species')
 
 # Plot Bubbleplot
 width_mm = 80
@@ -198,10 +202,10 @@ figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
 scatter = ax.scatter(
-    [1] * len(prev_ab_MAGs_sp),
-    prev_ab_MAGs_sp.index,      # Index names on the y-axis
-    s=prev_ab_MAGs_sp['Percent'] * 25,  # Scale bubble size
-    alpha=0.8, edgecolors="#DDDDDD", c=bar_colors)
+    [1] * len(prev_ab_MAGs_sp_phylum),
+    prev_ab_MAGs_sp_phylum.index,      # Index names on the y-axis
+    s=prev_ab_MAGs_sp_phylum['Percent'] * 25,  # Scale bubble size
+    alpha=0.9, edgecolors="#DDDDDD", c=bar_colors)
 
 # Add legend for bubble sizes
 bubble_sizes = [1, 5, 10]
@@ -220,7 +224,7 @@ ax.tick_params(left = False, bottom = False)
 # Show the plot
 plt.tight_layout()
 #plt.show()
-plt.savefig('intermediate-outputs/figures/high_prev-ab_sp_bubble_by_phyla__.svg')
+plt.savefig('intermediate-outputs/figures/high_prev-ab_sp_bubble_by_phyla.svg')
 
 
 # Plot abundances distribution of most prevalent MAGs
