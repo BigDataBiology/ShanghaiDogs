@@ -50,6 +50,7 @@ for n in species_catalog.index:
 species_catalog['Phylum'] = species_catalog['Classification'].str.extract(r'p__([^;]+)')
 species_catalog['Family'] = species_catalog['Classification'].str.extract(r'f__([^;]+)')
 species_catalog['Genus'] = species_catalog['Classification'].str.extract(r'g__([^;]+)')
+species_catalog['Species'] = species_catalog['Classification'].str.extract(r's__([^;]+)')
 
 ### HQ_mq MAGs table
 quality_table = MIMAG_report.pivot_table(
@@ -186,14 +187,40 @@ prevalent_sp = prevalent_sp.sort_values(by='Total', ascending=False).head(25)
 prevalent_sp_perc = prevalent_sp.div(prevalent_sp['Total'], axis=0) * 100
 prevalent_sp_perc = prevalent_sp_perc.sort_values(by='medium-quality',ascending=False)
 
+prevalent_sp_perc_phylum = pd.merge(prevalent_sp_perc,species_catalog[['Species','Phylum']],left_index=True,right_on='Species')
+order = ['Bacillota_A',
+ 'Bacteroidota',
+ 'Bacillota',
+ 'Fusobacteriota',
+ 'Pseudomonadota',
+ 'Actinomycetota',
+ 'Bacillota_C',
+ 'Campylobacterota',
+ 'Bacillota_B',
+ 'Desulfobacterota',
+ 'Deferribacterota']
+
+prevalent_sp_perc_phylum['Phylum'] = pd.Categorical(
+    prevalent_sp_perc_phylum['Phylum'],
+    categories=order,
+    ordered=True
+)
+
+prevalent_sp_perc_phylum = prevalent_sp_perc_phylum.sort_values(
+    by=['Phylum', 'Species'],
+    ascending=[False, False]
+)
+
+prevalent_sp_perc_phylum = prevalent_sp_perc_phylum.set_index('Species')
+
 # Plotting
 # Fig_size
-width_mm = 95
-height_mm = 110
+width_mm = 100
+height_mm = 120
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
-prevalent_sp_perc[['single-contig HQ','high-quality', 'medium-quality']].plot(
+prevalent_sp_perc_phylum[['single-contig HQ','high-quality', 'medium-quality']].plot(
     kind='barh',
     stacked=True,
     color=['#1E3F20','#1B9E77', '#EDB458'],
