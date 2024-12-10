@@ -68,12 +68,12 @@ plt.tight_layout()
 #plt.show()
 fig.savefig('intermediate-outputs/figures/donutplot_phyla_ver.svg')
 
-# Plot stacked barplot instead of donutplot
+### Plot stacked barplot instead of donutplot
 
 phylum_counts_merged['Percentage'] = (phylum_counts_merged['Count'] / phylum_counts_merged['Count'].sum()) * 100
 
 width_mm = 60
-height_mm = 160
+height_mm = 130
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 # Create the figure and axes
@@ -119,57 +119,48 @@ ax.axis('off')  # Remove axes for a cleaner look
 
 # Tight layout and display
 plt.tight_layout()
-plt.show()
+#plt.show()
+plt.savefig('intermediate-outputs/figures/barplot_phyla.svg')
 
-
-# List of prevalent MAGs (>30 MAGs in SHD)
+### Plot most prevalent species in SHD
 sp_MAGs_counts = MIMAG_report['Species'].value_counts().reset_index()
 sp_MAGs_counts_prev = sp_MAGs_counts[sp_MAGs_counts['count']>=30] # Genome assembled >30 times (~30 dogs)
 
-# order them according to MAG qual graph
-order = ['Blautia sp000432195', 'Blautia_A caecimuris',
-         'Fusobacterium_B sp900541465', 'Blautia_A sp900541345',
-         'Blautia hansenii', 'Oliverpabstia sp000432335',
-         'Collinsella intestinalis', 'Faecalimonas sp900550235',
-         'Ruminococcus_B gnavus', 'Megamonas funiformis',
-         'Schaedlerella glycyrrhizinilytica_A', 'Phocaeicola sp900546645',
-         'Faecalibacterium sp900540455', 'Amedibacterium intestinale',
-         'Enterocloster sp001517625', 'Peptacetobacter hiranonis',
-         'Thomasclavelia spiroformis_A', 'Ventrimonas sp900538475',
-         'Phocaeicola coprocola',  'Sutterella wadsworthensis_A',
-         'Faecalimonas umbilicata', 'Clostridium_Q sp000435655',
-         'Bacteroides sp900766005', 'Amedibacillus dolichus',
-         'Eisenbergiella sp900539715']
+# Link species to phylum info for ordering and coloring
+sp_MAGs_counts_prev_phylum = (pd.merge(sp_MAGs_counts_prev,MIMAG_report[['Species','Phylum']],left_on='Species',right_on='Species')
+                              .drop_duplicates(subset='Species'))
+order = list(phylum_counts.index)
 
-sp_MAGs_counts_prev['Species'] = pd.Categorical(
-    sp_MAGs_counts_prev['Species'],
+sp_MAGs_counts_prev_phylum['Phylum'] = pd.Categorical(
+    sp_MAGs_counts_prev_phylum['Phylum'],
     categories=order,
     ordered=True
 )
-sp_MAGs_counts_prev = sp_MAGs_counts_prev.sort_values(by='Species', ascending=True)
-sp_MAGs_counts_prev['Percent']=sp_MAGs_counts_prev['count']/52*100
-sp_MAGs_counts_prev = sp_MAGs_counts_prev.set_index('Species')
 
-# Link species to phylum for coloring
-MIMAG_report_unique_sp = MIMAG_report.drop_duplicates(subset='Species')
-MIMAG_report_unique_sp = MIMAG_report_unique_sp.set_index('Species')
-sp_MAG_prev = pd.merge(sp_MAGs_counts_prev,MIMAG_report_unique_sp['Phylum'],left_index=True,right_index=True)
+sp_MAGs_counts_prev_phylum = sp_MAGs_counts_prev_phylum.sort_values(
+    by=['Phylum', 'Species'],
+    ascending=[False, False]
+)
+
+# Calculate prevalence %
+sp_MAGs_counts_prev_phylum['Percent']=sp_MAGs_counts_prev_phylum['count']/52*100
+sp_MAGs_counts_prev_phylum = sp_MAGs_counts_prev_phylum.set_index('Species')
 
 # Define a default color for phyla not in the dictionary
-default_color = '#1b9e77'  # Other phyla category
-bar_colors = sp_MAG_prev['Phylum'].map(lambda phylum: phylum_to_color.get(phylum, default_color))
+default_color = '#666666'  # Other phyla category
+bar_colors = sp_MAGs_counts_prev_phylum['Phylum'].map(lambda phylum: phylum_to_color.get(phylum, default_color))
 
 # Plot prevalence bar
 width_mm = 90
-height_mm = 130
+height_mm = 120
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
-sp_MAG_prev['Percent'].plot(
+sp_MAGs_counts_prev_phylum['Percent'].plot(
     kind='barh',
     stacked=True,
     color=bar_colors,
-    alpha=0.8,
+    #alpha=0.8,
     ax=ax,
     width=0.7
 )
@@ -188,7 +179,7 @@ plt.tight_layout()
 #plt.show()
 plt.savefig('intermediate-outputs/figures/high_prev_species.svg')
 
-# Calculate abundant MAGs
+### Calculate abundant MAGs (for merging to previous plot)
 median_RA_MAGs = repbin_cov.T.apply(lambda x: x[x != 0].median()).reset_index() # if present, calculate the median RA - ignore 0s
 abundant_MAGs_sp = pd.merge(median_RA_MAGs,MIMAG_report['Species'],left_on='index',right_index=True)
 prev_ab_MAGs_sp = abundant_MAGs_sp[abundant_MAGs_sp['Species'].isin(order)]
@@ -202,7 +193,7 @@ prev_ab_MAGs_sp = prev_ab_MAGs_sp.set_index('Species')
 
 # Plot Bubbleplot
 width_mm = 80
-height_mm = 115
+height_mm = 125
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
