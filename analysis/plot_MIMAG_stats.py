@@ -89,7 +89,6 @@ plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual.svg")
 
-
 ### HQ_mq 1-contig
 quality_table_det = MIMAG_report.pivot_table(
     index='Sample',
@@ -553,7 +552,7 @@ plt.pie(genus_counts,labels=family_labels,
         textprops={'fontsize': 10})
 
 # add a circle at the center to transform it in a donut chart
-my_circle=plt.Circle( (0,0), 0.7, color='white')
+my_circle=plt.Circle( (0,0), 0.5, color='white')
 p=plt.gcf()
 p.gca().add_artist(my_circle)
 
@@ -584,3 +583,65 @@ ax.set_axis_off()  # Hide the axes
 plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_squarify.svg")
+
+
+### Three boxplots + stripplots (RefSeq, GenBank, canine MAGs)
+
+# If merging canine MAGs (contig counts)
+ALL_contiguity_melted['category'] = ALL_contiguity_melted['category'].str.replace('MAG_GenBank reference (GCA)','Shanghai Dog MAG')
+ALL_contiguity_melted['category'] = ALL_contiguity_melted['category'].str.replace('MAG_RefSeq reference (GCF)','Shanghai Dog MAG')
+ALL_contiguity_melted['log count'] = np.log10(ALL_contiguity_melted['Count'])
+
+# If merging canine MAGs (tRNAs counts)
+ALL_tRNAs_melted['category'] = ALL_tRNAs_melted['category'].str.replace('MAG_GenBank reference (GCA)','Shanghai Dog MAG')
+ALL_tRNAs_melted['category'] = ALL_tRNAs_melted['category'].str.replace('MAG_RefSeq reference (GCF)','Shanghai Dog MAG')
+
+### BOXPLOT + STRIPPLOT
+
+# Figure size
+width_mm = 45
+height_mm = 50
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+
+df=ALL_tRNAs_melted
+categories = ['Shanghai Dog MAG','REF_RefSeq reference (GCF)','REF_GenBank reference (GCA)']
+color_palette = {'Shanghai Dog MAG':'#1b9e77','REF_RefSeq reference (GCF)':'#a6761d','REF_GenBank reference (GCA)':'#e6ab02'}
+df = df.sort_values(
+    by=['category'],
+    ascending=[False]
+)
+
+# Adding individual data points using stripplot with increased jitter
+sns.stripplot(data=df,
+              x='category', y='Count',
+              ax=ax,
+              hue='category',
+              palette=color_palette,
+              size=3,
+              alpha=0.3,  # Transparency of the dots
+              jitter=0.2,  # Increase jitter to spread out the dots
+              order=categories)
+
+sns.boxplot(data=df,
+            x='category', y='Count',
+            ax=ax,
+            width=0.8,
+            palette=[(1, 1, 1, 0) for _ in color_palette], # Transparent boxplot
+            linewidth=1,
+            fliersize=0) # Hide the outlier markers
+
+ax.legend_.remove()
+ax.set_title('unique tRNAs')
+ax.set_ylabel('counts')
+ax.set_xlabel('')
+ax.set_xticklabels([])
+#ax.set_yticks(np.arange(0, 4, 1))
+ax.tick_params(axis='x', bottom=False)
+sns.despine(fig, trim=False)
+
+plt.tight_layout()
+#plt.show()
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_tRNAs_boxplot-strip.svg")

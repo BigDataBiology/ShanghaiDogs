@@ -278,16 +278,29 @@ order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank 
 mobilome_melted['category'] = pd.Categorical(mobilome_melted['category'], categories=order, ordered=True)
 mobilome_melted = mobilome_melted.sort_values('category')
 
+# If merging canine MAGs (mobilome counts)
+mobilome_melted['category'] = mobilome_melted['category'].str.replace('MAG_GenBank reference (GCA)','Shanghai Dog MAG')
+mobilome_melted['category'] = mobilome_melted['category'].str.replace('MAG_RefSeq reference (GCF)','Shanghai Dog MAG')
+mobilome_melted['log count'] = np.log10(mobilome_melted['Count'])
+
 # Plot boxplot mobilome GCA vs GCF
-width_mm = 55
-height_mm = 40
+width_mm = 45
+height_mm = 50
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+categories = ['Shanghai Dog MAG','REF_RefSeq reference (GCF)','REF_GenBank reference (GCA)']
+color_palette = {'Shanghai Dog MAG':'#1b9e77','REF_RefSeq reference (GCF)':'#a6761d','REF_GenBank reference (GCA)':'#e6ab02'}
+mobilome_melted = mobilome_melted.sort_values(
+    by=['category'],
+    ascending=[False]
+)
+
 
 fig, ax = plt.subplots(figsize=figsize_inch)
 ax.clear()
 sns.boxplot(data=mobilome_melted,
-            x='category',y='Count',
-            palette=['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77'],
+            x='category',y='log count',
+            palette=color_palette,
             ax=ax,
             width=0.7,
             linewidth=1,
@@ -297,12 +310,14 @@ sns.boxplot(data=mobilome_melted,
                 'markersize': 2,  # Size of outliers
                 'linestyle': 'none'  # No connecting line for outliers
     })
-ax.set_ylabel('')
+ax.set_ylabel('log10 counts')
 ax.set_xlabel('')
 ax.set_xticklabels([])
+ax.set_title('mobilome')
+ax.set_yticks(np.arange(0, 3, 1))
 ax.tick_params(axis='x', bottom=False)
 sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_mobilome_boxplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg")
