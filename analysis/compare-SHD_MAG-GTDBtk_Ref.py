@@ -9,8 +9,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 os.chdir('/data/Projects/ShanghaiDogs/')
+plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import quality reports
 SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep=',')
@@ -23,6 +25,68 @@ SHD_qual_rep = SHD_qual.query('Representative=="Yes" and Quality=="high-quality"
 merged = pd.merge(SHD_qual_rep,GTDB_qual,left_on='GTDBtk fastani Ref',right_on='Name') # include only those that are shared
 
 # Plots
+### Scatter plots for RefSeq representatives vs HQ MAGs
+
+# filter out medium-quality genomes from refseq and genbank
+merged_hq_only = merged[merged['Quality_y'].str.contains('high-quality')]
+
+# Sort by number of 16S rRNA genes
+merged_hq_only = merged_hq_only.sort_values(by='16S rRNA_x', ascending=True)
+
+# Create a reference column
+merged_hq_only['Reference'] = merged_hq_only['GTDBtk fastani Ref'].str.startswith('GCA_').map({True: 'GenBank', False: 'RefSeq'})
+
+# Filter data for GenBank and RefSeq
+genbank_data = merged_hq_only[merged_hq_only['Reference'] == 'GenBank']
+refseq_data = merged_hq_only[merged_hq_only['Reference'] == 'RefSeq']
+
+# Figure size
+width_mm = 100
+height_mm = 45
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+# GenBank scatter plot
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.scatter(genbank_data['Classification'], genbank_data['16S rRNA_y'],
+           label='GenBank genomes', alpha=1, s=6, c='#e6ab02')
+ax.scatter(genbank_data['Classification'], genbank_data['16S rRNA_x'],
+           label='Shanghai Dogs', alpha=0.3, s=20, c='#1b9e77')
+ax.set_xlabel('Species')
+ax.set_title('Number of 16S rRNAs',size=10)
+ax.set_xticks([])
+ax.set_ylim(-0.3, 16)
+ax.set_yticks(np.arange(0, 17, 4))
+ax.legend()
+#sns.despine()
+plt.tight_layout()
+#plt.show()
+fig.savefig('intermediate-outputs/figures/GenBank-vs-SHD_16S_scatterplot.svg')
+
+# RefSeq scatter plot
+
+# Figure size
+width_mm = 140
+height_mm = 55
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.scatter(refseq_data['Classification'], refseq_data['16S rRNA_y'],
+           label='RefSeq genomes', alpha=1, s=6, c='#a6761d')
+ax.scatter(refseq_data['Classification'], refseq_data['16S rRNA_x'],
+           label='Shanghai Dogs', alpha=0.3, s=20, c='#1b9e77')
+ax.set_xlabel('Species')
+ax.set_title('Number of 16S rRNAs',size=10)
+ax.set_xticks([])
+ax.set_ylim(-0.3, 19)
+ax.set_yticks(np.arange(0, 19, 4))
+ax.legend()
+sns.despine()
+plt.tight_layout()
+#plt.show()
+fig.savefig('intermediate-outputs/figures/RefSeq-vs-SHD_16S_scatterplot.svg')
+
+
+
 # Scatterplot
 y_SHD = merged['Nr contigs']
 x_SHD = merged['16S rRNA_x']
