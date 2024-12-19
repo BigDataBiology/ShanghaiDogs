@@ -18,17 +18,18 @@ print(otu_marker_ls[0])
 # Import metadata
 metadata = pd.read_csv('data/ShanghaiDogsMetadata/REP_canid_metadata.csv', \
                        sep=',', encoding= 'unicode_escape', index_col=0)
+# n=294 representative samples
 
 # OTU tables filtering functions
 
-def filt_low_OTU(OTUs_tab, min_count, min_prev):
+def filt_low_OTU(OTUs_tab, min_total, min_prev):
     """
     filt_low_OTU filters out OTUs from an OTU table that do not have
-    a min OTU total count (min_count) or a min prevalence (0-1, min_prev).
+    a min OTU total sum (min_total) or a min prevalence (0-1, min_prev).
     It also prints out removed OTUs. Columns should contain OTU IDs.
     """
     print(OTUs_tab.columns[0]+': this should be a OTU ID')
-    otus_count_filt = OTUs_tab.loc[:, OTUs_tab.sum(axis=0) >= min_count]
+    otus_count_filt = OTUs_tab.loc[:, OTUs_tab.sum(axis=0) >= min_total]
     prevalence = (otus_count_filt > 0).sum(axis=0) / OTUs_tab.shape[0]
     otus_filt = otus_count_filt.loc[:, prevalence >= min_prev]
     otus_filt_LOW = OTUs_tab.loc[:, ~OTUs_tab.columns.isin(otus_filt.columns)]
@@ -87,7 +88,7 @@ for m in otu_marker_ls:
 
     ## 2) Filtering OTU table
     otus_filt_0, otus_filt_rm_otus = filt_low_OTU(otu_tab, 10, 0.02) # filt out OTUs
-    otus_filt_1, otus_filt_rm_samples = filt_samples_low_OTU(otus_filt_0, 500) # filt out samples
+    otus_filt_1, otus_filt_rm_samples = filt_samples_low_OTU(otus_filt_0, 100) # filt out samples
     otus_filt, rm_all_items = remove_0_sum(otus_filt_1) # filt rows/columns with 0s
     otus_filt.drop('D024', axis=0, inplace=True, errors='ignore')  # filt D024 - in ATBs treatment
 
@@ -111,11 +112,10 @@ for m in otu_marker_ls:
     summary_otus.loc[otu_marker, 'num_studies_final'] = num_studies
 
 # Print and save final table
-print(summary_otus)
-summary_otus.to_csv('intermediate-outputs/singlem_profiling/beta-div/summary_otus_count.csv',sep=',')
 
-# I choose the top3 marker genes (after filtering) to proceed with alpha and beta diversity
-# First considering total samples - to have as many representatives as possible (after filt)
-# Second considering total number of OTUs - to capture as much diversity as possible (after filt)
-# I also ignore those markers that are exclusively 'Archaea' despite giving me the most hits
+summary_otus_df = pd.merge(summary_otus,singlem_markers['target_domains'],right_index=True,left_index=True)
+summary_otus_df.to_csv('intermediate-outputs/singlem_profiling/beta-div/summary_otus_count.csv',sep=',')
+summary_otus_df = pd.read_csv('intermediate-outputs/singlem_profiling/beta-div/summary_otus_count.csv'
+                              ,sep=',',index_col=0)
 
+# We decide to use all the markers that target Bacteria and Archaea, and compute median alpha and beta div values
