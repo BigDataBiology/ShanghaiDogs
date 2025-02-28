@@ -13,7 +13,7 @@ file2_path = "/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/MAGs-AR
 
 # Read the files into pandas DataFrames, adjusting for formats
 df1 = pd.read_csv(file1_path)  # Read CSV file
-df2 = pd.read_csv(file2_path, sep='\t')  # Read tab-separated text file (adjust sep if different, e.g., ',' for CSV)
+df2 = pd.read_csv(file2_path, sep=',')  # Read tab-separated text file (adjust sep if different, e.g., ',' for CSV)
 
 # Merge the DataFrames based on the "Bin ID" column
 merged_df = pd.merge(df1, df2, on="Bin ID", how="outer")
@@ -24,9 +24,16 @@ def extract_species(classification):
         return "Unknown"
     parts = classification.split(';')
     for part in parts:
-        if part.startswith('s__'):
-            return part[3:]
-    return "Unknown"
+        if part.startswith('g__'):  # Identify genus
+            genus = part[3:]
+        if part.startswith('s__'):  # Identify species
+            species = part[3:]
+    if species:
+        return species
+    elif genus:  # If 's__' consider it as genus + "novel sp"
+        return f"{genus} novel_sp"
+    else:
+        return "Unknown"  # If neither genus nor species are found
 
 merged_df['Species'] = merged_df['Classification'].apply(extract_species)
 
