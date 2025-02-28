@@ -8,12 +8,11 @@ import os
 from tabulate import tabulate
 
 # Updated file paths
-file1_path = "/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv"
-file2_path = "/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt"
+mags_report = "../data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv"
+args_mag = "../intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt"
 
-# Read the files into pandas DataFrames, adjusting for formats
-df1 = pd.read_csv(file1_path)  # Read CSV file
-df2 = pd.read_csv(file2_path, sep=',')  # Read tab-separated text file (adjust sep if different, e.g., ',' for CSV)
+df1 = pd.read_csv(mags_report)
+df2 = pd.read_csv(args_mag)
 
 # Merge the DataFrames based on the "Bin ID" column
 merged_df = pd.merge(df1, df2, on="Bin ID", how="outer")
@@ -77,8 +76,8 @@ top_species = species_stats.sort_values(by='Mean', ascending=False).head(14)['Sp
 df_top = merged_with_counts[merged_with_counts['Species'].isin(top_species)]
 
 # Directory to save plots
-plot_dir = "/work/microbiome/shanghai_dogs/output/Plots"
-os.makedirs(plot_dir, exist_ok=True)  # Create plots directory if it doesn't exist
+plot_dir = "figures"
+os.makedirs(plot_dir, exist_ok=True)
 
 # Define a palette with exactly 14 colors
 extended_palette = sns.color_palette("Dark2", n_colors=14)
