@@ -15,7 +15,7 @@ arg_MAGs = pd.read_csv("intermediate-outputs/06_ARG/00_RGI_CARD/ALL_samples_stri
                        delimiter='\t',header=None,index_col=None)
 
 # concatenated RGI results on contigs
-arg_contigs = pd.read_csv("intermediate-outputs/06_ARG/01_RGI_CARD_contigs/contigs-ARGs_ALL.txt", \
+arg_contigs = pd.read_csv("intermediate-outputs/06_ARG/01_RGI_CARD_contigs/contigs-ARGs_ALL_samples.txt", \
                           delimiter='\t',header=None,index_col=None)
 
 

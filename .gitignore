@@ -7,3 +7,4 @@ resource_generation/Public
 __pycache__/
 resource_generation/localDB/
 resource_generation/nohup/
+localDB/
