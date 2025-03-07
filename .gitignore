@@ -1,4 +1,8 @@
-data/
+data/ShanghaiDogsAssemblies
+data/ShanghaiDogsFastQ
+data/ShanghaiDogsMAGs
+data/ShanghaiDogsMetadata/subsets
+data/ShanghaiDogsTables
 external-data/data/
 intermediate-outputs/
 *.jugdata/
