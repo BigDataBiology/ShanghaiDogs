@@ -1,0 +1,170 @@
+basedir: ../../external-data/data/USA_pets_Nomnomnow/
+samples:
+  SRR13972884:
+  - single:
+    - SRR13972884.fastq.gz
+  SRR13972885:
+  - single:
+    - SRR13972885.fastq.gz
+  SRR13972886:
+  - single:
+    - SRR13972886.fastq.gz
+  SRR13972887:
+  - single:
+    - SRR13972887.fastq.gz
+  SRR13972888:
+  - single:
+    - SRR13972888.fastq.gz
+  SRR13972889:
+  - single:
+    - SRR13972889.fastq.gz
+  SRR13972890:
+  - single:
+    - SRR13972890.fastq.gz
+  SRR13972891:
+  - single:
+    - SRR13972891.fastq.gz
+  SRR13972892:
+  - single:
+    - SRR13972892.fastq.gz
+  SRR13972893:
+  - single:
+    - SRR13972893.fastq.gz
+  SRR13972894:
+  - single:
+    - SRR13972894.fastq.gz
+  SRR13972895:
+  - single:
+    - SRR13972895.fastq.gz
+  SRR13972896:
+  - single:
+    - SRR13972896.fastq.gz
+  SRR13972897:
+  - single:
+    - SRR13972897.fastq.gz
+  SRR13972898:
+  - single:
+    - SRR13972898.fastq.gz
+  SRR13972899:
+  - single:
+    - SRR13972899.fastq.gz
+  SRR13972900:
+  - single:
+    - SRR13972900.fastq.gz
+  SRR13972901:
+  - single:
+    - SRR13972901.fastq.gz
+  SRR13972902:
+  - single:
+    - SRR13972902.fastq.gz
+  SRR13972903:
+  - single:
+    - SRR13972903.fastq.gz
+  SRR13972904:
+  - single:
+    - SRR13972904.fastq.gz
+  SRR13972905:
+  - single:
+    - SRR13972905.fastq.gz
+  SRR13972906:
+  - single:
+    - SRR13972906.fastq.gz
+  SRR13972907:
+  - single:
+    - SRR13972907.fastq.gz
+  SRR13972908:
+  - single:
+    - SRR13972908.fastq.gz
+  SRR13972909:
+  - single:
+    - SRR13972909.fastq.gz
+  SRR13972910:
+  - single:
+    - SRR13972910.fastq.gz
+  SRR13972911:
+  - single:
+    - SRR13972911.fastq.gz
+  SRR13972912:
+  - single:
+    - SRR13972912.fastq.gz
+  SRR13972913:
+  - single:
+    - SRR13972913.fastq.gz
+  SRR13972914:
+  - single:
+    - SRR13972914.fastq.gz
+  SRR13972915:
+  - single:
+    - SRR13972915.fastq.gz
+  SRR13972916:
+  - single:
+    - SRR13972916.fastq.gz
+  SRR13972917:
+  - single:
+    - SRR13972917.fastq.gz
+  SRR13972918:
+  - single:
+    - SRR13972918.fastq.gz
+  SRR13972919:
+  - single:
+    - SRR13972919.fastq.gz
+  SRR13972920:
+  - single:
+    - SRR13972920.fastq.gz
+  SRR13972921:
+  - single:
+    - SRR13972921.fastq.gz
+  SRR13972922:
+  - single:
+    - SRR13972922.fastq.gz
+  SRR13972923:
+  - single:
+    - SRR13972923.fastq.gz
+  SRR13972924:
+  - single:
+    - SRR13972924.fastq.gz
+  SRR13972925:
+  - single:
+    - SRR13972925.fastq.gz
+  SRR13972926:
+  - single:
+    - SRR13972926.fastq.gz
+  SRR13972927:
+  - single:
+    - SRR13972927.fastq.gz
+  SRR13972928:
+  - single:
+    - SRR13972928.fastq.gz
+  SRR13972929:
+  - single:
+    - SRR13972929.fastq.gz
+  SRR13972930:
+  - single:
+    - SRR13972930.fastq.gz
+  SRR13972931:
+  - single:
+    - SRR13972931.fastq.gz
+  SRR13972932:
+  - single:
+    - SRR13972932.fastq.gz
+  SRR13972933:
+  - single:
+    - SRR13972933.fastq.gz
+  SRR13972934:
+  - single:
+    - SRR13972934.fastq.gz
+  SRR13972935:
+  - single:
+    - SRR13972935.fastq.gz
+  SRR13972936:
+  - single:
+    - SRR13972936.fastq.gz
+  SRR13972937:
+  - single:
+    - SRR13972937.fastq.gz
+  SRR13972938:
+  - single:
+    - SRR13972938.fastq.gz
+  SRR13972939:
+  - single:
+    - SRR13972939.fastq.gz

@@ -35,6 +35,7 @@ nestle = set(line.strip() for line in open('../../external-data/data/Coelho_dogs
 berlin = set(s.split('_')[0] for s in yaml.safe_load(open('berlin_dogs.yaml'))['samples'])
 Yarlagadda = set(yaml.safe_load(open('Yarlagadda_dogs.yaml'))['samples'])
 shanghai = set(yaml.safe_load(open('SH_dogs.yaml'))['samples'])
+nomnomnow = set(yaml.safe_load(open('USA_pets_Nomnomnow.yaml'))['samples'])
 def group_for(s):
     if s in nestle:
         return 'Nestlé'
@@ -44,5 +45,7 @@ def group_for(s):
         return 'Yarlagadda'
     if s in shanghai:
         return 'Shanghai'
+    if s in nomnomnow:
+        return 'NomNomNow'
 data['group'] = data['sample'].map(group_for)
 data.to_csv('../../intermediate-outputs/external_datasets_mappings/reads_mapped_shd.tsv', sep='\t', index=False)
