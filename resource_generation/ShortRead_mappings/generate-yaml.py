@@ -71,3 +71,21 @@ def generate_shanghai_dogs_yaml():
 
     with open('SH_dogs.yaml', 'wt') as out:
         out.write(yaml.dump(r))
+
+@Task
+def generate_USA_pets_Nomnomnow():
+    BASEDIR = '../../external-data/data/USA_pets_Nomnomnow/'
+    fqs= glob.glob(f'{BASEDIR}*.gz')
+    r = {}
+    for f in fqs:
+        f = f.removeprefix(BASEDIR)
+        sample = f.removesuffix('.fastq.gz')
+        r[sample] = [{'single': [f]}]
+    r = {
+            'basedir': BASEDIR,
+            'samples': r,
+    }
+    print(r)
+    with open('USA_pets_Nomnomnow.yaml', 'wt') as out:
+        out.write(yaml.dump(r))
+
