@@ -58,11 +58,8 @@ quality_df = pd.merge(quality_df,polish_eval[['Mean_cov LR']],
 
 # Compare default model in all polishing steps
 quality_df['Same_model'] = quality_df[['Polca-model', 'Poly-model', 'Medaka-model', 'Flye-model']].nunique(axis=1).apply(lambda x: 'Yes' if x == 1 else 'No')
-quality_df['Dif_general_model'] = quality_df['Polca-compl_general'] - quality_df['Flye-compl_general']
-quality_df['Dif_specific_model'] = quality_df['Polca-compl_specific'] - quality_df['Flye-compl_specific']
 
 # Add Quality columns
-
 ls_completeness = ['Polca-compl_general', 'Polca-compl_specific', 'Poly-compl_general','Poly-compl_specific',
                    'Medaka-compl_general', 'Medaka-compl_specific', 'Flye-compl_general','Flye-compl_specific']
 ls_contamination = ['Polca-contam', 'Polca-contam', 'Poly-contam', 'Poly-contam',
@@ -75,48 +72,71 @@ for qual, compl, contam in zip(ls_qual, ls_completeness,ls_contamination):
     quality_df.loc[(quality_df[compl] >= 50) & (quality_df[contam] <= 10), qual] = 'medium_quality'
     quality_df.loc[(quality_df[compl] >= 90) & (quality_df[contam] <= 5), qual] = 'high_quality'
 
-# General model dataframe
-quality_df_general = quality_df[quality_df['Polca-model']=='Gradient Boost (General Model)']
-quality_df_general = quality_df_general.drop(columns=[col for col in quality_df_general.columns if 'specific' in col])
-quality_df_general['Qual-evol'] = (
-    quality_df_general['Flye-qual-general'] + '_' + quality_df_general['Polca-qual-general'])
+def calculate_final_diff(quality_df):
+    final_diff = []
+    final_diff_Flye_Med = []
+    final_diff_Flye_Poly = []
+    polca_qual = []
+    poly_qual = []
+    medaka_qual = []
+    flye_qual = []
+    qual_evol = []
 
-quality_df_general['Qual-evol'] = quality_df_general['Qual-evol'].str.replace('high_quality_high_quality','High-to-High')
-quality_df_general['Qual-evol'] = quality_df_general['Qual-evol'].str.replace('medium_quality_medium_quality','Medium-to-Medium')
-quality_df_general['Qual-evol'] = quality_df_general['Qual-evol'].str.replace('medium_quality_high_quality','Medium-to-High')
-quality_df_general['Qual-evol'] = quality_df_general['Qual-evol'].str.replace('low_quality_medium_quality','Low-to-Medium')
-quality_df_general['Qual-evol'] = quality_df_general['Qual-evol'].str.replace('high_quality_medium_quality','High-to-Medium')
+    for index, row in quality_df.iterrows():
+        if 'Specific' in row['Polca-model']:
+            diff = row['Polca-compl_specific'] - row['Flye-compl_specific']
+            flye_med_diff = row['Medaka-compl_specific'] - row['Flye-compl_specific']
+            flye_poly_diff = row['Poly-compl_specific'] - row['Flye-compl_specific']
+            polca_qual.append(row['Polca-qual-specific'])
+            poly_qual.append(row['Poly-qual-specific'])
+            medaka_qual.append(row['Medaka-qual-specific'])
+            flye_qual.append(row['Flye-qual-specific'])
+            qual_combination = row['Flye-qual-specific'] + '_' + row['Polca-qual-specific']
+        else:
+            diff = row['Polca-compl_general'] - row['Flye-compl_general']
+            flye_med_diff = row['Medaka-compl_general'] - row['Flye-compl_general']
+            flye_poly_diff = row['Poly-compl_general'] - row['Flye-compl_general']
+            polca_qual.append(row['Polca-qual-general'])
+            poly_qual.append(row['Poly-qual-general'])
+            medaka_qual.append(row['Medaka-qual-general'])
+            flye_qual.append(row['Flye-qual-general'])
+            qual_combination = row['Flye-qual-general'] + '_' + row['Polca-qual-general']
 
-quality_df_general.columns = ['MIMAG-table_compl', 'Polca-compl', 'Polca-model', 'Polca-contam',
-                               'Poly-compl', 'Poly-model', 'Poly-contam', 'Medaka-compl', 'Medaka-model',
-                               'Medaka-contam', 'Flye-compl', 'Flye-model', 'Flye-contam', 'Mean_cov LR',
-                               'Same_model', 'Diff-completeness', 'Polca-qual', 'Poly-qual', 'Medaka-qual',
-                               'Flye-qual', 'Qual-evol']
+        final_diff.append(diff)
+        final_diff_Flye_Med.append(flye_med_diff)
+        final_diff_Flye_Poly.append(flye_poly_diff)
+        qual_evol.append(qual_combination)
 
-quality_df_general = quality_df_general.reset_index()
+    quality_df['Diff_Flye-Med'] = final_diff_Flye_Med
+    quality_df['Diff_Flye-Poly'] = final_diff_Flye_Poly
+    quality_df['Diff_Flye-Polca'] = final_diff
+    quality_df['Qual-evol'] = qual_evol
 
-# Specific model dataframe
-quality_df_specific = quality_df[quality_df['Polca-model']=='Neural Network (Specific Model)']
-quality_df_specific = quality_df_specific.drop(columns=[col for col in quality_df_specific.columns if 'general' in col])
-quality_df_specific['Qual-evol'] = (
-    quality_df_specific['Flye-qual-specific'] + '_' + quality_df_specific['Polca-qual-specific'])
+    quality_df['Polca_qual'] = polca_qual
+    quality_df['Poly_qual'] = poly_qual
+    quality_df['Medaka_qual'] = medaka_qual
+    quality_df['Flye_qual'] = flye_qual
 
-quality_df_specific['Qual-evol'] = quality_df_specific['Qual-evol'].str.replace('high_quality_high_quality','High-to-High')
-quality_df_specific['Qual-evol'] = quality_df_specific['Qual-evol'].str.replace('medium_quality_medium_quality','Medium-to-Medium')
-quality_df_specific['Qual-evol'] = quality_df_specific['Qual-evol'].str.replace('medium_quality_high_quality','Medium-to-High')
-quality_df_specific['Qual-evol'] = quality_df_specific['Qual-evol'].str.replace('low_quality_medium_quality','Low-to-Medium')
-quality_df_specific['Qual-evol'] = quality_df_specific['Qual-evol'].str.replace('high_quality_medium_quality','High-to-Medium')
+    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('high_quality_high_quality','High-to-High')
+    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('medium_quality_medium_quality','Medium-to-Medium')
+    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('medium_quality_high_quality','Medium-to-High')
+    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('low_quality_medium_quality','Low-to-Medium')
+    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('high_quality_medium_quality','High-to-Medium')
 
-quality_df_specific.columns = ['MIMAG-table_compl', 'Polca-compl', 'Polca-model', 'Polca-contam',
-                               'Poly-compl', 'Poly-model', 'Poly-contam', 'Medaka-compl', 'Medaka-model',
-                               'Medaka-contam', 'Flye-compl', 'Flye-model', 'Flye-contam', 'Mean_cov LR',
-                               'Same_model', 'Diff-completeness', 'Polca-qual', 'Poly-qual', 'Medaka-qual',
-                               'Flye-qual', 'Qual-evol']
+    quality_df.drop(['Polca-qual-specific','Polca-qual-general','Poly-qual-specific','Poly-qual-general',
+                     'Medaka-qual-specific','Medaka-qual-general','Flye-qual-specific','Flye-qual-general'],
+                    axis=1, inplace=True)
 
-quality_df_specific = quality_df_specific.reset_index()
+    return quality_df
 
-# Concatenate back specific and general model dataframes
+quality_df_final = calculate_final_diff(quality_df)
 
-quality_df_final = pd.concat([quality_df_general,quality_df_specific],axis=0)
-quality_df_final = quality_df_final.set_index('index')
+# Diff in contamination value after polishing steps
+quality_df_final['Contam_diff_Flye_Med'] = quality_df_final['Medaka-contam'] - quality_df_final['Flye-contam']
+quality_df_final['Contam_diff_Flye_Poly'] = quality_df_final['Poly-contam'] - quality_df_final['Flye-contam']
+quality_df_final['Contam_diff_Flye_Polca'] = quality_df_final['Polca-contam'] - quality_df_final['Flye-contam']
+
+# We chose the Checkm2 'default' model for the most polished MAG (Polca) as the reference
+quality_df_final['Final_model'] = quality_df_final['Polca-model']
+
 quality_df_final.to_csv('intermediate-outputs/polishing_evaluation/results/Checkm2_final_polish_eval.csv')
