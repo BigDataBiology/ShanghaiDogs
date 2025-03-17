@@ -16,7 +16,6 @@ for f in sorted(os.listdir(MAGS_DIR)):
         if line[0] == '>':
             _, contig, _, sample = line.split()
             bin2contig.append((mid, contig, sample))
-    print(mid)
 
 bin2contig = pd.DataFrame(bin2contig, columns=['Bin ID', 'Contig', 'Sample'])
 bin2contig['Contig'] = bin2contig['Contig'].str.rsplit('_', n=1).str[0]
@@ -32,7 +31,7 @@ for h, _ in fasta_iter(f'{RC_DIR}/combined_contigs_ref.fasta'):
     cluster_id, contig = h.split('Ω')
     clusterId2contig[cluster_id] = contig
 
-SAMPLE_SPOT_CHECK = 'D006'
+SAMPLE_SPOT_CHECK = 'D003'
 contig2seq = {}
 data = []
 n_cm2 = 0
@@ -48,13 +47,16 @@ for h, seq in fasta_iter(f'{RC_DIR}/combined_circular.fasta'):
     if f'{sample}_{contig}' in contigs_in_mags:
         in_mags += 1
         continue
-    if h in plasmids.index:
-        cat = 'plasmid'
-    elif h in high_vs2:
-        cat = 'virus'
-    else:
-        cat = 'non_categorized'
-    data.append([seq, h, sample, contig, cat])
+    is_plasmid = h in plasmids.index
+    is_virus = h in high_vs2
+    cat = {
+            ( True,  True): 'uncategorized',
+            ( True, False): 'plasmid',
+            (False,  True): 'virus',
+            (False, False): 'uncategorized',
+            }[is_plasmid, is_virus]
+    note = ('Markers for both plasmid and virus present' if is_plasmid and is_virus else '')
+    data.append([seq, h, sample, contig, cat, note])
     if sample == SAMPLE_SPOT_CHECK:
         contig2seq[contig] = seq
 
@@ -63,18 +65,20 @@ def sort_key(row):
         cat = 0
     elif row[4] == 'virus':
         cat = 1
-    else:
+    elif row[5].startswith('Markers for both'):
         cat = 2
+    else:
+        cat = 3
     return (cat, row[2], row[3])
 data.sort(key=sort_key)
-with gzip.open('../intermediate-outputs/non_chromosomal/SHD_NC.fna.gz', 'wt') as out:
+with gzip.open('../intermediate-outputs/non_chromosomal/SHD1_NC.fna.gz', 'wt') as out:
     for i, row in enumerate(data):
         nh = f'SHD1_NC.{i:03}'
-        seq, h, sample, contig, cat = row
+        seq, h, sample, contig, cat, note = row
         row[0] = nh
-        out.write(f'>{nh} {h} {sample} {contig} {cat}\n{seq}\n')
-data = pd.DataFrame(data, columns=['Element', 'Working_header', 'Sample', 'Contig', 'Category'])
-data.to_csv('../intermediate-outputs/non_chromosomal/non_chromosomal_elements.tsv.gz', sep='\t', index=False)
+        out.write(f'>{nh} {h} {sample} {contig} {cat}{" ("+note+")" if note else ""}\n{seq}\n')
+data = pd.DataFrame(data, columns=['Element', 'Working_header', 'Sample', 'Contig', 'Category', 'Note'])
+data.to_csv('../intermediate-outputs/non_chromosomal/SHD1_NC_props.tsv.gz', sep='\t', index=False)
 
 print(f'Spot check: {SAMPLE_SPOT_CHECK} (contains {len(contig2seq)} elements)')
 print('Will check if the sequences are the same and ID matching is correct')
