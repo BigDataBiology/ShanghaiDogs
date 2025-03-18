@@ -5,6 +5,7 @@ import matplotlib.patches as mpatches
 import seaborn as sns
 from pysankey2 import Sankey
 
+
 os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
@@ -60,7 +61,7 @@ print(polish_eval_low['Cov'])
 print(polish_eval_high['Cov'])
 
 order = ['Diff_Flye-Med','Diff_Flye-Poly','Diff_Flye-Polca']
-polish_cov_long = pd.melt(polish_eval_high, id_vars=['index'],
+polish_cov_long = pd.melt(polish_eval_low, id_vars=['index'],
                     value_vars=['Diff_Flye-Med', 'Diff_Flye-Poly','Diff_Flye-Polca'],
                     var_name='Polishing', value_name='Difference')
 polish_cov_long['Polishing'] = pd.Categorical(polish_cov_long['Polishing'],
@@ -116,11 +117,11 @@ polish_eval_high = polish_eval_high.reset_index()
 print(polish_eval_low['Cov'])
 print(polish_eval_high['Cov'])
 
-order = ['Contam_diff_Flye_Med','Contam_diff_Flye_Poly','Contam_diff_Flye_Polca']
+order = ['Diff_contam_Flye_Med','Diff_contam_Flye_Poly','Diff_contam_Flye_Polca']
 
 
 polish_cov_long = pd.melt(polish_eval_low, id_vars=['index'],
-                    value_vars=['Contam_diff_Flye_Med', 'Contam_diff_Flye_Poly','Contam_diff_Flye_Polca'],
+                    value_vars=['Diff_contam_Flye_Med', 'Diff_contam_Flye_Poly','Diff_contam_Flye_Polca'],
                     var_name='Polishing', value_name='Difference')
 polish_cov_long['Polishing'] = pd.Categorical(polish_cov_long['Polishing'],
                                                    categories=order, ordered=True)

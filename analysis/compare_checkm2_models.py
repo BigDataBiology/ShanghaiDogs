@@ -72,14 +72,15 @@ for qual, compl, contam in zip(ls_qual, ls_completeness,ls_contamination):
     quality_df.loc[(quality_df[compl] >= 50) & (quality_df[contam] <= 10), qual] = 'medium_quality'
     quality_df.loc[(quality_df[compl] >= 90) & (quality_df[contam] <= 5), qual] = 'high_quality'
 
-def calculate_final_diff(quality_df):
+# Calculate completeness differences
+def calculate_completeness_diff(quality_df):
     final_diff = []
     final_diff_Flye_Med = []
     final_diff_Flye_Poly = []
-    polca_qual = []
-    poly_qual = []
-    medaka_qual = []
-    flye_qual = []
+    polca_compl = []
+    poly_compl = []
+    medaka_compl = []
+    flye_compl = []
     qual_evol = []
 
     for index, row in quality_df.iterrows():
@@ -87,19 +88,24 @@ def calculate_final_diff(quality_df):
             diff = row['Polca-compl_specific'] - row['Flye-compl_specific']
             flye_med_diff = row['Medaka-compl_specific'] - row['Flye-compl_specific']
             flye_poly_diff = row['Poly-compl_specific'] - row['Flye-compl_specific']
-            polca_qual.append(row['Polca-qual-specific'])
-            poly_qual.append(row['Poly-qual-specific'])
-            medaka_qual.append(row['Medaka-qual-specific'])
-            flye_qual.append(row['Flye-qual-specific'])
+
+            polca_compl.append(row['Polca-compl_specific'])
+            poly_compl.append(row['Poly-compl_specific'])
+            medaka_compl.append(row['Medaka-compl_specific'])
+            flye_compl.append(row['Flye-compl_specific'])
+
             qual_combination = row['Flye-qual-specific'] + '_' + row['Polca-qual-specific']
-        else:
+
+        elif 'General' in row['Polca-model']:
             diff = row['Polca-compl_general'] - row['Flye-compl_general']
             flye_med_diff = row['Medaka-compl_general'] - row['Flye-compl_general']
             flye_poly_diff = row['Poly-compl_general'] - row['Flye-compl_general']
-            polca_qual.append(row['Polca-qual-general'])
-            poly_qual.append(row['Poly-qual-general'])
-            medaka_qual.append(row['Medaka-qual-general'])
-            flye_qual.append(row['Flye-qual-general'])
+
+            polca_compl.append(row['Polca-compl_general'])
+            poly_compl.append(row['Poly-compl_general'])
+            medaka_compl.append(row['Medaka-compl_general'])
+            flye_compl.append(row['Flye-compl_general'])
+
             qual_combination = row['Flye-qual-general'] + '_' + row['Polca-qual-general']
 
         final_diff.append(diff)
@@ -107,36 +113,42 @@ def calculate_final_diff(quality_df):
         final_diff_Flye_Poly.append(flye_poly_diff)
         qual_evol.append(qual_combination)
 
+    # Assign new columns
+    quality_df['Flye_completeness'] = flye_compl
+    quality_df['Medaka_completeness'] = medaka_compl
+    quality_df['Polypolish_completeness'] = poly_compl
+    quality_df['Polca_completeness'] = polca_compl
     quality_df['Diff_Flye-Med'] = final_diff_Flye_Med
     quality_df['Diff_Flye-Poly'] = final_diff_Flye_Poly
     quality_df['Diff_Flye-Polca'] = final_diff
     quality_df['Qual-evol'] = qual_evol
 
-    quality_df['Polca_qual'] = polca_qual
-    quality_df['Poly_qual'] = poly_qual
-    quality_df['Medaka_qual'] = medaka_qual
-    quality_df['Flye_qual'] = flye_qual
-
-    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('high_quality_high_quality','High-to-High')
-    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('medium_quality_medium_quality','Medium-to-Medium')
-    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('medium_quality_high_quality','Medium-to-High')
-    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('low_quality_medium_quality','Low-to-Medium')
-    quality_df['Qual-evol'] = quality_df['Qual-evol'].str.replace('high_quality_medium_quality','High-to-Medium')
-
-    quality_df.drop(['Polca-qual-specific','Polca-qual-general','Poly-qual-specific','Poly-qual-general',
-                     'Medaka-qual-specific','Medaka-qual-general','Flye-qual-specific','Flye-qual-general'],
-                    axis=1, inplace=True)
+    # Improve Quality Evolution Labels
+    replacements = {
+        'high_quality_high_quality': 'High-to-High',
+        'medium_quality_medium_quality': 'Medium-to-Medium',
+        'medium_quality_high_quality': 'Medium-to-High',
+        'low_quality_medium_quality': 'Low-to-Medium',
+        'high_quality_medium_quality': 'High-to-Medium'
+    }
+    quality_df['Qual-evol'].replace(replacements, inplace=True)
 
     return quality_df
 
-quality_df_final = calculate_final_diff(quality_df)
+quality_df_final = calculate_completeness_diff(quality_df)
 
 # Diff in contamination value after polishing steps
-quality_df_final['Contam_diff_Flye_Med'] = quality_df_final['Medaka-contam'] - quality_df_final['Flye-contam']
-quality_df_final['Contam_diff_Flye_Poly'] = quality_df_final['Poly-contam'] - quality_df_final['Flye-contam']
-quality_df_final['Contam_diff_Flye_Polca'] = quality_df_final['Polca-contam'] - quality_df_final['Flye-contam']
+quality_df_final['Diff_contam_Flye_Med'] = quality_df_final['Medaka-contam'] - quality_df_final['Flye-contam']
+quality_df_final['Diff_contam_Flye_Poly'] = quality_df_final['Poly-contam'] - quality_df_final['Flye-contam']
+quality_df_final['Diff_contam_Flye_Polca'] = quality_df_final['Polca-contam'] - quality_df_final['Flye-contam']
+
+# Re-order and clean-up unused columns
+desired_order = ['MIMAG-table_compl', 'Mean_cov LR', 'Final_model', 'Flye_completeness', 'Medaka_completeness',
+                 'Polypolish_completeness', 'Polca_completeness', 'Flye-contam', 'Medaka-contam',
+                 'Poly-contam', 'Polca-contam', 'Diff_Flye-Med', 'Diff_Flye-Poly',
+                 'Diff_Flye-Polca', 'Diff_contam_Flye_Med', 'Diff_contam_Flye_Poly',
+                 'Diff_contam_Flye_Polca', 'Qual-evol']
+quality_df_final = quality_df_final[desired_order]
 
 # We chose the Checkm2 'default' model for the most polished MAG (Polca) as the reference
-quality_df_final['Final_model'] = quality_df_final['Polca-model']
-
 quality_df_final.to_csv('intermediate-outputs/polishing_evaluation/results/Checkm2_final_polish_eval.csv')
