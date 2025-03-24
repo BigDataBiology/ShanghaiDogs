@@ -12,3 +12,4 @@ __pycache__/
 resource_generation/localDB/
 resource_generation/nohup/
 localDB/
+analysis/unused_scripts

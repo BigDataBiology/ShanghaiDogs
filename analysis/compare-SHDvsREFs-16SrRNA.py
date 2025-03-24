@@ -23,29 +23,22 @@ SHD_qual_rep = SHD_qual.query('Representative=="Yes" and Quality=="high-quality"
 
 # Merge the the two qual_report
 merged = pd.merge(SHD_qual_rep,GTDB_qual,left_on='GTDBtk fastani Ref',right_on='Name') # include only those that are shared
+merged_hq_only = merged[merged['Quality_y'].str.contains('high-quality')]
 
 # Plots
 ### Scatter plots for RefSeq representatives vs HQ MAGs
-
-# filter out medium-quality genomes from refseq and genbank
-merged_hq_only = merged[merged['Quality_y'].str.contains('high-quality')]
-
-# Sort by number of 16S rRNA genes
 merged_hq_only = merged_hq_only.sort_values(by='16S rRNA_x', ascending=True)
-
-# Create a reference column
 merged_hq_only['Reference'] = merged_hq_only['GTDBtk fastani Ref'].str.startswith('GCA_').map({True: 'GenBank', False: 'RefSeq'})
 
 # Filter data for GenBank and RefSeq
 genbank_data = merged_hq_only[merged_hq_only['Reference'] == 'GenBank']
 refseq_data = merged_hq_only[merged_hq_only['Reference'] == 'RefSeq']
 
-# Figure size
+## GenBank scatter plot
 width_mm = 100
 height_mm = 45
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
-# GenBank scatter plot
 fig, ax = plt.subplots(figsize=figsize_inch)
 ax.scatter(genbank_data['Classification'], genbank_data['16S rRNA_y'],
            label='GenBank genomes', alpha=1, s=6, c='#e6ab02')
@@ -62,9 +55,7 @@ plt.tight_layout()
 #plt.show()
 fig.savefig('intermediate-outputs/figures/GenBank-vs-SHD_16S_scatterplot.svg')
 
-# RefSeq scatter plot
-
-# Figure size
+## RefSeq scatter plot
 width_mm = 140
 height_mm = 55
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
@@ -84,35 +75,6 @@ sns.despine()
 plt.tight_layout()
 #plt.show()
 fig.savefig('intermediate-outputs/figures/RefSeq-vs-SHD_16S_scatterplot.svg')
-
-
-
-# Scatterplot
-y_SHD = merged['Nr contigs']
-x_SHD = merged['16S rRNA_x']
-y_Ref = merged['Number']
-x_Ref = merged['16S rRNA_y']
-
-fig, ax = plt.subplots()
-ax.scatter(x_Ref, y_Ref, label='Genbank/RefSeq genomes',alpha=0.5)
-ax.scatter(x_SHD, y_SHD, label='Shanghai Dogs',alpha=0.5)
-ax.set_xlabel('16S genes')
-ax.set_ylabel('Nr contigs')
-ax.set_title('Scatterplot of Contiguity vs 16S genes')
-ax.legend()
-#plt.show()
-fig.savefig('intermediate-outputs/figures/SHDvsRef_16S_scatterplot.svg')
-
-# Boxplot
-fig, ax = plt.subplots()
-ax.clear()
-sns.boxplot(data=[x_Ref, x_SHD], palette="Dark2",ax=ax)
-ax.set_ylabel('Nr 16S genes')
-ax.set_xticklabels(labels=['Ref genomes', 'SHD MAGs (here)'])
-sns.despine(trim=False)
-#plt.show()
-
-fig.savefig('intermediate-outputs/figures/SHDvsRef_16S_boxplot.svg')
 
 # Histogram
 colors = sns.color_palette("Dark2", 2)
