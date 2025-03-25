@@ -35,7 +35,6 @@ for n in GTDB_qual.index:
         GTDB_qual.loc[n, 'Quality_det'] = 'single-contig HQ'
 
 ### TAXONOMY OF species-level MAGs
-
 species_catalog = MIMAG_report[MIMAG_report['Representative']=='Yes']
 species_catalog['ref_new']=species_catalog['GTDBtk fastani Ref']
 species_catalog['ref_new'] = species_catalog['ref_new'].fillna('Novel species')
@@ -57,8 +56,7 @@ quality_table = MIMAG_report.pivot_table(
     index='Sample',
     columns='Quality',
     aggfunc='size',
-    fill_value=0
-)
+    fill_value=0)
 
 quality_table['Total']=quality_table['high-quality']+quality_table['medium-quality']
 quality_table = quality_table.sort_values('Total',ascending=False)
@@ -94,8 +92,7 @@ quality_table_det = MIMAG_report.pivot_table(
     index='Sample',
     columns='Quality_det',
     aggfunc='size',
-    fill_value=0
-)
+    fill_value=0)
 
 quality_table_det['Total']=quality_table_det['high-quality']+quality_table_det['medium-quality']+quality_table_det['single-contig HQ']
 quality_table_det = quality_table_det.sort_values('Total',ascending=False)
@@ -125,23 +122,20 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 
 # Save figure
 plt.tight_layout()
-# plt.show()
+#plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual_1tig.svg")
 
 ### MIMAG high-quality
-
 quality_table_MIMAG = MIMAG_report.pivot_table(
     index='Sample',
     columns='Quality_MIMAG',
     aggfunc='size',
-    fill_value=0
-)
+    fill_value=0)
 
 quality_table_MIMAG['Total']=quality_table_MIMAG['high-quality']+quality_table_MIMAG['medium-quality']+quality_table_MIMAG['MIMAG high-quality']
 quality_table_MIMAG = quality_table_MIMAG.sort_values('Total',ascending=False)
 
 # Plot a stacked barplot
-# Fig_size
 width_mm = 110
 height_mm = 60
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
@@ -165,7 +159,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 
 # Save figure
 plt.tight_layout()
-# plt.show()
+#plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual_MIMAG.svg")
 
 ### Most prevalent species in dog cohort
@@ -202,18 +196,15 @@ order = ['Bacillota_A',
 prevalent_sp_perc_phylum['Phylum'] = pd.Categorical(
     prevalent_sp_perc_phylum['Phylum'],
     categories=order,
-    ordered=True
-)
+    ordered=True)
 
 prevalent_sp_perc_phylum = prevalent_sp_perc_phylum.sort_values(
     by=['Phylum', 'Species'],
-    ascending=[False, False]
-)
+    ascending=[False, False])
 
 prevalent_sp_perc_phylum = prevalent_sp_perc_phylum.set_index('Species')
 
 # Plotting
-# Fig_size
 width_mm = 95
 height_mm = 120
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
@@ -224,8 +215,8 @@ prevalent_sp_perc_phylum[['single-contig HQ','high-quality', 'medium-quality']].
     stacked=True,
     color=['#1E3F20','#1B9E77', '#EDB458'],
     ax=ax,
-    width=0.7
-)
+    width=0.7)
+
 ax.set_xlabel('',fontsize=10)
 ax.set_xticks([0, 50, 100])
 ax.set_xticklabels(['0%','50%','100%'])
@@ -242,8 +233,7 @@ phylum_ref = species_catalog.pivot_table(
     index='Phylum',
     columns='ref_new',
     aggfunc='size',
-    fill_value=0
-)
+    fill_value=0)
 
 phylum_ref['Total']=phylum_ref.sum(axis=1)
 phylum_ref=phylum_ref.sort_values(by='Total',ascending=True)
@@ -252,7 +242,6 @@ phylum_ref = phylum_ref.tail(8)
 phylum_ref.columns = ['RefSeq reference', 'GenBank reference', 'Novel species']
 
 # Plot horizontal stacked barplot
-# Fig_size
 width_mm = 110
 height_mm = 65
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
@@ -268,248 +257,6 @@ ax.set_xlabel('N# of species-level MAGs',fontsize=10)
 plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_novelty_red.svg")
-
-### CONTIGUITY:  MAGs vs REF (GCA & GCF)
-# species_catalog_HQ=species_catalog.query('Quality == "high-quality" and ref_new != "Novel species"')
-order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
-color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
-
-### Contiguity by Ref quality vs MAG
-SHD_contiguity_df = species_catalog[['Nr contigs','ref_new','GTDBtk fastani Ref']].reset_index()
-ALL_contiguity_df = pd.merge(SHD_contiguity_df,GTDB_qual[['Name','Number']],right_on='Name',left_on='GTDBtk fastani Ref')
-ALL_contiguity = ALL_contiguity_df [['Bin ID','Nr contigs','Number','ref_new']]
-ALL_contiguity.columns = ['Bin ID','MAG','REF','ref_new']
-
-ALL_contiguity_melted = pd.melt(ALL_contiguity, id_vars=['Bin ID','ref_new'],
-                    value_vars=['MAG', 'REF'],
-                    var_name='Genome', value_name='Count')
-ALL_contiguity_melted['category']=ALL_contiguity_melted['Genome']+'_'+ALL_contiguity_melted['ref_new']
-ALL_contiguity_melted['category'] = pd.Categorical(ALL_contiguity_melted['category'], categories=order, ordered=True)
-ALL_contiguity_melted = ALL_contiguity_melted.sort_values('category')
-ALL_contiguity_melted['log count'] = np.log10(ALL_contiguity_melted['Count'])
-
-# Plot boxplot contiguity GCA vs GCF
-width_mm = 55
-height_mm = 40
-figsize_inch = (width_mm / 25.4, height_mm / 25.4)
-
-fig, ax = plt.subplots(figsize=figsize_inch)
-ax.clear()
-sns.boxplot(data=ALL_contiguity_melted,
-              x='category', y='log count',
-              palette=['#a6761d', '#1b9e77', '#e6ab02','#1b9e77'],
-              ax=ax,
-               width=0.8,
-               linewidth=1,
-               flierprops={
-                   'marker': 'd',  # Shape of outliers
-                   'color': 'gray',  # Color of outliers
-                   'markersize': 2.5,  # Size of outliers
-                   'linestyle': 'none'  # No connecting line for outliers
-                })
-ax.set_ylabel('Log10 counts')
-ax.set_ylim(-0.2,3)
-ax.set_xlabel('')
-ax.set_xticklabels([])
-ax.tick_params(axis='x', bottom=False)
-sns.despine(fig, trim=False)
-
-plt.tight_layout()
-# plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_contiguity_boxplot_log_mq-HQ.svg")
-
-### RIBOSOMALS:  MAGs vs REF (GCA & GCF)
-order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
-color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
-
-SHD_ribosomal_df = species_catalog[['16S rRNA','ref_new','GTDBtk fastani Ref']].reset_index()
-ALL_ribosomal_df = pd.merge(SHD_ribosomal_df,GTDB_qual[['Name','16S rRNA']],right_on='Name',left_on='GTDBtk fastani Ref')
-ALL_ribosomal = ALL_ribosomal_df [['Bin ID','16S rRNA_x','16S rRNA_y','ref_new']]
-ALL_ribosomal.columns = ['Bin ID','MAG','REF','ref_new']
-
-ALL_ribosomal_melted = pd.melt(ALL_ribosomal, id_vars=['Bin ID','ref_new'],
-                    value_vars=['MAG', 'REF'],
-                    var_name='Genome', value_name='Count')
-ALL_ribosomal_melted['category']=ALL_ribosomal_melted['Genome']+'_'+ALL_ribosomal_melted['ref_new']
-ALL_ribosomal_melted['category'] = pd.Categorical(ALL_ribosomal_melted['category'], categories=order, ordered=True)
-ALL_ribosomal_melted = ALL_ribosomal_melted.sort_values('category')
-
-# Plot boxplot 16S rRNA GCA vs GCF
-width_mm = 55
-height_mm = 40
-figsize_inch = (width_mm / 25.4, height_mm / 25.4)
-
-fig, ax = plt.subplots(figsize=figsize_inch)
-ax.clear()
-sns.boxplot(data=ALL_ribosomal_melted,
-            x='category',y='Count',
-            palette=['#a6761d', '#1b9e77', '#e6ab02','#1b9e77'],
-            ax=ax,
-            width=0.7,
-            linewidth=1,
-            flierprops={
-                'marker': 'd',  # Shape of outliers
-                'color': 'gray',  # Color of outliers
-                'markersize': 2,  # Size of outliers
-                'linestyle': 'none'  # No connecting line for outliers
-    })
-ax.set_ylabel('')
-ax.set_xlabel('')
-ax.set_xticklabels([])
-ax.tick_params(axis='x', bottom=False)
-sns.despine(fig, trim=False)
-
-plt.tight_layout()
-# plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_16S_boxplot.svg")
-
-### Plot histograms for 16S rRNA count
-categories = ALL_ribosomal_melted['category'].unique()
-num_categories = len(categories)
-
-# Create subplots
-width_mm = 120
-height_mm = 60
-figsize_inch_hist = (width_mm / 25.4, height_mm / 25.4)
-
-plt.clf()
-fig, axes = plt.subplots(1, 2, figsize=figsize_inch_hist, sharey=True, sharex=True)
-bin_edges = np.linspace(0, 18, 8) # Define common bin edges
-
-# Plot the first two categories on the first subplot
-subset1 = ALL_ribosomal_melted[ALL_ribosomal_melted['category'] == categories[0]]
-subset2 = ALL_ribosomal_melted[ALL_ribosomal_melted['category'] == categories[1]]
-axes[0].hist(subset1['Count'], bins=bin_edges, alpha=0.7, color='#a6761d', edgecolor='white',linewidth=1.2)
-axes[0].hist(subset2['Count'], bins=bin_edges, alpha=0.5, color='#1b9e77', edgecolor='white',linewidth=1.2)
-axes[0].set_title('')
-axes[0].set_xlabel('16S rRNA counts',fontsize=10)
-axes[0].set_ylabel('Frequency',fontsize=10)
-axes[0].set_xlim(-0.2,17.7)
-
-# Plot the next two categories on the second subplot
-subset3 = ALL_ribosomal_melted[ALL_ribosomal_melted['category'] == categories[2]]
-subset4 = ALL_ribosomal_melted[ALL_ribosomal_melted['category'] == categories[3]]
-axes[1].hist(subset3['Count'], bins=bin_edges, alpha=0.7, color='#e6ab02', edgecolor='white',linewidth=1.2)
-axes[1].hist(subset4['Count'], bins=bin_edges, alpha=0.5, color='#1b9e77', edgecolor='white',linewidth=1.2)
-axes[1].set_title('')
-axes[1].set_xlabel('16S rRNA counts',fontsize=10)
-#axes[1].set_ylabel('Frequency',fontsize=10)
-axes[1].set_xlim(-0.2,17.7)
-
-sns.despine(fig, trim=False)
-plt.tight_layout()
-#plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_16S_histograms_v2.svg")
-
-### tRNAs: MAGs vs REF (GCA & GCF)
-order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
-color_palette = ['#a6761d', '#1b9e77', '#e6ab02', '#1b9e77']
-
-SHD_tRNAs_df = species_catalog[['Unique tRNAs','ref_new','GTDBtk fastani Ref']].reset_index()
-ALL_tRNAs_df = pd.merge(SHD_tRNAs_df,GTDB_qual[['Name','Unique tRNAs']],right_on='Name',left_on='GTDBtk fastani Ref')
-ALL_tRNAs = ALL_tRNAs_df [['Bin ID','Unique tRNAs_x','Unique tRNAs_y','ref_new']]
-ALL_tRNAs.columns = ['Bin ID','MAG','REF','ref_new']
-
-ALL_tRNAs_melted = pd.melt(ALL_tRNAs, id_vars=['Bin ID','ref_new'],
-                    value_vars=['MAG', 'REF'],
-                    var_name='Genome', value_name='Count')
-ALL_tRNAs_melted['category']=ALL_tRNAs_melted['Genome']+'_'+ALL_tRNAs_melted['ref_new']
-ALL_tRNAs_melted['category'] = pd.Categorical(ALL_tRNAs_melted['category'], categories=order, ordered=True)
-ALL_tRNAs_melted = ALL_tRNAs_melted.sort_values('category')
-
-# Plot boxplot tRNAs GCA vs GCF
-width_mm = 65
-height_mm = 60
-figsize_inch = (width_mm / 25.4, height_mm / 25.4)
-
-fig, ax = plt.subplots(figsize=figsize_inch)
-ax.clear()
-sns.boxplot(data=ALL_tRNAs_melted,
-               x='category',y='Count',
-               palette=color_palette,
-               ax=ax,
-               width=0.7,
-               linewidth=1,
-               flierprops={
-                   'marker': 'd',  # Shape of outliers
-                   'color': 'gray',  # Color of outliers
-                   'markersize': 2,  # Size of outliers
-                   'linestyle': 'none'  # No connecting line for outliers
-    })
-ax.set_ylabel('')
-ax.set_xlabel('')
-ax.set_xticklabels([])
-ax.set_ylim(0,30)
-ax.tick_params(axis='x', bottom=False)
-sns.despine(fig, trim=False)
-
-plt.tight_layout()
-# plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_tRNAs_boxplot.svg")
-
-### SWARMPLOTS
-fig, ax = plt.subplots(figsize=figsize_inch)
-ax.clear()
-df=ALL_ribosomal_melted
-
-sns.swarmplot(data=df,
-              x='category', y='Count',
-              ax=ax,
-              hue='category',
-              palette=color_palette,
-              size=2.5,             # Size of the dots
-              alpha=0.5)            # Transparency of the dots
-
-ax.legend_.remove()
-ax.set_ylabel('')
-ax.set_xlabel('')
-ax.set_xticklabels([])
-#ax.set_ylim(0, 30)
-ax.tick_params(axis='x', bottom=False)
-sns.despine(fig, trim=False)
-
-plt.tight_layout()
-#plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_ribosomal_swarmplot.svg")
-
-### STRIPPLOT
-fig, ax = plt.subplots(figsize=figsize_inch)
-ax.clear()
-
-df=ALL_tRNAs_melted
-categories = df['category'].unique()
-
-# Adding individual data points using stripplot with increased jitter
-sns.stripplot(data=df,
-              x='category', y='Count',
-              ax=ax,
-              hue='category',
-              palette=color_palette,
-              size=3,
-              alpha=0.3,  # Transparency of the dots
-              jitter=0.2,  # Increase jitter to spread out the dots
-              order=categories)
-
-sns.boxplot(data=df,
-            x='category', y='Count',
-            ax=ax,
-            width=0.8,
-            palette=[(1, 1, 1, 0) for _ in color_palette], # Transparent boxplot
-            linewidth=1,
-            fliersize=0) # Hide the outlier markers
-
-ax.legend_.remove()
-ax.set_title('Number of tRNAs')
-ax.set_ylabel('Counts')
-ax.set_xlabel('')
-ax.set_xticklabels([])
-ax.set_ylim(0, 30)
-ax.tick_params(axis='x', bottom=False)
-sns.despine(fig, trim=False)
-
-plt.tight_layout()
-#plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_vs_ref_tRNAs_boxplot-strip.svg")
 
 ### NOVEL SPECIES PLOT
 species_catalog_novel = species_catalog.query('ref_new == "Novel species"')
@@ -583,65 +330,3 @@ ax.set_axis_off()  # Hide the axes
 plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_squarify.svg")
-
-
-### Three boxplots + stripplots (RefSeq, GenBank, canine MAGs)
-
-# If merging canine MAGs (contig counts)
-ALL_contiguity_melted['category'] = ALL_contiguity_melted['category'].str.replace('MAG_GenBank reference (GCA)','Shanghai Dog MAG')
-ALL_contiguity_melted['category'] = ALL_contiguity_melted['category'].str.replace('MAG_RefSeq reference (GCF)','Shanghai Dog MAG')
-ALL_contiguity_melted['log count'] = np.log10(ALL_contiguity_melted['Count'])
-
-# If merging canine MAGs (tRNAs counts)
-ALL_tRNAs_melted['category'] = ALL_tRNAs_melted['category'].str.replace('MAG_GenBank reference (GCA)','Shanghai Dog MAG')
-ALL_tRNAs_melted['category'] = ALL_tRNAs_melted['category'].str.replace('MAG_RefSeq reference (GCF)','Shanghai Dog MAG')
-
-### BOXPLOT + STRIPPLOT
-
-# Figure size
-width_mm = 45
-height_mm = 50
-figsize_inch = (width_mm / 25.4, height_mm / 25.4)
-
-fig, ax = plt.subplots(figsize=figsize_inch)
-ax.clear()
-
-df=ALL_tRNAs_melted
-categories = ['Shanghai Dog MAG','REF_RefSeq reference (GCF)','REF_GenBank reference (GCA)']
-color_palette = {'Shanghai Dog MAG':'#1b9e77','REF_RefSeq reference (GCF)':'#a6761d','REF_GenBank reference (GCA)':'#e6ab02'}
-df = df.sort_values(
-    by=['category'],
-    ascending=[False]
-)
-
-# Adding individual data points using stripplot with increased jitter
-sns.stripplot(data=df,
-              x='category', y='Count',
-              ax=ax,
-              hue='category',
-              palette=color_palette,
-              size=3,
-              alpha=0.3,  # Transparency of the dots
-              jitter=0.2,  # Increase jitter to spread out the dots
-              order=categories)
-
-sns.boxplot(data=df,
-            x='category', y='Count',
-            ax=ax,
-            width=0.8,
-            palette=[(1, 1, 1, 0) for _ in color_palette], # Transparent boxplot
-            linewidth=1,
-            fliersize=0) # Hide the outlier markers
-
-ax.legend_.remove()
-ax.set_title('unique tRNAs')
-ax.set_ylabel('counts')
-ax.set_xlabel('')
-ax.set_xticklabels([])
-#ax.set_yticks(np.arange(0, 4, 1))
-ax.tick_params(axis='x', bottom=False)
-sns.despine(fig, trim=False)
-
-plt.tight_layout()
-#plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_tRNAs_boxplot-strip.svg")
