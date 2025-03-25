@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from scipy.stats import shapiro
 
 os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
@@ -25,8 +26,7 @@ SHD_qual_rep = SHD_qual.query('Representative=="Yes" and Quality=="high-quality"
 merged = pd.merge(SHD_qual_rep,GTDB_qual,left_on='GTDBtk fastani Ref',right_on='Name') # include only those that are shared
 merged_hq_only = merged[merged['Quality_y'].str.contains('high-quality')]
 
-# Plots
-### Scatter plots for RefSeq representatives vs HQ MAGs
+### Scatter plots for 16S rRNA: RefSeq/GenBank vs HQ MAGs
 merged_hq_only = merged_hq_only.sort_values(by='16S rRNA_x', ascending=True)
 merged_hq_only['Reference'] = merged_hq_only['GTDBtk fastani Ref'].str.startswith('GCA_').map({True: 'GenBank', False: 'RefSeq'})
 
@@ -76,93 +76,18 @@ plt.tight_layout()
 #plt.show()
 fig.savefig('intermediate-outputs/figures/RefSeq-vs-SHD_16S_scatterplot.svg')
 
-# Histogram
-colors = sns.color_palette("Dark2", 2)
-fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+### Check statistical differences in the number of ribosomal genes
+## 1) Assess normality - reshape to long format + Shapiro test
+compare_df = refseq_data #genbank_data refseq_data
+df = compare_df[['Bin ID','16S rRNA_x','16S rRNA_y']]
+df = df.melt(id_vars="Bin ID", var_name="Condition", value_name='#16S rRNA')
 
-# Plot histogram for x_Ref
-ax[0].hist(x_Ref, bins=20, alpha=0.5, label='Ref genomes', edgecolor='black',color=colors[0])
-ax[0].set_xlabel('Nr 16S genes')
-ax[0].set_ylabel('Frequency')
-ax[0].set_title('Reference genomes')
-ax[0].set_xlim(0,17)
+conditions = df["Condition"].unique()
+normality_results = {}
+for condition in conditions:
+    stat, p = shapiro(df[df["Condition"] == condition]['#16S rRNA'])
+    normality_results[condition] = p
+    print(f"Shapiro-Wilk test for {condition}: p-value = {p:.4f}")
 
-# Plot histogram for x_SHD
-ax[1].hist(x_SHD, bins=20, alpha=0.5, label='SHD MAGs (here)', edgecolor='black',color=colors[1])
-ax[1].set_xlabel('Nr 16S genes')
-ax[1].set_ylabel('Frequency')
-ax[1].set_title('Shanghai Dogs MAGs')
-ax[1].set_xlim(0,17)
-
-plt.tight_layout()
-#plt.show()
-fig.savefig('intermediate-outputs/figures/SHDvsRef_16S_histogram.svg')
-
-# Compare the genomes/MAGs that pass MIMAG criteria
-GTDB_qual_MIMAG = GTDB_qual.query("MIMAG =='Yes'")
-#GTDB_qual_MIMAG = GTDB_qual_MIMAG[GTDB_qual_MIMAG['Name'].str.contains('GCF')] # only Ref_seq genome assemblies
-SHD_qual_MIMAG = SHD_qual_rep.query("MIMAG =='Yes'")
-merged_MIMAG = pd.merge(SHD_qual_MIMAG,GTDB_qual_MIMAG,left_on='GTDBtk fastani Ref',right_on='Name') # only shared
-
-# Evaluate the number of ribosomal genes
-# First col will store SHD values, second col Reference values
-
-counts = {'same_count_ribosomals': [0, 0],
-          'two_count_ribosomals': [0, 0],
-          'diff_count_ribosomals': [0, 0]}
-
-# Iterate over each row of the dataframe
-for index, row in merged_MIMAG.iterrows():
-    if row['16S rRNA_x'] == row['23S rRNA_x'] == row['5S rRNA_x']:
-        counts['same_count_ribosomals'][0] += 1
-    elif row['16S rRNA_x'] == row['23S rRNA_x'] or row['16S rRNA_x'] == row['5S rRNA_x'] or row['23S rRNA_x'] == row['23S rRNA_x']:
-        counts['two_count_ribosomals'][0] += 1
-    else:
-        counts['diff_count_ribosomals'][0] += 1
-    if row['16S rRNA_y'] == row['23S rRNA_y'] == row['5S rRNA_y']:
-        counts['same_count_ribosomals'][1] += 1
-    elif row['16S rRNA_y'] == row['23S rRNA_y'] or row['16S rRNA_y'] == row['5S rRNA_y'] or row['23S rRNA_y'] == row['23S rRNA_y']:
-        counts['two_count_ribosomals'][1] += 1
-    else:
-        counts['diff_count_ribosomals'][1] += 1
-
-ribosomals = pd.DataFrame(counts, index=['ShanghaiDogs: 16S-23S-5S', 'RefSeq: 16S-23S-5S'])
-
-# Compare 16S rRNA genes
-df_16S =  merged_MIMAG[['Classification','16S rRNA_x','16S rRNA_y','23S rRNA_x','23S rRNA_y','Nr contigs','Number']]
-df_16S['Dif_16S']=df_16S['16S rRNA_x'] - df_16S['16S rRNA_y']
-df_16S['Dif_23S']=df_16S['23S rRNA_x'] - df_16S['23S rRNA_y']
-df_16S['Dif_Sum']=df_16S['Dif_16S']+df_16S['Dif_23S']
-df_16S = df_16S.sort_values(by='Dif_16S')
-df_16S = df_16S.drop(columns=['Dif_Sum'])
-
-df_16S['Species']=df_16S['Classification'].str.replace(r'^.*s__', '', regex=True)
-
-# Plotting
-labels = df_16S['Species']
-values = df_16S['Dif_16S']
-
-fig, ax = plt.subplots(figsize=(8, 20))
-bars = ax.barh(labels, values, color=['green' if value > 0 else 'red' for value in values], edgecolor='black', linewidth=0.5)
-
-contiguity_ref = df_16S['Number']
-for bar, value in zip(bars, contiguity_ref):
-    if value == 1:
-        bar_position = bar.get_y() + bar.get_height() / 2
-        ax.plot(-6, bar_position, marker='_', markersize=10, color='black', linestyle='None')
-
-contiguity_SHD = df_16S['Nr contigs']
-for bar, value in zip(bars, contiguity_SHD):
-    if value == 1:
-        bar_position = bar.get_y() + bar.get_height() / 2
-        ax.plot(-5, bar_position, marker='_', markersize=10, color='black', linestyle='None')
-
-ax.set_xlabel('Dif in N# of 16S genes',size=14)
-ax.set_title('16S rRNA counts',size=18)
-ax.set_xlim(-7,15)
-ax.set_xticks(range(-4, 16, 2))
-ax.invert_yaxis()  # Invert y-axis to have the highest value on top
-plt.tight_layout()
-sns.despine(trim=False)
-fig.savefig('intermediate-outputs/figures/16S_diff_count_species.svg')
-#plt.show()
+## 2) Compute Wilcoxon test for SHD vs REFs 16S rRNA
+# Done at compare-SHDvsREFs-contiguity-tRNAs.py
