@@ -17,14 +17,19 @@ plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import qual_reports
 SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep=',')
+GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
+
+# SHD MAGs to REFs
 SHD_qual['Bin ID'] = SHD_qual['Bin ID'].str.replace('.fna.gz','')
 SHD_Ref = SHD_qual[['Bin ID','GTDBtk fastani Ref']]
-GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
-GTDB_MIMAG= GTDB_qual.query('MIMAG == "Yes"')
-GTDB_MIMAG_ls = list(GTDB_MIMAG['Name'])
 
-### NO 'X' COG Category in eggNOG!!!!
-### https://github.com/eggnogdb/eggnog-mapper/issues/424
+# Make a list of HQ genomes
+SHD_HQ = SHD_qual.query('Quality == "high-quality" and Representative == "Yes"')
+SHD_HQ_ls = list(SHD_HQ['Bin ID'])
+GTDB_HQ= GTDB_qual.query('Quality == "high-quality"')
+GTDB_HQ_ls = list(GTDB_HQ['Name'])
+
+### NO 'X' COG Category in eggNOG: https://github.com/eggnogdb/eggnog-mapper/issues/424
 # Import COG_ids for COG_category X according to NCBI
 COG_X = pd.read_csv('external-data/data/NCBI_genomes_ref/eggNOG-annot/NCBI_cog_X_table.tsv',sep='\t')
 COG_X_ls = list(COG_X['COG'])
@@ -66,14 +71,13 @@ shd_mobilome_df = pd.concat(shd_mobilome, ignore_index=True)
 
 a = pd.merge(shd_mobilome_df,SHD_Ref,left_on='Name',right_on='Bin ID')
 a.drop('Bin ID',axis=1,inplace=True)
-
 all_COGs=pd.merge(a,ext_mobilome_df,left_on=['GTDBtk fastani Ref','eggNOG_OGs'],right_on=['Name','eggNOG_OGs'],how='outer')
 all_COGs.fillna(0, inplace=True)
 
 all_COGs['COG_id']=all_COGs['eggNOG_OGs'].str.split('@').str[0]
 all_COGs_descript = pd.merge(all_COGs,COG_X[['COG','Annotation']],left_on='COG_id',right_on='COG',how='left')
 all_COGs_descript.drop(['COG','eggNOG_OGs','Name_y'],axis=1,inplace=True)
-all_COGs_descript = all_COGs_descript.query('`GTDBtk fastani Ref` != "0"')
+all_COGs_descript = all_COGs_descript.query('`GTDBtk fastani Ref` != 0')
 all_COGs_descript = all_COGs_descript[['COG_id','Name_x','GTDBtk fastani Ref','Count_x','Count_y','Annotation']]
 
 # Count 'hits' within each technique by COG category (use only Representative genomes from SHD)
