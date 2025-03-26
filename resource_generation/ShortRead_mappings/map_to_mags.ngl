@@ -3,6 +3,8 @@ import "parallel" version "1.1"
 
 SH_DOGS_MAGS = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGs.fna.gz'
 SH_DOGS_MAGS_SP = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGsSpecies.fna.gz'
+SH_DOGS_MAGS_NC = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGs+NonChrom.fna.gz'
+SH_DOGS_MAGS_SP_NC = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGsSpecies+NonChrom.fna.gz'
 DOG_GENOME = '../../external-data/data/dog_genome/GCA_000002285.4_Dog10K_Boxer_Tasha_genomic.fna'
 
 input = run_for_all_samples(load_sample_list(ARGV[1]))
@@ -37,6 +39,22 @@ mapped_sp = select(mapped_sp) using |mr|:
 
 write(mapstats(mapped_sp),
     ofile='outputs' </> input.name() + '_shd_sp_mapstats.txt')
+
+mapped_sp = map(input, fafile=SH_DOGS_MAGS_NC)
+
+mapped_sp = select(mapped_sp) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+
+write(mapstats(mapped_sp),
+    ofile='outputs' </> input.name() + '_shd_nc_mapstats.txt')
+
+mapped_sp = map(input, fafile=SH_DOGS_MAGS_SP_NC)
+
+mapped_sp = select(mapped_sp) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+
+write(mapstats(mapped_sp),
+    ofile='outputs' </> input.name() + '_shd_sp_nc_mapstats.txt')
 
 write(qcstats({fastq}),
     ofile='outputs' </> input.name() + '_fqstats.txt')
