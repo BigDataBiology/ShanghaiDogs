@@ -9,6 +9,7 @@ import os
 import glob
 import re
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -17,24 +18,22 @@ plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import qual_reports
 SHD_qual = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',sep=',')
+SHD_qual['Bin ID'] = SHD_qual['Bin ID'].str.replace('.fna.gz','')
 GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
 
-# SHD MAGs to REFs
-SHD_qual['Bin ID'] = SHD_qual['Bin ID'].str.replace('.fna.gz','')
-SHD_Ref = SHD_qual[['Bin ID','GTDBtk fastani Ref']]
-
-# Make a list of HQ genomes
+# Make a list of HQ genomes - we only compare high-quality representative genomes between them
 SHD_HQ = SHD_qual.query('Quality == "high-quality" and Representative == "Yes"')
 SHD_HQ_ls = list(SHD_HQ['Bin ID'])
 GTDB_HQ= GTDB_qual.query('Quality == "high-quality"')
 GTDB_HQ_ls = list(GTDB_HQ['Name'])
 
 ### NO 'X' COG Category in eggNOG: https://github.com/eggnogdb/eggnog-mapper/issues/424
-# Import COG_ids for COG_category X according to NCBI
+## Import COG_ids for 'COG_category X' according to NCBI
 COG_X = pd.read_csv('external-data/data/NCBI_genomes_ref/eggNOG-annot/NCBI_cog_X_table.tsv',sep='\t')
 COG_X_ls = list(COG_X['COG'])
 
-# Import eggNOG_annotation & count COG categories
+## Import eggNOG_annotation and count COG categories
+# external REF genomes
 ext_path = 'external-data/data/NCBI_genomes_ref/eggNOG-annot/'
 ext_mobilome = []
 
@@ -52,6 +51,7 @@ for filename in glob.glob(os.path.join(ext_path, '*.annotations')):
 
 ext_mobilome_df = pd.concat(ext_mobilome, ignore_index=True)
 
+# SHD MAGs
 shd_path = 'intermediate-outputs/eggNOG-annot/'
 shd_mobilome = []
 
@@ -69,259 +69,129 @@ for filename in glob.glob(os.path.join(shd_path, '*.annotations')):
 
 shd_mobilome_df = pd.concat(shd_mobilome, ignore_index=True)
 
-a = pd.merge(shd_mobilome_df,SHD_Ref,left_on='Name',right_on='Bin ID')
-a.drop('Bin ID',axis=1,inplace=True)
-all_COGs=pd.merge(a,ext_mobilome_df,left_on=['GTDBtk fastani Ref','eggNOG_OGs'],right_on=['Name','eggNOG_OGs'],how='outer')
-all_COGs.fillna(0, inplace=True)
+# Merge REF genomes and SHD MAGs mobilome hits
+shd_mobilome_hits = pd.merge(shd_mobilome_df,SHD_qual[['Bin ID','GTDBtk fastani Ref']],left_on='Name',right_on='Bin ID')
+shd_mobilome_hits.drop('Name',axis=1,inplace=True)
+merged_hits = pd.merge(shd_mobilome_hits,ext_mobilome_df,left_on=['GTDBtk fastani Ref','eggNOG_OGs'],right_on=['Name','eggNOG_OGs'],how='outer')
+merged_hits.drop('Name',axis=1,inplace=True)
+merged_hits.fillna(0, inplace=True)
 
-all_COGs['COG_id']=all_COGs['eggNOG_OGs'].str.split('@').str[0]
-all_COGs_descript = pd.merge(all_COGs,COG_X[['COG','Annotation']],left_on='COG_id',right_on='COG',how='left')
-all_COGs_descript.drop(['COG','eggNOG_OGs','Name_y'],axis=1,inplace=True)
-all_COGs_descript = all_COGs_descript.query('`GTDBtk fastani Ref` != 0')
-all_COGs_descript = all_COGs_descript[['COG_id','Name_x','GTDBtk fastani Ref','Count_x','Count_y','Annotation']]
+# Keep only high-quality genomes (for both MAGs and REFs)
+merged_hits = merged_hits[merged_hits['Bin ID'].isin(SHD_HQ_ls)]
+merged_hits = merged_hits[merged_hits['GTDBtk fastani Ref'].isin(GTDB_HQ_ls)]
 
-# Count 'hits' within each technique by COG category (use only Representative genomes from SHD)
-Rep_COGs = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Representative']],left_on='Name_x',right_on='Bin ID')
-Rep_COGs = Rep_COGs.query('Representative == "Yes"')
+# Extract lower rank COG_ids and check if they are 'mobilome'
+def extract_lowest_rank_cogs(entry, mobilome_list):
+    parsed_entries = []
 
-mobilome_counts_COG = Rep_COGs.groupby('COG_id')[['Count_x','Count_y']].sum().reset_index()
-mobilome_counts_COG.columns = ['COG_id','SHD Counts','GTDBtk Ref Counts']
-mobilome_counts_COG['prop']=mobilome_counts_COG['SHD Counts']/mobilome_counts_COG['GTDBtk Ref Counts']
-mobilome_counts_COG = pd.merge(mobilome_counts_COG,COG_X[['COG','Annotation']],left_on='COG_id',right_on='COG')
-mobilome_counts_COG.drop('COG',axis=1,inplace=True)
+    # Parse the input entries
+    for e in entry.split(","):
+        cog_id, rest = e.split("@")
+        rank, taxonomic_level = rest.split("|")
+        # Only include entries that contain 'COG'
+        if 'COG' in cog_id:
+            parsed_entries.append((cog_id, int(rank), taxonomic_level))
 
-# Boxplot
-sub_mob_counts_COG = mobilome_counts_COG.query("`SHD Counts` >= 50 and `GTDBtk Ref Counts` >= 25")
-sub_mob_counts_COG['prop'].mean()
+    # If no entries with 'COG', return None
+    if not parsed_entries:
+        return None
 
-fig, ax = plt.subplots()
-ax.clear()
-sns.boxplot(data=[sub_mob_counts_COG['SHD Counts'], sub_mob_counts_COG['GTDBtk Ref Counts']], palette="Dark2",ax=ax)
-plt.ylabel('Mobilome COGs (hits)')
-plt.xticks(ticks=[0, 1], labels=['SHD MAGs (here)','Ref genomes'])
-sns.despine(fig, trim=False)
-#plt.show()
+    # Find the COG_id with the lowest taxonomic rank (largest number)
+    lowest_rank = max([rank for _, rank, _ in parsed_entries])  # Lowest rank has the highest number
+    lowest_rank_cogs = [cog_id for cog_id, rank, _ in parsed_entries if rank == lowest_rank]
 
-fig.savefig('intermediate-outputs/figures/boxplot_total_COGs_mobilome.svg')
+    # Filter by mobilome_list
+    filtered_cogs = [cog_id for cog_id in lowest_rank_cogs if cog_id in mobilome_list]
+    return filtered_cogs if filtered_cogs else None
 
-# Heatmap
-sub_mob_counts_COG['Tag']=sub_mob_counts_COG['COG_id']+'_'+sub_mob_counts_COG['Annotation']
-sub_mob_counts_COG = sub_mob_counts_COG.set_index('Tag')
-sub_mob_counts_COG = sub_mob_counts_COG.sort_values(by='SHD Counts',ascending=False)
+merged_hits['lowest_rank_cogs'] = merged_hits['eggNOG_OGs'].apply(lambda x: extract_lowest_rank_cogs(x, COG_X_ls))
 
-fig,ax = plt.subplots(figsize=(11,9))
-sns.heatmap(
-    sub_mob_counts_COG[['SHD Counts', 'GTDBtk Ref Counts']],
-    cmap='Blues',
-    annot=True,
-    fmt="g",
-    linewidths=0.5,
-    linecolor='black',
-    ax=ax,
-    cbar_kws={'shrink': 0.5})
-ax.set_aspect('auto')
-plt.ylabel('')
-plt.tight_layout()
-#plt.show()
-
-fig.savefig('intermediate-outputs/figures/heatmap_specific_COGs_count.svg')
+# Merge COG_ID with the annotation
+exploded_hits = merged_hits.explode('lowest_rank_cogs', ignore_index=True) #split if multiple hits
+exploded_hits = exploded_hits.rename(columns={'lowest_rank_cogs': 'COG_id'})
+exploded_hits_detailed = pd.merge(exploded_hits,COG_X[['COG','Annotation']],left_on='COG_id',right_on='COG',how='left')
+# Group back into lists if needed
+merged_hits_detailed = (
+    exploded_hits_detailed
+    .groupby(['eggNOG_OGs', 'Count_x', 'Bin ID', 'GTDBtk fastani Ref', 'Count_y'])
+    .agg({
+        'COG_id': lambda x: list(x.dropna()),       # Keep COG IDs as lists
+        'Annotation': lambda x: list(x.dropna())   # Group annotations
+    }).reset_index())
 
 # Add taxonomic information to all_COGs and assess mobilome info by species
-all_COGs_w_tax = pd.merge(all_COGs_descript,SHD_qual[['Bin ID','Classification','MIMAG']],left_on='Name_x',right_on='Bin ID')
+merged_hits_w_tax = pd.merge(merged_hits_detailed,SHD_qual[['Bin ID','Classification']],left_on='Bin ID',right_on='Bin ID')
+merged_hits_w_tax['Species'] = merged_hits_w_tax['Classification'].str.split(';').str[-1].str.replace('s__','')
 
-# Mobilome count for Ref_GTDB genomes
-ext_COGs_count = ext_mobilome_df[['Name','Count']]
-ext_COGs_count = ext_COGs_count.groupby('Name').sum()
-ext_COGs_count = pd.merge(ext_COGs_count,SHD_qual[['GTDBtk fastani Ref','Classification']],
-                          left_index=True,right_on='GTDBtk fastani Ref',how='left')
-ext_COGs_count = ext_COGs_count.drop_duplicates()
-ext_COGs_count['Species'] = ext_COGs_count['Classification'].str.split(';').str[-1].str.split('__').str[-1]
+merged_hits_w_tax = merged_hits_w_tax[['COG_id','Count_x','Count_y','Annotation',
+                                             'Species','Bin ID','GTDBtk fastani Ref']]
+merged_hits_w_tax.columns = ['COG ID','COG count (MAGs)','COG count (Reference)','Annotation',
+                                'Species','Bin ID','Reference genome']
 
-### COMPARE MOBILOME COUNTS SHDs vs REF GENOMES (in high-quality MAGs)
-# Filter high-quality and SHD MAGs with 10+ representatives
-SHD_HQ = SHD_qual.query('Quality == "high-quality"')
-count_sp = SHD_HQ['Classification'].value_counts().reset_index()
-abd_sp = count_sp.query('count > 10')
-abd_sp_ls = list(abd_sp['Classification'])
+# Save this dataframe as CSV file
+merged_hits_w_tax.to_csv("intermediate-outputs/tables/cog-mobilome-hits-HQ.csv", index=False)
 
-# Classify GTDB genomes for contiguity
-GTDB_contiguous = GTDB_qual.query('Number < 20')
-GTDB_contiguous_ls = list(GTDB_contiguous['Name'])
-GTDB_non_contiguous = GTDB_qual.query('Number > 80')
-GTDB_non_contiguous_ls = list(GTDB_non_contiguous['Name'])
+### Total Mobilome 'hits' SHD vs REFs
+merged_hits_w_tax['Reference']=merged_hits_w_tax['Reference genome']
 
-# Filter all_COGs_w_tax for contiguous Ref genomes and abundant SHD MAGs
-all_COGs_w_tax_contiguous = all_COGs_w_tax[all_COGs_w_tax['GTDBtk fastani Ref'].isin(GTDB_contiguous_ls)]
-all_COGs_w_tax_contiguous = all_COGs_w_tax_contiguous[all_COGs_w_tax_contiguous['Classification'].isin(abd_sp_ls)]
-SHD_COGs_count_contiguous = all_COGs_w_tax_contiguous.groupby('Name_x')['Count_x'].sum().reset_index()
-SHD_COGs_count_contiguous = pd.merge(SHD_COGs_count_contiguous, SHD_HQ[['Bin ID', 'Classification']],
-                                     left_on='Name_x', right_on='Bin ID', how='left')
-SHD_COGs_count_contiguous['Species'] = SHD_COGs_count_contiguous['Classification'].str.split(';').str[-1].str.split('__').str[-1]
-
-# Filter ext_COGs_count for contiguous genomes and SHD abundant species
-ext_COGs_count_contiguous = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_count_contiguous['Classification'])]
-ext_COGs_count_contiguous_MIMAG = ext_COGs_count_contiguous[ext_COGs_count_contiguous['GTDBtk fastani Ref'].isin(GTDB_MIMAG_ls)]
-
-# Filter all_COGs_w_tax for non-contiguous Ref genomes and abundant SHD MAGs
-all_COGs_w_tax_non_contiguous = all_COGs_w_tax[all_COGs_w_tax['GTDBtk fastani Ref'].isin(GTDB_non_contiguous_ls)]
-all_COGs_w_tax_non_contiguous = all_COGs_w_tax_non_contiguous[all_COGs_w_tax_non_contiguous['Classification'].isin(abd_sp_ls)]
-SHD_COGs_count_non_contiguous = all_COGs_w_tax_non_contiguous.groupby('Name_x')['Count_x'].sum().reset_index()
-SHD_COGs_count_non_contiguous = pd.merge(SHD_COGs_count_non_contiguous, SHD_HQ[['Bin ID', 'Classification']],
-                                         left_on='Name_x', right_on='Bin ID', how='left')
-SHD_COGs_count_non_contiguous['Species'] = SHD_COGs_count_non_contiguous['Classification'].str.split(';').str[-1].str.split('__').str[-1]
-
-# Filter ext_COGs_count for non contiguous genomes and SHD abundant species
-ext_COGs_count_non_contiguous = ext_COGs_count[ext_COGs_count['Classification'].isin(SHD_COGs_count_non_contiguous['Classification'])]
-ext_COGs_count_non_contiguous_MIMAG = ext_COGs_count_non_contiguous[ext_COGs_count_non_contiguous['GTDBtk fastani Ref'].isin(GTDB_MIMAG_ls)]
-
-# Plot Boxplots
-fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-
-palette_axes = sns.color_palette("Dark2", 6)
-order_cont=SHD_COGs_count_contiguous.groupby('Species')['Count_x'].median().sort_values().index
-order_non_cont=SHD_COGs_count_non_contiguous.groupby('Species')['Count_x'].median().sort_values().index
-
-# Plot for contiguous genomes
-sns.boxplot(x=SHD_COGs_count_contiguous['Species'], y=SHD_COGs_count_contiguous['Count_x'], ax=axes[0],\
-            order=order_cont,color=palette_axes[0],fliersize=0)
-sns.stripplot(x=SHD_COGs_count_contiguous['Species'], y=SHD_COGs_count_contiguous['Count_x'], color='black',\
-              size=2, ax=axes[0],order=order_cont)
-sns.stripplot(x=ext_COGs_count_contiguous['Species'], y=ext_COGs_count_contiguous['Count'], color='red',\
-              size=4, ax=axes[0],order=order_cont)
-sns.stripplot(x=ext_COGs_count_contiguous_MIMAG['Species'], y=ext_COGs_count_contiguous_MIMAG['Count'], color='blue',\
-              size=4, ax=axes[0],order=order_cont)
-axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=30, ha='right')
-axes[0].set_xlabel('Species (>10 SHD MAGs)')
-axes[0].set_ylabel('Hits to Mobilome COGs')
-axes[0].set_title('Contiguous Ref Genomes (<20 contigs)')
-axes[0].set_ylim(0, 350)
-
-# Plot for many_contigs genomes
-sns.boxplot(x=SHD_COGs_count_non_contiguous['Species'], y=SHD_COGs_count_non_contiguous['Count_x'], ax=axes[1],\
-            order=order_non_cont,color=palette_axes[1],fliersize=0)
-sns.stripplot(x=SHD_COGs_count_non_contiguous['Species'], y=SHD_COGs_count_non_contiguous['Count_x'], color='black',\
-              size=2, ax=axes[1],order=order_non_cont)
-sns.stripplot(x=ext_COGs_count_non_contiguous['Species'], y=ext_COGs_count_non_contiguous['Count'], color='red',\
-              size=4, ax=axes[1],order=order_non_cont)
-sns.stripplot(x=ext_COGs_count_non_contiguous_MIMAG['Species'], y=ext_COGs_count_non_contiguous_MIMAG['Count'], color='blue',\
-              size=4, ax=axes[1],order=order_non_cont)
-axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=30, ha='right')
-axes[1].set_xlabel('Species (>10 SHD MAGs)')
-axes[1].set_ylabel('Hits to Mobilome COGs')
-axes[1].set_title('Non-contiguous Ref Genomes (>80 contigs)')
-axes[1].set_ylim(0, 350)
-
-plt.tight_layout()
-fig.savefig('intermediate-outputs/figures/Mobilome_by_species.svg')
-#plt.show()
-
-### COMPARE MOBILOME COUNTS IN SHDs OF MOST ABUNDANT SPs (ORDERED BY TAXONOMIC CLASSIFICATION)
-SHD_MIMAG = SHD_qual.query('MIMAG == "Yes"')
-count_sp = SHD_MIMAG['Classification'].value_counts().reset_index()
-abd_sp = count_sp.query('count > 20')
-abd_sp_ls = list(abd_sp['Classification'])
-
-all_COGs_w_tax_MIMAG = all_COGs_w_tax[all_COGs_w_tax['Classification'].isin(abd_sp_ls)]
-all_COGs_w_tax_MIMAG = all_COGs_w_tax_MIMAG.query('MIMAG == "Yes"')
-SHD_COGs_count_MIMAG = all_COGs_w_tax_MIMAG.groupby('Name_x')['Count_x'].sum().reset_index()
-SHD_COGs_count_MIMAG = pd.merge(SHD_COGs_count_MIMAG, SHD_MIMAG[['Bin ID', 'Classification']],
-                                     left_on='Name_x', right_on='Bin ID', how='left')
-SHD_COGs_count_MIMAG['Species'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[-1].str.replace('s__','')
-SHD_COGs_count_MIMAG['Genera'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[-2].str.replace('g__','')
-SHD_COGs_count_MIMAG['Family'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[-3].str.replace('f__','')
-SHD_COGs_count_MIMAG['Phylum'] = SHD_COGs_count_MIMAG['Classification'].str.split(';').str[1].str.replace('p__','')
-
-SHD_COGs_count_MIMAG_sorted = SHD_COGs_count_MIMAG.sort_values(by='Count_x')
-custom_phylum_order = ['Bacillota','Bacillota_A', 'Bacillota_C', 'Bacteroidota','Pseudomonadota',\
-                       'Fusobacteriota','Actinomycetota']
-SHD_COGs_count_MIMAG_sorted['Phylum'] = pd.Categorical(SHD_COGs_count_MIMAG_sorted['Phylum'], categories=custom_phylum_order, ordered=True)
-SHD_COGs_count_MIMAG_sorted = SHD_COGs_count_MIMAG_sorted.sort_values(by='Phylum')
-
-# Plot boxplot
-fig, ax = plt.subplots(figsize=(12, 4))
-sns.boxplot(x=SHD_COGs_count_MIMAG_sorted['Species'], y=SHD_COGs_count_MIMAG_sorted['Count_x'], ax=ax,\
-            hue=SHD_COGs_count_MIMAG_sorted['Phylum'],palette='Dark2',fliersize=0, width=0.65)
-
-ax.set_xlim(ax.get_xlim()[0] - 0.5, ax.get_xlim()[1] + 0.5)
-ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha='right')
-ax.set_xlabel('Species (>20 SHD MAGs)')
-ax.set_ylabel('Mobilome hits')
-ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Phylum')
-
-plt.tight_layout()
-
-fig.savefig('intermediate-outputs/figures/Mobilome_by_species_tax.svg')
-#plt.show()
-
-###### Plot Mobilome boxplots by GCA, vs GCF
-all_COGs_w_tax_ = pd.merge(all_COGs_w_tax, SHD_qual[['Quality','Bin ID','Representative']],left_on='Bin ID',right_on='Bin ID')
-all_COGs_w_tax_ = all_COGs_w_tax_.query('`GTDBtk fastani Ref` != 0 and Representative =="Yes"')
-all_COGs_w_tax_['ref_qual']=all_COGs_w_tax_['GTDBtk fastani Ref']
-
-for n in all_COGs_w_tax_.index:
-    ref_value = all_COGs_w_tax_.loc[n, 'ref_qual']
+for n in merged_hits_w_tax.index:
+    ref_value = merged_hits_w_tax.loc[n, 'Reference']
     if 'GCF' in ref_value:
-        all_COGs_w_tax_.loc[n, 'ref_qual'] = 'RefSeq reference (GCF)'
+        merged_hits_w_tax.loc[n, 'Reference'] = 'RefSeq'
     elif 'GCA' in ref_value:
-        all_COGs_w_tax_.loc[n, 'ref_qual'] = 'GenBank reference (GCA)'
+        merged_hits_w_tax.loc[n, 'Reference'] = 'GenBank'
 
-### Mobilome COG counts by reference genome assembly quality
+# Mobilome COG counts by reference genome origin (RefSeq vs GenBank)
+mobilome_total = merged_hits_w_tax.groupby(['Bin ID','Reference genome','Reference','Species'])[['COG count (MAGs)', 'COG count (Reference)']].sum()
+mobilome_total = mobilome_total.reset_index()
 
-mobilome_MAGs = all_COGs_w_tax_.groupby(['Bin ID','ref_qual'])[['Count_x', 'Count_y']].sum()
-mobilome_MAGs = mobilome_MAGs.reset_index()
+# Save this dataframe as CSV file
+mobilome_total.to_csv("intermediate-outputs/tables/species-mobilome-hits-HQ.csv", index=False)
 
-mobilome_melted = pd.melt(mobilome_MAGs, id_vars=['Bin ID','ref_qual'],
-                    value_vars=['Count_x', 'Count_y'],
-                    var_name='Genome', value_name='Count')
+### Total Mobilome 'hits' SHD vs REFs: BOXPLOT
+mobilome_melted = pd.melt(mobilome_total, id_vars=['Bin ID','Reference'],
+                          value_vars=['COG count (MAGs)', 'COG count (Reference)'],
+                          var_name='Genome', value_name='Count')
 
-mobilome_melted['category']=mobilome_melted['Genome']+'_'+mobilome_melted['ref_qual']
-mobilome_melted['category']=mobilome_melted['category'].str.replace('Count_x','MAG')
-mobilome_melted['category']=mobilome_melted['category'].str.replace('Count_y','REF')
+mobilome_melted['Genome'] = mobilome_melted['Genome'].str.replace('COG count (','')
+mobilome_melted['Genome'] = mobilome_melted['Genome'].str.replace(')','')
 
-order = ['REF_RefSeq reference (GCF)','MAG_RefSeq reference (GCF)','REF_GenBank reference (GCA)','MAG_GenBank reference (GCA)']
-mobilome_melted['category'] = pd.Categorical(mobilome_melted['category'], categories=order, ordered=True)
-mobilome_melted = mobilome_melted.sort_values('category')
-
-# If merging canine MAGs (mobilome counts)
-mobilome_melted['category'] = mobilome_melted['category'].str.replace('MAG_GenBank reference (GCA)','Shanghai Dog MAG')
-mobilome_melted['category'] = mobilome_melted['category'].str.replace('MAG_RefSeq reference (GCF)','Shanghai Dog MAG')
+# Create 'category' column & merge MAGs into a single category for visualization purposes
+mobilome_melted['category'] = mobilome_melted['Genome']+'_'+mobilome_melted['Reference']
+mobilome_melted['category'] = mobilome_melted['category'].str.replace('MAGs_GenBank','Shanghai Dog MAG')
+mobilome_melted['category'] = mobilome_melted['category'].str.replace('MAGs_RefSeq','Shanghai Dog MAG')
 mobilome_melted['log count'] = np.log10(mobilome_melted['Count'])
 
-# Plot boxplot mobilome GCA vs GCF
+# Plot boxplot
 width_mm = 45
-height_mm = 50
+height_mm = 46
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
-categories = ['Shanghai Dog MAG','REF_RefSeq reference (GCF)','REF_GenBank reference (GCA)']
-color_palette = {'Shanghai Dog MAG':'#1b9e77','REF_RefSeq reference (GCF)':'#a6761d','REF_GenBank reference (GCA)':'#e6ab02'}
+categories = ['Shanghai Dog MAG', 'Reference_RefSeq','Reference_GenBank']
+color_palette = {'Shanghai Dog MAG':'#1b9e77','Reference_RefSeq':'#a6761d','Reference_GenBank':'#e6ab02'}
+
 mobilome_melted = mobilome_melted.sort_values(
     by=['category'],
-    ascending=[False]
-)
-
+    ascending=[False])
 
 fig, ax = plt.subplots(figsize=figsize_inch)
 ax.clear()
+
 sns.boxplot(data=mobilome_melted,
             x='category',y='log count',
             palette=color_palette,
             ax=ax,
-            width=0.7,
+            width=0.8,
             linewidth=1,
-            flierprops={
-                'marker': 'd',  # Shape of outliers
-                'color': 'gray',  # Color of outliers
-                'markersize': 2,  # Size of outliers
-                'linestyle': 'none'  # No connecting line for outliers
-    })
-ax.set_ylabel('log10 counts')
+            fliersize=2)
+
+ax.set_title('')
+ax.set_ylabel('counts')
 ax.set_xlabel('')
 ax.set_xticklabels([])
-ax.set_title('mobilome')
-ax.set_yticks(np.arange(0, 3, 1))
 ax.tick_params(axis='x', bottom=False)
 sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg.svg")
