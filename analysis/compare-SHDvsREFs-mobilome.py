@@ -6,12 +6,14 @@ Created on Thu Apr 18 08:52:22 2024
 """
 
 import os
+import pandas as pd
 import glob
 import re
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import shapiro,wilcoxon
+from statsmodels.stats.multitest import multipletests
 
 os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
@@ -195,3 +197,51 @@ sns.despine(fig, trim=False)
 plt.tight_layout()
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg.svg")
+
+### Total Mobilome 'hits' SHD vs REFs: statistical significance
+# 1) Assess normality - reshape to long format + Shapiro test
+mobilome_melted = pd.melt(mobilome_total, id_vars=['Bin ID','Reference'],
+                          value_vars=['COG count (MAGs)', 'COG count (Reference)'],
+                          var_name='Genome', value_name='Count')
+mobilome_melted['Genome'] = mobilome_melted['Genome'].str.replace('COG count (','')
+mobilome_melted['Genome'] = mobilome_melted['Genome'].str.replace(')','')
+mobilome_melted['category'] = mobilome_melted['Genome']+'_'+mobilome_melted['Reference']
+mobilome_melted['log count'] = np.log10(mobilome_melted['Count'])
+
+categories = mobilome_melted["category"].unique()
+print(categories)
+
+normality_results = {}
+
+for category in categories:
+    stat, p = shapiro(mobilome_melted[mobilome_melted["category"] == category]['log count'])
+    normality_results[category] = p
+    print(f"Shapiro-Wilk test for {category}: p-value = {p:.4f}")
+
+## 2) Compute Wilcoxon test for SHD vs GenBank & SHD vs RefSeq
+mobilome_total['log count MAG'] = np.log10(mobilome_total['COG count (MAGs)'])
+mobilome_total['log count REF'] = np.log10(mobilome_total['COG count (Reference)'])
+refseq_data = mobilome_total[mobilome_total['Reference']=='RefSeq']
+genbank_data = mobilome_total[mobilome_total['Reference']=='GenBank']
+
+# Perform Wilcoxon test
+p_values = []
+results = []
+
+stat, p_value = wilcoxon(genbank_data['log count MAG'],genbank_data['log count REF'],alternative='greater')
+results.append({'Comparison': 'mobilome MAG vs REFs', 'Statistic': stat, 'p-value': p_value, 'Group': 'GenBank'})
+p_values.append(p_value)
+stat, p_value = wilcoxon(refseq_data['log count MAG'],refseq_data['log count REF'],alternative='greater')
+results.append({'Comparison': 'mobilome MAG vs REFs', 'Statistic': stat, 'p-value': p_value, 'Group': 'RefSeq'})
+p_values.append(p_value)
+
+# Correct for multiple testing (e.g., Benjamini-Hochberg)
+_, p_values_corrected, _, _ = multipletests(p_values, method='fdr_bh')
+
+# Add corrected p-values to the results DataFrame
+for idx, result in enumerate(results):
+    result['Corrected p-value'] = p_values_corrected[idx]
+
+# Create DataFrame
+comparison_results = pd.DataFrame(results)
+comparison_results['Corrected p-value'] = comparison_results['Corrected p-value'].apply(lambda x: f"{x:.2e}")
