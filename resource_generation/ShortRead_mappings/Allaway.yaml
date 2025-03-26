@@ -1,0 +1,236 @@
+basedir: ../../external-data/data/Allaway/WGS_RANDOM/
+samples:
+  SAMEA5953189:
+  - paired:
+    - SAMEA5953189/ERR4183438.pair.1.fq.gz
+    - SAMEA5953189/ERR4183438.pair.2.fq.gz
+  SAMEA5953190:
+  - paired:
+    - SAMEA5953190/ERR4183439.pair.1.fq.gz
+    - SAMEA5953190/ERR4183439.pair.2.fq.gz
+  SAMEA5953191:
+  - paired:
+    - SAMEA5953191/ERR4183440.pair.1.fq.gz
+    - SAMEA5953191/ERR4183440.pair.2.fq.gz
+  SAMEA5953192:
+  - paired:
+    - SAMEA5953192/ERR4183441.pair.1.fq.gz
+    - SAMEA5953192/ERR4183441.pair.2.fq.gz
+  SAMEA5953193:
+  - paired:
+    - SAMEA5953193/ERR4183442.pair.1.fq.gz
+    - SAMEA5953193/ERR4183442.pair.2.fq.gz
+  SAMEA5953194:
+  - paired:
+    - SAMEA5953194/ERR4183443.pair.1.fq.gz
+    - SAMEA5953194/ERR4183443.pair.2.fq.gz
+  SAMEA5953195:
+  - paired:
+    - SAMEA5953195/ERR4183444.pair.1.fq.gz
+    - SAMEA5953195/ERR4183444.pair.2.fq.gz
+  SAMEA5953196:
+  - paired:
+    - SAMEA5953196/ERR4183445.pair.1.fq.gz
+    - SAMEA5953196/ERR4183445.pair.2.fq.gz
+  SAMEA5953197:
+  - paired:
+    - SAMEA5953197/ERR4183446.pair.1.fq.gz
+    - SAMEA5953197/ERR4183446.pair.2.fq.gz
+  SAMEA5953198:
+  - paired:
+    - SAMEA5953198/ERR4183447.pair.1.fq.gz
+    - SAMEA5953198/ERR4183447.pair.2.fq.gz
+  SAMEA5953199:
+  - paired:
+    - SAMEA5953199/ERR4183448.pair.1.fq.gz
+    - SAMEA5953199/ERR4183448.pair.2.fq.gz
+  SAMEA5953200:
+  - paired:
+    - SAMEA5953200/ERR4183449.pair.1.fq.gz
+    - SAMEA5953200/ERR4183449.pair.2.fq.gz
+  SAMEA5953201:
+  - paired:
+    - SAMEA5953201/ERR4183450.pair.1.fq.gz
+    - SAMEA5953201/ERR4183450.pair.2.fq.gz
+  SAMEA5953202:
+  - paired:
+    - SAMEA5953202/ERR4183451.pair.1.fq.gz
+    - SAMEA5953202/ERR4183451.pair.2.fq.gz
+  SAMEA5953203:
+  - paired:
+    - SAMEA5953203/ERR4183452.pair.1.fq.gz
+    - SAMEA5953203/ERR4183452.pair.2.fq.gz
+  - paired:
+    - SAMEA5953203/ERR4183453.pair.1.fq.gz
+    - SAMEA5953203/ERR4183453.pair.2.fq.gz
+  SAMEA5953204:
+  - paired:
+    - SAMEA5953204/ERR4183454.pair.1.fq.gz
+    - SAMEA5953204/ERR4183454.pair.2.fq.gz
+  SAMEA5953205:
+  - paired:
+    - SAMEA5953205/ERR4183455.pair.1.fq.gz
+    - SAMEA5953205/ERR4183455.pair.2.fq.gz
+  SAMEA5953206:
+  - paired:
+    - SAMEA5953206/ERR4183456.pair.1.fq.gz
+    - SAMEA5953206/ERR4183456.pair.2.fq.gz
+  SAMEA5953207:
+  - paired:
+    - SAMEA5953207/ERR4183457.pair.1.fq.gz
+    - SAMEA5953207/ERR4183457.pair.2.fq.gz
+  - paired:
+    - SAMEA5953207/ERR4183458.pair.1.fq.gz
+    - SAMEA5953207/ERR4183458.pair.2.fq.gz
+  SAMEA5953208:
+  - paired:
+    - SAMEA5953208/ERR4183459.pair.1.fq.gz
+    - SAMEA5953208/ERR4183459.pair.2.fq.gz
+  SAMEA5953209:
+  - paired:
+    - SAMEA5953209/ERR4183460.pair.1.fq.gz
+    - SAMEA5953209/ERR4183460.pair.2.fq.gz
+  SAMEA5953210:
+  - paired:
+    - SAMEA5953210/ERR4183461.pair.1.fq.gz
+    - SAMEA5953210/ERR4183461.pair.2.fq.gz
+  SAMEA5953211:
+  - paired:
+    - SAMEA5953211/ERR4183462.pair.1.fq.gz
+    - SAMEA5953211/ERR4183462.pair.2.fq.gz
+  SAMEA5953212:
+  - paired:
+    - SAMEA5953212/ERR4183463.pair.1.fq.gz
+    - SAMEA5953212/ERR4183463.pair.2.fq.gz
+  SAMEA5953213:
+  - paired:
+    - SAMEA5953213/ERR4183464.pair.1.fq.gz
+    - SAMEA5953213/ERR4183464.pair.2.fq.gz
+  SAMEA5953214:
+  - paired:
+    - SAMEA5953214/ERR4183465.pair.1.fq.gz
+    - SAMEA5953214/ERR4183465.pair.2.fq.gz
+  SAMEA5953215:
+  - paired:
+    - SAMEA5953215/ERR4183466.pair.1.fq.gz
+    - SAMEA5953215/ERR4183466.pair.2.fq.gz
+  SAMEA5953216:
+  - paired:
+    - SAMEA5953216/ERR4183467.pair.1.fq.gz
+    - SAMEA5953216/ERR4183467.pair.2.fq.gz
+  SAMEA5953217:
+  - paired:
+    - SAMEA5953217/ERR4183468.pair.1.fq.gz
+    - SAMEA5953217/ERR4183468.pair.2.fq.gz
+  - paired:
+    - SAMEA5953217/ERR4183469.pair.1.fq.gz
+    - SAMEA5953217/ERR4183469.pair.2.fq.gz
+  SAMEA5953218:
+  - paired:
+    - SAMEA5953218/ERR4183470.pair.1.fq.gz
+    - SAMEA5953218/ERR4183470.pair.2.fq.gz
+  SAMEA5953219:
+  - paired:
+    - SAMEA5953219/ERR4183471.pair.1.fq.gz
+    - SAMEA5953219/ERR4183471.pair.2.fq.gz
+  - paired:
+    - SAMEA5953219/ERR4183472.pair.1.fq.gz
+    - SAMEA5953219/ERR4183472.pair.2.fq.gz
+  SAMEA5953220:
+  - paired:
+    - SAMEA5953220/ERR4183473.pair.1.fq.gz
+    - SAMEA5953220/ERR4183473.pair.2.fq.gz
+  SAMEA5953221:
+  - paired:
+    - SAMEA5953221/ERR4183474.pair.1.fq.gz
+    - SAMEA5953221/ERR4183474.pair.2.fq.gz
+  SAMEA5953222:
+  - paired:
+    - SAMEA5953222/ERR4183475.pair.1.fq.gz
+    - SAMEA5953222/ERR4183475.pair.2.fq.gz
+  - paired:
+    - SAMEA5953222/ERR4183476.pair.1.fq.gz
+    - SAMEA5953222/ERR4183476.pair.2.fq.gz
+  SAMEA5953223:
+  - paired:
+    - SAMEA5953223/ERR4183477.pair.1.fq.gz
+    - SAMEA5953223/ERR4183477.pair.2.fq.gz
+  SAMEA5953224:
+  - paired:
+    - SAMEA5953224/ERR4183478.pair.1.fq.gz
+    - SAMEA5953224/ERR4183478.pair.2.fq.gz
+  - paired:
+    - SAMEA5953224/ERR4183479.pair.1.fq.gz
+    - SAMEA5953224/ERR4183479.pair.2.fq.gz
+  SAMEA5953225:
+  - paired:
+    - SAMEA5953225/ERR4183480.pair.1.fq.gz
+    - SAMEA5953225/ERR4183480.pair.2.fq.gz
+  - paired:
+    - SAMEA5953225/ERR4183481.pair.1.fq.gz
+    - SAMEA5953225/ERR4183481.pair.2.fq.gz
+  SAMEA6863126:
+  - paired:
+    - SAMEA6863126/ERR4183482.pair.1.fq.gz
+    - SAMEA6863126/ERR4183482.pair.2.fq.gz
+  - paired:
+    - SAMEA6863126/ERR4183483.pair.1.fq.gz
+    - SAMEA6863126/ERR4183483.pair.2.fq.gz
+  SAMEA6863127:
+  - paired:
+    - SAMEA6863127/ERR4183484.pair.1.fq.gz
+    - SAMEA6863127/ERR4183484.pair.2.fq.gz
+  - paired:
+    - SAMEA6863127/ERR4183485.pair.1.fq.gz
+    - SAMEA6863127/ERR4183485.pair.2.fq.gz
+  SAMEA6863128:
+  - paired:
+    - SAMEA6863128/ERR4183486.pair.1.fq.gz
+    - SAMEA6863128/ERR4183486.pair.2.fq.gz
+  - paired:
+    - SAMEA6863128/ERR4183487.pair.1.fq.gz
+    - SAMEA6863128/ERR4183487.pair.2.fq.gz
+  SAMEA6863129:
+  - paired:
+    - SAMEA6863129/ERR4183488.pair.1.fq.gz
+    - SAMEA6863129/ERR4183488.pair.2.fq.gz
+  - paired:
+    - SAMEA6863129/ERR4183489.pair.1.fq.gz
+    - SAMEA6863129/ERR4183489.pair.2.fq.gz
+  SAMEA6863130:
+  - paired:
+    - SAMEA6863130/ERR4183490.pair.1.fq.gz
+    - SAMEA6863130/ERR4183490.pair.2.fq.gz
+  SAMEA6863131:
+  - paired:
+    - SAMEA6863131/ERR4183491.pair.1.fq.gz
+    - SAMEA6863131/ERR4183491.pair.2.fq.gz
+  - paired:
+    - SAMEA6863131/ERR4183492.pair.1.fq.gz
+    - SAMEA6863131/ERR4183492.pair.2.fq.gz
+  SAMEA6863132:
+  - paired:
+    - SAMEA6863132/ERR4183493.pair.1.fq.gz
+    - SAMEA6863132/ERR4183493.pair.2.fq.gz
+  - paired:
+    - SAMEA6863132/ERR4183494.pair.1.fq.gz
+    - SAMEA6863132/ERR4183494.pair.2.fq.gz
+  SAMEA6863133:
+  - paired:
+    - SAMEA6863133/ERR4183495.pair.1.fq.gz
+    - SAMEA6863133/ERR4183495.pair.2.fq.gz
+  - paired:
+    - SAMEA6863133/ERR4183496.pair.1.fq.gz
+    - SAMEA6863133/ERR4183496.pair.2.fq.gz
+  SAMEA6863134:
+  - paired:
+    - SAMEA6863134/ERR4183497.pair.1.fq.gz
+    - SAMEA6863134/ERR4183497.pair.2.fq.gz
+  SAMEA6863135:
+  - paired:
+    - SAMEA6863135/ERR4183498.pair.1.fq.gz
+    - SAMEA6863135/ERR4183498.pair.2.fq.gz
+  SAMEA6863136:
+  - paired:
+    - SAMEA6863136/ERR4183499.pair.1.fq.gz
+    - SAMEA6863136/ERR4183499.pair.2.fq.gz

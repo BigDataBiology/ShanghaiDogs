@@ -89,3 +89,61 @@ def generate_USA_pets_Nomnomnow():
     with open('USA_pets_Nomnomnow.yaml', 'wt') as out:
         out.write(yaml.dump(r))
 
+@Task
+def generate_Coelho_2018():
+    BASEDIR = '../../external-data/data/Coelho_dogs_2018/'
+
+    samples = glob.glob(f'{BASEDIR}/*')
+
+    r = {}
+    for s in samples:
+        fqs = glob.glob(f'{s}/*')
+        fqs.sort()
+        f1s = [f for f in fqs if f.endswith('.1.fq.gz')]
+        assert len(f1s) == len(fqs) // 2
+        f1s = [f.removeprefix(BASEDIR) for f in f1s]
+        reads = []
+        for f1 in f1s:
+            f2 = f1.replace('.1.fq.gz', '.2.fq.gz')
+            reads.append({'paired': [f1,f2]})
+        sample = s.removeprefix(BASEDIR)
+        if reads:
+            r[sample] = reads
+
+    r = {
+            'basedir': BASEDIR,
+            'samples': dict(r),
+        }
+
+    with open('Coelho_2018.yaml', 'wt') as out:
+        out.write(yaml.dump(r))
+
+
+@Task
+def generate_Allaway():
+    BASEDIR = '../../external-data/data/Allaway/WGS_RANDOM/'
+
+    samples = glob.glob(f'{BASEDIR}/*')
+
+    r = {}
+    for s in samples:
+        fqs = glob.glob(f'{s}/*')
+        fqs.sort()
+        f1s = [f for f in fqs if f.endswith('.1.fq.gz')]
+        assert len(f1s) == len(fqs) // 2
+        f1s = [f.removeprefix(BASEDIR) for f in f1s]
+        reads = []
+        for f1 in f1s:
+            f2 = f1.replace('.1.fq.gz', '.2.fq.gz')
+            reads.append({'paired': [f1,f2]})
+        sample = s.removeprefix(BASEDIR)
+        if reads:
+            r[sample] = reads
+
+    r = {
+            'basedir': BASEDIR,
+            'samples': dict(r),
+        }
+
+    with open('Allaway.yaml', 'wt') as out:
+        out.write(yaml.dump(r))
