@@ -188,7 +188,7 @@ sns.boxplot(data=mobilome_melted,
             fliersize=2)
 
 ax.set_title('')
-ax.set_ylabel('counts')
+ax.set_ylabel('log counts')
 ax.set_xlabel('')
 ax.set_xticklabels([])
 ax.tick_params(axis='x', bottom=False)
@@ -196,7 +196,7 @@ sns.despine(fig, trim=False)
 
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg.svg")
+plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg")
 
 ### Total Mobilome 'hits' SHD vs REFs: statistical significance
 # 1) Assess normality - reshape to long format + Shapiro test

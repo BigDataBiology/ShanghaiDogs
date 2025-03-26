@@ -30,6 +30,8 @@ for n in merged_hq_only.index:
     elif 'GCA' in ref_value:
         merged_hq_only.loc[n, 'ref_new'] = 'GenBank'
 
+merged_hq_only.to_csv("intermediate-outputs/tables/SHDvsREF-comparison-HQ.csv", index=False)
+
 # Filter data for GenBank and RefSeq
 genbank_data = merged_hq_only[merged_hq_only['ref_new'] == 'GenBank']
 refseq_data = merged_hq_only[merged_hq_only['ref_new'] == 'RefSeq']
@@ -76,7 +78,7 @@ sns.boxplot(data=df_melted,
             width=0.8,
             palette=color_palette,
             linewidth=1,
-            fliersize=2) # Hide the outlier markers
+            fliersize=2)
 
 ax.set_title('')
 ax.set_ylabel('counts')
