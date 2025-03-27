@@ -195,6 +195,8 @@ ax.tick_params(axis='x', bottom=False)
 sns.despine(fig, trim=False)
 
 plt.tight_layout()
+plt.ylim(0, 3)
+plt.yticks([0, 1, 2])
 # plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg")
 
