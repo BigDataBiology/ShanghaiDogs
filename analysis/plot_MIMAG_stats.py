@@ -258,15 +258,14 @@ plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_novelty_red.svg")
 
-### NOVEL SPECIES PLOT
+### NOVEL SPECIES PLOTS
 species_catalog_novel = species_catalog.query('ref_new == "Novel species"')
 species_catalog_novel = species_catalog_novel[['Family','Genus']]
 
 novel_df = species_catalog_novel.pivot_table(
     index='Family',
     aggfunc='count',
-    fill_value=0
-)
+    fill_value=0)
 
 novel_df = novel_df.sort_values(by='Genus',ascending=False)
 
@@ -281,7 +280,7 @@ novel_df_filtered = novel_df[novel_df['Genus'] >= 5]
 # Append the "Other tax" row
 final_df = pd.concat([novel_df_filtered, other_row], ignore_index=True)
 
-# Donut plot
+## DONUT PLOT
 width_mm = 110
 height_mm = 50
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
@@ -307,7 +306,7 @@ plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_donutplot.svg")
 
-### Tree plot
+## TREE PLOT
 # Set up the figure
 width_mm = 160
 height_mm = 50
@@ -330,3 +329,43 @@ ax.set_axis_off()  # Hide the axes
 plt.tight_layout()
 #plt.show()
 plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_squarify.svg")
+
+## GENUS PIECHARTS FOR NOVEL SPECIES
+all_df_genus = species_catalog.groupby(['Genus','ref_new'])['Representative'].count().reset_index()
+all_df_genus_wide = (all_df_genus.pivot_table(index='Genus',
+                                             columns='ref_new',
+                                             values='Representative')
+                     .fillna(0))
+
+all_df_genus_wide['Total'] = all_df_genus_wide.sum(axis=1)
+all_df_genus_wide_filt = all_df_genus_wide[all_df_genus_wide['Novel species'] > 3]
+all_df_genus_wide_filt.columns = ['GenBank','Novel','RefSeq','Total']
+
+## PIE CHART
+genus = 'Dysosmobacter'  # CAG-269, Collinsella, Blautia_A, Dysosmobacter
+custom_palette = {'GenBank': '#a6761d', 'Novel': '#66a61e', 'RefSeq': '#e6ab02'}
+
+# Size and dimensions of the pie chart
+size_factor = all_df_genus_wide_filt.loc[genus, 'Total']
+width_mm = 3 * size_factor
+height_mm = 3 * size_factor
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+# Transpose the data for the genus, excluding 'Total'
+all_df_genus_wide_filt_T = all_df_genus_wide_filt.drop(['Total'], axis=1).T
+
+# Prepare the data for plotting
+genus_counts = list(all_df_genus_wide_filt_T[genus])
+
+# Create the pie chart
+fig, ax = plt.subplots(figsize=figsize_inch)
+ax.clear()
+plt.pie(
+    genus_counts,
+    labels=None,
+    colors=[custom_palette[col] for col in all_df_genus_wide_filt_T.index],
+    wedgeprops={'linewidth': 2, 'edgecolor': 'white'})
+
+#plt.show()
+out_path = "/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_sp_"+genus+".svg"
+plt.savefig(out_path)
