@@ -1,0 +1,26 @@
+ngless "1.5"
+import "parallel" version "1.1"
+
+SH_DOGS_MAGS_SP_NC = '../../intermediate-outputs/Coelho_2018_mappings/ShanghaiDogsMAGsSpecies+NonChrom.fna.gz'
+DOG_GENOME = '../../external-data/data/dog_genome/GCA_000002285.4_Dog10K_Boxer_Tasha_genomic.fna'
+
+input = run_for_all_samples(load_sample_list(ARGV[1]))
+input = preprocess(input) using |read|:
+    read = substrim(read, min_quality=25)
+    if len(read) < 45:
+        discard
+
+mapped = map(input, fafile=DOG_GENOME)
+mapped = select(mapped) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+    if mr.flag({mapped}):
+        discard
+
+mapped_sp = map(input, fafile=SH_DOGS_MAGS_SP_NC)
+
+mapped_sp = select(mapped_sp) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+
+write(mapped_sp,
+    ofile='outputs' </> 'mapped_sp_nc' </> input.name() + 'mapped.bam')
+
