@@ -3,6 +3,7 @@ data/ShanghaiDogsFastQ
 data/ShanghaiDogsMAGs
 data/ShanghaiDogsMetadata/subsets
 data/ShanghaiDogsTables
+data/ShanghaiDogs_OtherResources/
 external-data/data/
 intermediate-outputs/
 *.jugdata/
