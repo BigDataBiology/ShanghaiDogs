@@ -15,7 +15,6 @@ metadata = metadata[~metadata.index.isin(['D000'])] # remove biological replicat
 
 # Store households in a dictionary
 household = metadata['Household.1'].to_dict()
-#household['D000'] = household['D008']
 
 # Get the original_id
 data['ref_sample'] = data.reference.str.split('.').str[0].str.split('_').str[-1]
@@ -78,14 +77,11 @@ data_tax.rename(columns={'Classification_x': 'Ref Classification', 'Classificati
 data_tax.drop(['Original ID_x','Original ID_y'],axis=1,inplace=True)
 
 # Remove comparisons with eachself & for comparisons in the two directions, keep one
-# Remove D000 comparisons, since D008 is the same
 mask = data_tax['reference'] != data_tax['querry']
 data_tax = data_tax[mask]
 data_tax['Comparison'] = data_tax[['reference', 'querry']].apply(lambda x: tuple(sorted(x)), axis=1)
 data_tax = data_tax.drop_duplicates('Comparison')
 data_tax.drop(columns=['Comparison'], inplace=True)
-data_tax = data_tax[~(data_tax['reference'].str.contains('D000'))]
-data_tax = data_tax[~(data_tax['querry'].str.contains('D000'))]
 
 # Proportion of same strain within the same species (same sp defined as ANI>95%)
 data_tax_99 = data_tax[data_tax['ani']>0.99]
@@ -143,7 +139,7 @@ sns.stripplot(data=data_tax_genus_filt[data_tax_genus_filt['is_same_household'] 
 sns.stripplot(data=data_tax_genus_filt[data_tax_genus_filt['is_same_household'] == True],
               x='Species', y='ani', ax=ax, alpha=0.6, color='green')
 
-sns.despine(fig, trim=True)
+sns.despine()
 ax.set_xticklabels(ax.get_xticklabels(), rotation=45,horizontalalignment='right')
 ax.set_ylabel('ANI')
 ax.set_xlabel('')
