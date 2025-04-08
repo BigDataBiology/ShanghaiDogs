@@ -11,14 +11,17 @@ plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 data = pd.read_csv('intermediate-outputs/05_dereplication/01_drep/ANI_9999/data_tables/Ndb.csv')
 mimag_tab = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv',index_col=0)
 metadata = pd.read_csv('data/ShanghaiDogsMetadata/SH_Dog_metadata_red.csv', index_col=0)
+metadata = metadata[~metadata.index.isin(['D000'])] # remove biological replicate
 
 # Store households in a dictionary
 household = metadata['Household.1'].to_dict()
-household['D000'] = household['D008']
+#household['D000'] = household['D008']
 
 # Get the original_id
 data['ref_sample'] = data.reference.str.split('.').str[0].str.split('_').str[-1]
 data['qry_sample'] = data.querry.str.split('.').str[0].str.split('_').str[-1]
+data = data[~data['ref_sample'].isin(['D000'])] # remove biological replicate
+data = data[~data['qry_sample'].isin(['D000'])] # remove biological replicate
 
 # Filter MAG comparisons
 data = data.query('alignment_coverage > 0.50')
@@ -35,16 +38,32 @@ paired.eval('fraction_shared_st = shared_st/shared_sp', inplace=True)
 paired['is_same_household'] = paired[['ref_sample', 'qry_sample']].apply(lambda x: household[x[0]] == household[x[1]], axis=1)
 paired = paired.query('ref_sample < qry_sample') # remove same animal comparison
 
-# Create a subset (at least 10 shared species)
+### Create a subset (at least 10 shared species) for visualization
 paired_10 = paired.query('shared_sp >= 10')
 m_v = stats.mannwhitneyu(paired_10.query('is_same_household')['fraction_shared_st'], paired_10.query('~is_same_household')['fraction_shared_st'])
 
-fig, ax = plt.subplots()
+width_mm = 75
+height_mm = 75
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+fig, ax = plt.subplots(figsize=figsize_inch)  # adjust size as needed
 ax.clear()
-sns.boxplot(data=paired_10, x='is_same_household', y='fraction_shared_st', ax=ax, boxprops={'facecolor':'None'}, showfliers=False)
-sns.stripplot(data=paired_10, x='is_same_household', y='fraction_shared_st', ax=ax)
-ax.text(0.5, 0.99, f'Mann-Whitney U test: p-value = {m_v.pvalue:.1e}', ha='center', va='center', transform=ax.transAxes)
-sns.despine(fig, trim=True)
+sns.boxplot(data=paired_10, x='is_same_household', y='fraction_shared_st', ax=ax,
+            boxprops={'facecolor':'None'}, showfliers=False, width=0.7)
+sns.stripplot(data=paired_10, x='is_same_household', y='fraction_shared_st', ax=ax,
+              alpha=0.5, size=2.5, jitter=0.2, palette=['#D3D3D3','#e7298a'])
+
+ax.set_title('Bacterial strains', fontsize=11, pad=22)
+ax.text(0.5, 1.1, f'p-value = {m_v.pvalue:.1e}', ha='center', va='center', transform=ax.transAxes)
+ax.set_ylim(0,1)
+
+ax.set_ylabel('Fraction shared strains', fontsize=10)
+ax.set_xlabel('', fontsize=10)
+ax.set_xticklabels(['Different\nHousehold', 'Same\nHousehold'],rotation=0,ha='center')
+
+sns.despine()
+plt.tight_layout()
+plt.show()
 fig.savefig('intermediate-outputs/figures/mag_sharing_ANI.svg')
 
 print(f'''Mann-Whitney U test: p-value = {m_v.pvalue}''')

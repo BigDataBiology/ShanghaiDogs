@@ -78,7 +78,7 @@ jacc_all_by_type = pd.concat([Jacc_plasmid,Jacc_virus,Jacc_uncat], ignore_index=
 
 # Compute statistics
 stat_results = []
-jacc_df = jacc_all_by_type #Jacc_all jacc_all_by_type
+jacc_df = Jacc_all #Jacc_all jacc_all_by_type
 
 for ec in jacc_df['ec_type'].unique():
     data = jacc_df[jacc_df['ec_type'] == ec]
@@ -109,7 +109,7 @@ sns.boxplot(data=jacc_all_by_type, x='ec_type', y='jaccard_similarity',
             flierprops={'markersize': 3})
 ax.set_ylabel('Jaccard Similarity', fontsize=10)
 ax.set_xlabel('', fontsize=10)
-ax.set_title('Similarity of EC by Household', fontsize=10)
+ax.set_title('Extra-chromosomal elements', fontsize=11)
 ax.set_xticklabels(['plasmid', 'virus','uncat'],rotation=45,ha='right')
 ax.legend_.remove()
 
@@ -119,17 +119,30 @@ plt.tight_layout()
 plt.show()
 
 # Visualization jacc_all
-fig, ax = plt.subplots(figsize=(3, 3))  # adjust size as needed
+width_mm = 75
+height_mm = 75
+figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
-sns.boxplot(data=Jacc_all, x='same_household', y='jaccard_similarity',
-            width=0.7, ax=ax, palette='Dark2', flierprops={'markersize': 3})
+fig, ax = plt.subplots(figsize=figsize_inch)  # adjust size as needed
+
+#sns.boxplot(data=Jacc_all, x='same_household', y='jaccard_similarity',
+#            width=0.7, ax=ax, palette='Dark2', flierprops={'markersize': 3})
+ax.clear()
+sns.boxplot(data=Jacc_all, x='same_household', y='jaccard_similarity', ax=ax,
+            boxprops={'facecolor':'None'}, showfliers=False, width=0.7)
+sns.stripplot(data=Jacc_all, x='same_household', y='jaccard_similarity', ax=ax,
+              alpha=0.5, size=2.5, jitter=0.2, palette=['#D3D3D3','#e7298a'])
+
+ax.set_title('Extra-chromosomal elements', fontsize=11, pad=22)
+ax.text(0.5, 1.1, f'p-value = {pval:.1e}', ha='center', va='center', transform=ax.transAxes)
+ax.set_ylim(0,1)
+
 ax.set_ylabel('Jaccard Similarity', fontsize=10)
 ax.set_xlabel('', fontsize=10)
-ax.set_title('Similarity of EC by Household', fontsize=10)
-ax.set_xticklabels(['Different', 'Shared'],rotation=45,ha='right')
-#ax.legend_.remove()
+ax.set_xticklabels(['Different\nHousehold', 'Same\nHousehold'],rotation=0,ha='center')
 
 # Tight layout and show
 sns.despine()
 plt.tight_layout()
 plt.show()
+
