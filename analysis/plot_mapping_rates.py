@@ -33,6 +33,7 @@ data['group'] = data['group'].str.replace('Yarlagadda Dog Free_roaming', 'Non-pe
 data['group'] = data['group'].str.replace('Yarlagadda Dog Shelter', 'Non-pet dogs (India and Laos)')
 data['group'] = data['group'].str.replace('NomNomNow Dog Pet', 'Pet dogs (USA)')
 data['group'] = data['group'].str.replace('Shanghai Dog Pet', 'Pet dogs (Shanghai)')
+data['group'] = data['group'].str.replace('Allaway Dog Colony', 'Colony dogs (UK)')
 
 group_order = [
     'Pet dogs (Shanghai)',
@@ -40,6 +41,7 @@ group_order = [
     'Pet dogs (South Africa)',
     'Pet dogs (USA)',
     'Colony dogs (USA)',
+    'Colony dogs (UK)',
     'Non-pet dogs (India and Laos)']
 
 ### Plotting: VERTICAL boxplot
@@ -107,14 +109,15 @@ data_filt = data_filt[data_filt['group'].isin(group_order)]
 
 data_filt['env_classification']=data_filt['env_classification'].str.replace('Dog Free_roaming','Non-pet dog')
 data_filt['env_classification']=data_filt['env_classification'].str.replace('Dog Shelter','Non-pet dog')
+data_filt['env_classification']=data_filt['env_classification'].str.replace('Dog Colony','Non-pet dog')
 
-palette = ['#1b9e77', '#d95f02', '#7570b3'] #Dark2 colors
+palette = ['#1b9e77', '#7570b3'] #Dark2 colors
 
 # Fig_size
 plt.clf()
 
 width_mm = 120
-height_mm = 45
+height_mm = 50
 figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
 fig, ax = plt.subplots(figsize=figsize_inch)
