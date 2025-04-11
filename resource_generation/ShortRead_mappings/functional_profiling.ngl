@@ -1,0 +1,29 @@
+ngless "1.5"
+import "parallel" version "1.1"
+
+SH_DOGS_95NT = '../../intermediate-outputs/Prodigal/SHD.95NT.fna.gz'
+SH_DOGS_95NT_EMAPPER = '../../intermediate-outputs/Prodigal/SHD.95NT.emapper.annotations.gz'
+DOG_GENOME = '../../external-data/data/dog_genome/GCA_000002285.4_Dog10K_Boxer_Tasha_genomic.fna'
+
+input = run_for_all_samples(load_sample_list(ARGV[1]))
+input = preprocess(input) using |read|:
+    read = substrim(read, min_quality=25)
+    if len(read) < 45:
+        discard
+
+mapped = map(input, fafile=DOG_GENOME)
+
+mapped = select(mapped) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+    if mr.flag({mapped}):
+        discard
+
+input = as_reads(mapped)
+mapped = map(input, fafile=SH_DOGS_95NT)
+
+mapped = select(mapped) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=95, action={unmatch})
+
+counts = count(mapped, functional_map=SH_DOGS_95NT_EMAPPER, features=['KEGG_ko'])
+
+write(counts, ofile='outputs' </> 'functional' </> input.name() + '_KEGG_ko.tsv.gz')
