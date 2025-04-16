@@ -9,6 +9,9 @@ import numpy as np
 import gzip
 import re
 
+# matplotlib uses inches, so we need to convert cm to inches
+IN2CM = 2.54
+
 # --- Part 1: Prevalence Bar Plot ---
 # Load metadata
 metadata = pd.read_csv('data/ShanghaiDogsMetadata/REP_canid_metadata.csv', sep=',', encoding='unicode_escape', index_col=0)
@@ -16,9 +19,9 @@ metadata['Sex'] = metadata['Sex'].str.lower()
 
 # Load coverage and NCE info
 MAGs_NCE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mappings/SHD_covered_fraction.tsv.gz',
-                                    sep='\t', index_col=0, compression='gzip')
+                                    sep='\t', index_col=0)
 NCE_info = pd.read_csv('data/ShanghaiDogsTables/SHD_NC_props.tsv.gz',
-                       sep='\t', index_col=0, compression='gzip')
+                       sep='\t', index_col=0)
 
 # Define your element and threshold
 element_id = 'SHD1_NC.006'
@@ -32,57 +35,54 @@ abbreviations = {
     'Dog Free_roaming': 'F'
 }
 
-if element_id in NCE_info.index and element_id in MAGs_NCE_covered_frac.index:
-    # Get coverage and apply threshold
-    element_coverage = MAGs_NCE_covered_frac.loc[element_id]
-    element_presence = element_coverage[element_coverage >= threshold]
-    positive_samples = element_presence.index.str.split('_').str[0]
+assert (element_id in NCE_info.index and element_id in MAGs_NCE_covered_frac.index), \
+    f"Element {element_id} not found in NCE info or coverage data."
 
-    # Get metadata for all and positive samples
-    metadata_env = metadata[['env_classification']].copy()
-    metadata_env = metadata_env[metadata_env['env_classification'].isin(abbreviations.keys())]
-    metadata_env['is_positive'] = metadata_env.index.isin(positive_samples)
+# Get coverage and apply threshold
+element_coverage = MAGs_NCE_covered_frac.loc[element_id]
+element_presence = element_coverage[element_coverage >= threshold]
+positive_samples = element_presence.index.str.split('_').str[0]
 
-    # Compute prevalence
-    prevalence = metadata_env.groupby('env_classification')['is_positive'].mean().reindex(abbreviations.keys(), fill_value=0) * 100
-    counts = metadata_env.groupby('env_classification')['is_positive'].sum().reindex(abbreviations.keys(), fill_value=0)
+# Get metadata for all and positive samples
+metadata_env = metadata[['env_classification']].copy()
+metadata_env = metadata_env[metadata_env['env_classification'].isin(abbreviations.keys())]
+metadata_env['is_positive'] = metadata_env.index.isin(positive_samples)
 
-    # Print prevalence
-    print("Prevalence of SHD1_NC.006 (≥0.8) per environment:")
-    for env, pct in prevalence.items():
-        print(f"  {env:16} ({abbreviations[env]}): {pct:.1f}%")
+# Compute prevalence
+prevalence = metadata_env.groupby('env_classification')['is_positive'].mean().reindex(abbreviations.keys(), fill_value=0) * 100
+counts = metadata_env.groupby('env_classification')['is_positive'].sum().reindex(abbreviations.keys(), fill_value=0)
 
-    # Plot
-    IN2CM = 2.54  # Conversion factor
-    # Convert cm to inches (e.g., 12cm width and 6cm height)
-    fig_width = 12 / IN2CM
-    fig_height = 6 / IN2CM
+# Print prevalence
+print("Prevalence of SHD1_NC.006 (≥0.8) per environment:")
+for env, pct in prevalence.items():
+    print(f"  {env:16} ({abbreviations[env]}): {pct:.1f}%")
 
-    plt.figure(figsize=(fig_width, fig_height))  # Set figsize in inches
-    x_labels = [abbreviations[env] for env in prevalence.index]
-    palette = sns.color_palette('Dark2', n_colors=len(prevalence))
-    ax = sns.barplot(x=x_labels, y=prevalence.values, palette=palette)
+# Plot
+fig_width = 12 / IN2CM
+fig_height = 6 / IN2CM
 
-    # % labels
-    for i, pct in enumerate(prevalence.values):
-        ax.text(i, pct + 1, f'{pct:.1f}%', ha='center', va='bottom', fontsize=10)
+fig, ax = plt.subplots(figsize=(fig_width, fig_height))  # Set figsize in inches
+x_labels = [abbreviations[env] for env in prevalence.index]
+palette = sns.color_palette('Dark2', n_colors=len(prevalence))
+sns.barplot(x=x_labels, y=prevalence.values, palette=palette, ax=ax)
 
-    plt.ylabel('Prevalence (%)')
-    plt.xlabel('Environment')
-    plt.ylim(0, max(prevalence.values) * 1.2 + 5)
+# % labels
+for i, pct in enumerate(prevalence.values):
+    ax.text(i, pct + 1, f'{pct:.1f}%', ha='center', va='bottom', fontsize=10)
 
-    # Colored legend
-    legend_elements = [
-        Patch(facecolor=palette[i], edgecolor='black', label=f"{abbreviations[env]} = {env}")
-        for i, env in enumerate(prevalence.index)
-    ]
-    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+ax.set_label('Prevalence (%)')
+ax.set_label('Environment')
+ax.set_ylim(0, max(prevalence.values) * 1.2 + 5)
 
-    plt.tight_layout()
-    plt.show()
+# Colored legend
+legend_elements = [
+    Patch(facecolor=palette[i], edgecolor='black', label=f"{abbreviations[env]} = {env}")
+    for i, env in enumerate(prevalence.index)
+]
+ax.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 
-else:
-    print(f"{element_id} not found in one of the input files.")
+fig.tight_layout()
+fig.show()
 
 
 # --- Part 2: Heatmap Visualization ---
@@ -99,7 +99,6 @@ data = {
 df = pd.DataFrame(data)
 
 # Set figure size
-IN2CM = 2.54
 fig = plt.figure(figsize=(12./IN2CM, 6/IN2CM))  # ~12cm x 6cm
 gs = gridspec.GridSpec(1, 2, width_ratios=[3.5, 1])
 
@@ -157,13 +156,13 @@ legend_text = (
 ax_right.text(0, 1, legend_text, fontsize=6, va='top', ha='left', linespacing=1.5)
 
 # Layout adjustments
-plt.tight_layout()
-plt.subplots_adjust(top=0.88, wspace=0.3)
-plt.savefig("heatmap_single_legend.svg", format='svg')
-plt.show()
+fig.tight_layout()
+fig.subplots_adjust(top=0.88, wspace=0.3)
+fig.savefig("heatmap_single_legend.svg", format='svg')
+fig.show()
 
 # --- Part 3: Circular Gene Plot ---
-faa_file = "D003_proteins.faa.gz"
+faa_file = "intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
 
 # Initialize gene list
 genes = []
@@ -220,8 +219,8 @@ ax.set_ylim(-1.5, 1.5)
 ax.axis('off')
 
 # Show legend
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=6)
-plt.tight_layout()
+fig.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=6)
+fig.tight_layout()
 
 # Show plot (or replace with savefig if needed)
-plt.show()
+fig.show()
