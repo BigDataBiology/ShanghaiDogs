@@ -52,52 +52,7 @@ if element_id in NCE_info.index and element_id in MAGs_NCE_covered_frac.index:
     for env, pct in prevalence.items():
         print(f"  {env:16} ({abbreviations[env]}): {pct:.1f}%")
 
-    # Plot
-    IN2CM = 2.54  # Conversion factor
-    # Convert cm to inches (e.g., 12cm width and 6cm height)
-    fig_width = 12 / IN2CM
-    fig_height = 6 / IN2CM
-
-    plt.figure(figsize=(fig_width, fig_height))  # Set figsize in inches
-    x_labels = [abbreviations[env] for env in prevalence.index]
-    palette = sns.color_palette('Dark2', n_colors=len(prevalence))
-    ax = sns.barplot(x=x_labels, y=prevalence.values, palette=palette)
-
-    # % labels
-    for i, pct in enumerate(prevalence.values):
-        ax.text(i, pct + 1, f'{pct:.1f}%', ha='center', va='bottom', fontsize=10)
-
-    plt.ylabel('Prevalence (%)')
-    plt.xlabel('Environment')
-    plt.ylim(0, max(prevalence.values) * 1.2 + 5)
-
-    # Colored legend
-    legend_elements = [
-        Patch(facecolor=palette[i], edgecolor='black', label=f"{abbreviations[env]} = {env}")
-        for i, env in enumerate(prevalence.index)
-    ]
-    plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
-
-    plt.tight_layout()
-    plt.show()
-
-else:
-    print(f"{element_id} not found in one of the input files.")
-
-
-# --- Part 2: Heatmap Visualization ---
-
-# Data for heatmap
-data = {
-    'Element': ['SHD1_NC.006', 'SHD1_NC.021', 'SHD1_NC.026', 'SHD1_NC.053'],
-    'Best_Hit_ARO': ['OXA-85', 'OXA-85', 'TEM-1', 'ErmQ'],
-    'Current_Pet': [18.8, np.nan, np.nan, np.nan],
-    'Current_Colony': [14.7, np.nan, np.nan, np.nan],
-    'Current_Shelter': [0.0, np.nan, np.nan, np.nan],
-    'Current_Free': [2.8, np.nan, np.nan, np.nan]
-}
-df = pd.DataFrame(data)
-
+# Plot
 # Set figure size
 IN2CM = 2.54
 fig = plt.figure(figsize=(12./IN2CM, 6/IN2CM))  # ~12cm x 6cm
@@ -128,12 +83,14 @@ for i, aro in enumerate(df['Best_Hit_ARO']):
 prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
 simple_titles = ['P', 'C', 'F', 'S']
 
+# Create new axes for each prevalence column
 for i, (col, title) in enumerate(zip(prevalence_columns, simple_titles)):
-    
+    ax = plt.subplot(gs_heatmap[i+1])  # Create new subplot for each prevalence column
+
     # Mask 0.0 values
     prevalence_data = df[col].replace(0.0, np.nan).values.reshape(-1, 1)  # Replace 0.0 with NaN
     masked = np.ma.masked_invalid(prevalence_data)  # Mask NaN values
-    
+
     im = ax.imshow(masked, cmap=prevalence_cmap, aspect=0.4, vmin=0, vmax=50)
     ax.set_yticks(np.arange(len(df)))
     ax.set_yticklabels([])
