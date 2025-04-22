@@ -25,5 +25,13 @@ mapped = select(mapped) using |mr|:
     mr = mr.filter(min_match_size=45, min_identity_pc=95, action={unmatch})
 
 counts = count(mapped, functional_map=SH_DOGS_95NT_EMAPPER, features=['KEGG_ko'])
-
 write(counts, ofile='outputs' </> 'functional' </> input.name() + '_KEGG_ko.tsv.gz')
+
+counts = count(mapped, functional_map=SH_DOGS_95NT_EMAPPER, features=['CAZy'])
+write(counts, ofile='outputs' </> 'functional' </> input.name() + '_CAZy.tsv.gz')
+
+counts = count(mapped, functional_map=SH_DOGS_95NT_EMAPPER, features=['KEGG_Module'])
+write(counts, ofile='outputs' </> 'functional' </> input.name() + '_KEGG_Module.tsv.gz')
+
+counts = count(mapped, functional_map=SH_DOGS_95NT_EMAPPER, features=['COG_category'])
+write(counts, ofile='outputs' </> 'functional' </> input.name() + '_COG_category.tsv.gz')
