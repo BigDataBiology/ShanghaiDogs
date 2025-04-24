@@ -25,20 +25,13 @@ MAGs_NCE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mapp
 NCE_info = pd.read_csv('data/ShanghaiDogsTables/SHD_NC_props.tsv.gz',
                        sep='\t', index_col=0)
 
-# --- Define elements and best-hit AROs ---
-element_info = {
-    'SHD1_NC.006': 'OXA-85',
-    'SHD1_NC.021': 'OXA-85',
-    'SHD1_NC.026': 'TEM-1',
-    'SHD1_NC.053': 'ErmQ',
-    'SHD1_NC.094': 'lnuC',
-    'SHD1_NC.113': 'lnuC',
-    'SHD1_NC.143': 'lnuC',
-    'SHD1_NC.147': 'lnuC',
-    'SHD1_NC.174': 'tet(Q)',
-    'SHD1_NC.183': 'ErmQ / tetB(P) / tetA(P)'
-}
-element_ids = list(element_info.keys())
+# Load and filter for rows with AROs
+props_df = pd.read_csv('/content/SHD_EC_Props.csv')
+props_filtered = props_df[props_df['Best_Hit_ARO'].notna() & (props_df['Best_Hit_ARO'] != '')]
+
+# Create one row per (Element, ARO) pair
+element_info_rows = props_filtered[['Element', 'Best_Hit_ARO']].drop_duplicates();
+element_info_list = list(element_info_rows.itertuples(index=False, name=None))
 
 abbreviations = {
     'Dog Pet': 'Current_Pet',
@@ -47,10 +40,9 @@ abbreviations = {
     'Dog Free_roaming': 'Current_Free'
 }
 
-# --- Compute prevalence ---
 prevalence_records = []
 
-for element_id in element_ids:
+for element_id, aro in element_info_list:
     if element_id not in MAGs_NCE_covered_frac.index or element_id not in NCE_info.index:
         continue
 
@@ -66,7 +58,7 @@ for element_id in element_ids:
 
     record = {
         'Element': element_id,
-        'Best_Hit_ARO': element_info[element_id],
+        'Best_Hit_ARO': aro,
         'Current_Pet': prevalence.get('Dog Pet', np.nan),
         'Current_Colony': prevalence.get('Dog Colony', np.nan),
         'Current_Shelter': prevalence.get('Dog Shelter', np.nan),
@@ -126,7 +118,6 @@ legend_text = (
     "C: Dog Colony\n"
     "F: Dog Free-roaming\n"
     "S: Dog Shelter\n"
-    "Prevalence threshold: ≥ 80%"
 )
 ax_right.text(0.2, 1, legend_text, fontsize=6, va='top', ha='left', linespacing=1.5)
 
