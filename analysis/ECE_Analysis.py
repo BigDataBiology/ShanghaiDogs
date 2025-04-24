@@ -136,64 +136,78 @@ fig.show()
 
 # --- Part 2: Circular Gene Plot ---
 faa_file = "intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
+annotations_file = "intermediate-outputs/eggNOG_annot_contigs/D003/D003.emapper.annotations"
 
-# Initialize gene list
+# COG categories to consider
+valid_cogs = set("DLISJLV")
+
+# Step 1: Parse gene coordinates from .faa.gz
+pattern = re.compile(r"#\s+(\d+)\s+#\s+(\d+)")
 genes = []
 
-# Pattern to extract coordinates from headers like:
-# >contig_2645_polypolish_1 # 202 # 690 # 1 ...
-pattern = re.compile(r"#\s+(\d+)\s+#\s+(\d+)")
-
-# Read .faa.gz file and extract gene start/end positions for contig_2645
 with gzip.open(faa_file, "rt") as f:
     for line in f:
         if line.startswith(">contig_2645"):
             match = pattern.search(line)
             if match:
                 start, end = map(int, match.groups())
-                genes.append({"start": start, "end": end})
+                contig_id = line.split()[0][1:]  # remove ">"
+                genes.append({
+                    "start": start,
+                    "end": end,
+                    "contig": contig_id
+                })
 
-# Check if any genes were found
-if not genes:
-    raise ValueError("No gene entries found for contig_2645.")
+# Step 2: Parse COG categories from annotations
+cog_categories = {}
 
-# Calculate total genome size (for angle scaling)
+with open(annotations_file, "r") as f:
+    for line in f:
+        if line.startswith("#") or not line.startswith("contig_2645"):
+            continue
+        parts = line.strip().split("\t")
+        if len(parts) > 6:
+            contig_name = parts[0]
+            cog_field = parts[6]
+            filtered = "".join(c for c in cog_field if c in valid_cogs)
+            cog_categories[contig_name] = filtered if filtered else "-"
+
+# Step 3: Map COGs to genes
+for gene in genes:
+    gene["cog_category"] = cog_categories.get(gene["contig"], "-")
+
+# Step 4: Plot
 genomic_size = max(g["end"] for g in genes)
-
-# Create circular plot
-fig, ax = plt.subplots(figsize=(4, 4))
+fig, ax = plt.subplots(figsize=(3, 3))
 
 # Draw main circle
-circle = plt.Circle((0, 0), 1, fill=False, color='black')
-ax.add_artist(circle)
+fig_circle = plt.Circle((0, 0), 1, fill=False, color='black')
+ax.add_artist(fig_circle)
 
-# Color map for genes
-colors = plt.cm.Dark2(np.linspace(0, 1, len(genes)))
+# Color map
+unique_cogs = sorted(set(g["cog_category"] for g in genes if g["cog_category"] != "-"))
+color_map = dict(zip(unique_cogs, plt.cm.tab10.colors[:len(unique_cogs)]))
 
-# Draw arcs for each gene
-for i, (gene, color) in enumerate(zip(genes, colors)):
-    mean_pos = (gene["start"] + gene["end"]) / 2
-    angle = (mean_pos / genomic_size) * 2 * np.pi
-    length = (gene["end"] - gene["start"]) / genomic_size * 2 * np.pi
-    theta = np.linspace(angle - length/2, angle + length/2, 100)
-    x = np.cos(theta)
-    y = np.sin(theta)
-    ax.plot(x, y, linewidth=5, color=color, label=f'Gene {i+1}')
+# Arcs and labels
+for gene in genes:
+    angle = ((gene["start"] + gene["end"]) / 2 / genomic_size) * 2 * np.pi
+    arc_len = (gene["end"] - gene["start"]) / genomic_size * 2 * np.pi
+    theta = np.linspace(angle - arc_len / 2, angle + arc_len / 2, 100)
+    x, y = np.cos(theta), np.sin(theta)
+    cog = gene["cog_category"]
+    color = color_map.get(cog, "gray")
+    ax.plot(x, y, linewidth=4, color=color)
+    ax.text(1.1 * np.cos(angle), 1.1 * np.sin(angle), cog, ha='center', va='center', fontsize=8)
 
-    # Add gene label outside the circle
-    label_x = 1.1 * np.cos(angle)
-    label_y = 1.1 * np.sin(angle)
-    ax.text(label_x, label_y, f'G{i+1}', ha='center', va='center', fontsize=8)
-
-# Style adjustments
+# Final formatting
 ax.set_aspect('equal')
 ax.set_xlim(-1.5, 1.5)
 ax.set_ylim(-1.5, 1.5)
-ax.axis('off')
+ax.axis("off")
 
-# Show legend
-fig.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=6)
+# Legend
+handles = [plt.Line2D([0], [0], color=color_map[c], lw=4, label=c) for c in unique_cogs]
+fig.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8)
+
 fig.tight_layout()
-
-# Show plot (or replace with savefig if needed)
 fig.show()
