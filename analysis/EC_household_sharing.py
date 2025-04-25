@@ -144,5 +144,5 @@ ax.set_xticklabels(['Different\nHousehold', 'Same\nHousehold'],rotation=0,ha='ce
 # Tight layout and show
 sns.despine()
 plt.tight_layout()
-plt.show()
-
+#plt.show()
+fig.savefig('intermediate-outputs/figures/EC_sharing_Jacc.svg')
