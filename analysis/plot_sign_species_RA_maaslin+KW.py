@@ -56,17 +56,25 @@ for name in tax_profile.columns:
 tax_profile_filt = tax_profile[tax_profile.columns[tax_profile.columns.isin(samples_ls)]]
 tax_profile_filt = tax_profile_filt.T
 metadata_filt = metadata[metadata.index.isin(samples_ls)]
-tax_w_metadata = pd.merge(tax_profile_filt,metadata_filt[['env_classification','Animal_age_simplified']],left_index=True,right_index=True)
+tax_w_metadata = pd.merge(tax_profile_filt,metadata_filt[['env_classification','Animal_age_simplified',
+                                                          'Body_condition', 'Size_class']],left_index=True,right_index=True)
 
 ## Significant species list names according to Maaslin2
 env_sign_sp = ["Collinsella sp008014645", "Faecalimonas umbilicata", "Sutterella sp905186105",
-               "Bifidobacterium globosum", "Phocaeicola plebeius", "Turicibacter sp002311155"]
+               "Bifidobacterium globosum", "Phocaeicola plebeius", "Turicibacter sp002311155",
+               "Campylobacter_D upsaliensis", "Faecalimonas phoceensis", "Blautia sp000432195",
+               "Escherichia fergusonii", "GCA-900066495 sp014323405", "Limosilactobacillus reuteri"]
 
-# Remove "Blautia_A sp019416265", "Fournierella massiliensis", "Blautia sp900556555" - not sign when KW test
+# Remove not sign when KW test: "Blautia_A sp019416265", "Fournierella massiliensis", "Blautia sp900556555",
+# Anaerobiospirillum sp023051105, Butyricicoccus sp018383195, Catenibacterium sp000437715
 age_sign_sp = ["CAJMNU01 sp905214855", "Butyricicoccus pullicaecorum", "Thomasclavelia spiroformis_A",
                "JAGZHZ01 sp018366495", "UMGS1370 sp900551135", "Faecalibacillus intestinalis",
                "Faecalibacterium sp900540455", "Slackia_A piriformis", "Eisenbergiella sp900539715",
-               "Dorea_B phocaeensis"]
+               "Dorea_B phocaeensis", "Faecousia sp019418025", "UMGS1370 sp900542035", "Faecalibacillus sp900544435"]
+
+size_sign_sp = ["UMGS1071 sp900548305", "Ruminococcus_B sp900544395"]
+
+body_sign_sp = ["Clostridium_Q sp018377235", "Lachnospira sp900552795"]
 
 ### Env_classification: Plot boxplots and add pairwise comparisons
 for tax in env_sign_sp:
@@ -76,7 +84,7 @@ for tax in env_sign_sp:
     custom_palette = sns.color_palette("Dark2", len(categories))
 
     # Figure size
-    width_mm = 57
+    width_mm = 45
     height_mm = 35
     figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
@@ -94,13 +102,13 @@ for tax in env_sign_sp:
     ax.set_xticks([])
     ax.set_xticklabels([])
     ax.set_xlabel('')
-    ax.set_ylabel('Rel ab.')
+    ax.set_ylabel('')
 
     sns.despine()
     plt.tight_layout()
-    plt.show()
-    out_path = 'intermediate-outputs/figures/maaslin2_tax/'+ tax + '_57env.svg'
-    #plt.savefig(out_path)
+    #plt.show()
+    out_path = 'intermediate-outputs/figures/maaslin2_tax/'+ tax + '_45env.svg'
+    plt.savefig(out_path)
 
 ### Age_classification: Plot boxplots and add pairwise comparisons
 for tax in age_sign_sp:
@@ -109,7 +117,7 @@ for tax in age_sign_sp:
     custom_palette = {"Young": "#e6ab02", "Adult": "#d95f02", "Senior": "#a6761d"}
 
     # Figure size
-    width_mm = 57
+    width_mm = 45
     height_mm = 35
     figsize_inch = (width_mm / 25.4, height_mm / 25.4)
 
@@ -127,18 +135,84 @@ for tax in age_sign_sp:
     ax.set_xticks([])
     ax.set_xticklabels([])
     ax.set_xlabel('')
-    ax.set_ylabel('Rel ab.')
+    ax.set_ylabel('')
+
+    sns.despine()
+    plt.tight_layout()
+    plt.show()
+    out_path = 'intermediate-outputs/figures/maaslin2_tax/'+ tax + '_45age.svg'
+    #plt.savefig(out_path)
+
+### Body_condition: Plot boxplots and add pairwise comparisons
+for tax in body_sign_sp:
+    tax_w_metadata = tax_w_metadata[~tax_w_metadata['Body_condition'].isin(['unknown'])]
+    categories = ['Lean to normal', 'Overweight to obese']
+    custom_palette = {"Lean to normal": "#1b9e77","Overweight to obese": "#7570b3"}
+
+    # Figure size
+    width_mm = 40
+    height_mm = 35
+    figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+    # Plot figure
+    fig, ax = plt.subplots(figsize=figsize_inch)
+    # Plot boxplot + swarmplot
+    sns.swarmplot(data=tax_w_metadata, x='Body_condition', y=tax,
+                  order=categories, palette=custom_palette,
+                  alpha=0.7, size=2, legend=False)
+    sns.boxplot(data=tax_w_metadata, x='Body_condition', y=tax,
+                color='white', width=0.5, order=categories, showfliers=False)
+
+    ax.set_title(tax,size=10, fontstyle='italic')
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'{x:.1f}'))
+    ax.set_xticks([])
+    ax.set_xticklabels([])
+    ax.set_xlabel('')
+    ax.set_ylabel('')
 
     sns.despine()
     plt.tight_layout()
     #plt.show()
-    out_path = 'intermediate-outputs/figures/maaslin2_tax/'+ tax + '_57age.svg'
+    out_path = 'intermediate-outputs/figures/maaslin2_tax/'+ tax + '_45body.svg'
+    plt.savefig(out_path)
+
+### Size_class: Plot boxplots and add pairwise comparisons
+for tax in size_sign_sp:
+    tax_w_metadata = tax_w_metadata[~tax_w_metadata['Size_class'].isin(['unclass','wolf'])]
+    categories = ['small', 'medium', 'large']
+    custom_palette = {'small': '#e6ab02', 'medium': '#d95f02', 'large': '#a6761d'}
+
+    # Figure size
+    width_mm = 40
+    height_mm = 35
+    figsize_inch = (width_mm / 25.4, height_mm / 25.4)
+
+    # Plot figure
+    fig, ax = plt.subplots(figsize=figsize_inch)
+    # Plot boxplot + swarmplot
+    sns.swarmplot(data=tax_w_metadata, x='Size_class', y=tax,
+                  order=categories, palette=custom_palette,
+                  alpha=0.7, size=2, legend=False)
+    sns.boxplot(data=tax_w_metadata, x='Size_class', y=tax,
+                color='white', width=0.5, order=categories, showfliers=False)
+
+    ax.set_title(tax,size=10, fontstyle='italic')
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'{x:.1f}'))
+    ax.set_xticks([])
+    ax.set_xticklabels([])
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+
+    sns.despine()
+    plt.tight_layout()
+    #plt.show()
+    out_path = 'intermediate-outputs/figures/maaslin2_tax/'+ tax + '_45size.svg'
     plt.savefig(out_path)
 
 ### Compute Mann-Whitney U pairwise tests ###
 pairwise_results = []
-variable = 'Animal_age_simplified' #'env_classification'
-sign_sp = age_sign_sp #env_sign_sp
+variable = 'Size_class' #'Animal_age_simplified', 'env_classification', 'Body_condition', 'Size_class'
+sign_sp = size_sign_sp #age_sign_sp size_sign_sp env_sign_sp body_sign_sp
 
 # Iterate through significant variables
 for tax in sign_sp:
