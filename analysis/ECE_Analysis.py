@@ -9,11 +9,9 @@ import numpy as np
 import gzip
 import re
 
-# matplotlib uses inches, so we need to convert cm to inches
-IN2CM = 2.54
-
 #constant
 threshold = 0.8
+IN2CM = 2.54
 
 # Load metadata
 metadata = pd.read_csv('data/ShanghaiDogsMetadata/REP_canid_metadata.csv', sep=',', encoding='unicode_escape', index_col=0)
@@ -25,10 +23,31 @@ MAGs_NCE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mapp
 NCE_info = pd.read_csv('data/ShanghaiDogsTables/SHD_NC_props.tsv.gz',
                        sep='\t', index_col=0)
 
-# Load and filter for rows with AROs
-props_df = pd.read_csv('/content/SHD_EC_Props.csv')
-props_filtered = props_df[props_df['Best_Hit_ARO'].notna() & (props_df['Best_Hit_ARO'] != '')]
+# Load Contigs and Extrachromosomal elements data 
+Contigs_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/contigs-ARGs_ALL_filt.txt"
+Extrachromosomal_elements_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/non_chromosomal/SHD1_NC_props.tsv.gz"
 
+df_arg = pd.read_csv(Contigs_file, sep=",")           
+df_non_chromo = pd.read_csv(Extrachromosomal_elements_file, sep="\t")   
+
+# Clean contig names to match
+df_arg['Contig_clean'] = df_arg['Contig'].str.extract(r'(contig_\d+)')
+
+# Merge ARGs with extrachromosomal elements
+merged_df = pd.merge(
+    df_non_chromo,
+    df_arg[['Contig_clean', 'sample_id', 'Best_Hit_ARO', 'Cut_Off', 'Best_Identities']],
+    left_on=['Contig', 'Sample'],
+    right_on=['Contig_clean', 'sample_id'],
+    how='left'
+)
+
+merged_df = merged_df.drop(columns=['Contig_clean'])
+
+# Filter rows with ARO information
+filtered_df = merged_df[merged_df['Best_Hit_ARO'].notnull()]
+
+# Build prevalence dataframe
 # Create one row per (Element, ARO) pair
 element_info_rows = props_filtered[['Element', 'Best_Hit_ARO']].drop_duplicates();
 element_info_list = list(element_info_rows.itertuples(index=False, name=None))
