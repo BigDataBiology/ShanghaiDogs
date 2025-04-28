@@ -14,18 +14,18 @@ threshold = 0.8
 IN2CM = 2.54
 
 # Load metadata
-metadata = pd.read_csv('data/ShanghaiDogsMetadata/REP_canid_metadata.csv', sep=',', encoding='unicode_escape', index_col=0)
+metadata = pd.read_csv('/work/microbiome/shanghai_dogs/data/ShanghaiDogsMetadata/REP_canid_metadata.csv', sep=',', encoding='unicode_escape', index_col=0)
 metadata['Sex'] = metadata['Sex'].str.lower()
 
 # Load coverage and NCE info
-MAGs_NCE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mappings/SHD_covered_fraction.tsv.gz',
-                                    sep='\t', index_col=0)
-NCE_info = pd.read_csv('data/ShanghaiDogsTables/SHD_NC_props.tsv.gz',
+MAGs_NCE_covered_frac = pd.read_csv('/work/microbiome/shanghai_dogs/intermediate-outputs/external_datasets_mappings/SHD_covered_fraction.tsv.gz',
+                        sep='\t', index_col=0)
+NCE_info = pd.read_csv('/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/SHD_NC_props.tsv.gz',
                        sep='\t', index_col=0)
 
 # Load Contigs and Extrachromosomal elements data 
 Contigs_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/contigs-ARGs_ALL_filt.txt"
-Extrachromosomal_elements_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/non_chromosomal/SHD1_NC_props.tsv.gz"
+Extrachromosomal_elements_file = "/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/SHD_NC_props.tsv.gz"
 
 df_arg = pd.read_csv(Contigs_file, sep=",")           
 df_non_chromo = pd.read_csv(Extrachromosomal_elements_file, sep="\t")   
@@ -49,7 +49,7 @@ filtered_df = merged_df[merged_df['Best_Hit_ARO'].notnull()]
 
 # Build prevalence dataframe
 # Create one row per (Element, ARO) pair
-element_info_rows = props_filtered[['Element', 'Best_Hit_ARO']].drop_duplicates();
+element_info_rows = filtered_df[['Element', 'Best_Hit_ARO']].drop_duplicates()
 element_info_list = list(element_info_rows.itertuples(index=False, name=None))
 
 abbreviations = {
@@ -93,7 +93,7 @@ gs = gridspec.GridSpec(1, 3, width_ratios=[4, 0.2, 1])
 gs_heatmap = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[0], width_ratios=[1, 1, 1, 1, 1])
 
 # Colormaps
-ylorrd_colors = cm.get_cmap('YlOrRd', 8)(range(8))
+ylorrd_colors = plt.cm.Dark2(range(8))
 prevalence_cmap = LinearSegmentedColormap.from_list('YlOrRd_Custom', ['white', ylorrd_colors[4]])
 
 # ARO column
@@ -142,11 +142,11 @@ ax_right.text(0.2, 1, legend_text, fontsize=6, va='top', ha='left', linespacing=
 
 fig.tight_layout()
 fig.subplots_adjust(top=0.88, wspace=0.4)
-fig.show()
+plt.show()
 
 # --- Part 2: Circular Gene Plot ---
-faa_file = "intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
-annotations_file = "intermediate-outputs/eggNOG_annot_contigs/D003/D003.emapper.annotations"
+faa_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
+annotations_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/eggNOG_annot_contigs/D003/D003.emapper.annotations"
 
 # COG categories to consider
 valid_cogs = set("DLISJLV")
