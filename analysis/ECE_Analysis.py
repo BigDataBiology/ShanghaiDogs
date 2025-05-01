@@ -135,7 +135,7 @@ cb.ax.tick_params(labelsize=9)
 # --- Layout adjustments
 fig.tight_layout()
 fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.05)
-plt.show()
+fig.show()
 
 # --- Part 2: Circular Gene Plot ---
 faa_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
@@ -173,44 +173,46 @@ with open(annotations_file, "r") as f:
             contig_name = parts[0]
             cog_field = parts[6]
             filtered = "".join(c for c in cog_field if c in valid_cogs)
-            cog_categories[contig_name] = filtered if filtered else "-"
+            cog_categories[contig_name] = filtered if filtered else "NA"
 
 # Step 3: Map COGs to genes
 for gene in genes:
-    gene["cog_category"] = cog_categories.get(gene["contig"], "-")
+    gene["cog_category"] = cog_categories.get(gene["contig"], "NA")
 
 # Step 4: Plot
 genomic_size = max(g["end"] for g in genes)
 fig, ax = plt.subplots(figsize=(3, 3))
 
-# Draw main circle
-fig_circle = plt.Circle((0, 0), 1, fill=False, color='black')
+fig_circle = plt.Circle((0, 0), 0.15, fill=False, color='black')
 ax.add_artist(fig_circle)
 
-# Color map
-unique_cogs = sorted(set(g["cog_category"] for g in genes if g["cog_category"] != "-"))
-color_map = dict(zip(unique_cogs, plt.cm.tab10.colors[:len(unique_cogs)]))
+# Color map: Dark2 greyish-green for NA, Dark2 for others
+unique_cogs = sorted(set(g["cog_category"] for g in genes))
+color_map = {"NA": plt.cm.Dark2.colors[7]}  
+non_na_cogs = [c for c in unique_cogs if c != "NA"]
+color_map.update(zip(non_na_cogs, [c for i, c in enumerate(plt.cm.Dark2.colors) if i != 7][:len(non_na_cogs)]))
 
 # Arcs and labels
 for gene in genes:
     angle = ((gene["start"] + gene["end"]) / 2 / genomic_size) * 2 * np.pi
     arc_len = (gene["end"] - gene["start"]) / genomic_size * 2 * np.pi
     theta = np.linspace(angle - arc_len / 2, angle + arc_len / 2, 100)
-    x, y = np.cos(theta), np.sin(theta)
+    x, y = 0.15 * np.cos(theta), 0.15 * np.sin(theta)  
     cog = gene["cog_category"]
-    color = color_map.get(cog, "gray")
+    color = color_map.get(cog)
     ax.plot(x, y, linewidth=4, color=color)
-    ax.text(1.1 * np.cos(angle), 1.1 * np.sin(angle), cog, ha='center', va='center', fontsize=8)
+    label = "NA" if cog == "NA" else cog
+    ax.text(0.165 * np.cos(angle), 0.165 * np.sin(angle), label, ha='center', va='center', fontsize=9)
 
 # Final formatting
 ax.set_aspect('equal')
-ax.set_xlim(-1.5, 1.5)
-ax.set_ylim(-1.5, 1.5)
+ax.set_xlim(-0.225, 0.225)
+ax.set_ylim(-0.225, 0.225)
 ax.axis("off")
 
 # Legend
 handles = [plt.Line2D([0], [0], color=color_map[c], lw=4, label=c) for c in unique_cogs]
-fig.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=8)
+fig.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=9)
 
 fig.tight_layout()
 fig.show()
