@@ -88,60 +88,53 @@ for element_id, aro in element_info_list:
 df = pd.DataFrame(prevalence_records)
 
 # --- Plotting ---
-fig = plt.figure(figsize=(13 / IN2CM, 6 / IN2CM))
-gs = gridspec.GridSpec(1, 3, width_ratios=[4, 0.2, 1])
-gs_heatmap = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[0], width_ratios=[1, 1, 1, 1, 1])
+fig = plt.figure(figsize=(10 / IN2CM, 7 / IN2CM))   
+gs = gridspec.GridSpec(2, 2, height_ratios=[6, 0.3], width_ratios=[1, 4])   
 
-# Colormaps
-ylorrd_colors = plt.cm.Dark2(range(8))
-prevalence_cmap = LinearSegmentedColormap.from_list('YlOrRd_Custom', ['white', ylorrd_colors[4]])
+# --- Colormap
+ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))  # Smooth gradient
+prevalence_cmap = LinearSegmentedColormap.from_list('YlOrBr_Custom', ylorbr_colors)
 
-# ARO column
-ax1 = plt.subplot(gs_heatmap[0])
-ax1.imshow(np.ones((len(df), 1)), cmap=LinearSegmentedColormap.from_list("white_only", ['white', 'white']), aspect=0.4)
+# --- ARO labels column
+ax1 = plt.subplot(gs[0, 0])
+ax1.imshow(np.ones((len(df), 1)), cmap=LinearSegmentedColormap.from_list("white_only", ['white', 'white']),
+           aspect='auto')  # aspect='auto' to minimize gaps
 ax1.set_yticks(np.arange(len(df)))
-ax1.set_yticklabels(df['Element'], fontsize=5)
+ax1.set_yticklabels(df['Element'], fontsize=9)    
 ax1.set_xticks([])
-ax1.set_title('ARO', fontsize=6)
+ax1.set_title('ARG', fontsize=9, rotation=45, ha='right')   
 ax1.xaxis.tick_top()
 for i, aro in enumerate(df['Best_Hit_ARO']):
-    ax1.text(0, i, aro, ha='center', va='center', fontsize=5, color='black')
+    ax1.text(0, i, aro, ha='center', va='center', fontsize=9, color='black')    
+for spine in ax1.spines.values():
+    spine.set_visible(False)
 
-# Prevalence columns
+# --- Single Prevalence Heatmap using Seaborn ---
 prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
-simple_titles = ['P', 'C', 'F', 'S']
+full_titles = ['Pet', 'Colony', 'Free-roaming', 'Shelter']
+heatmap_data = df[prevalence_columns].copy()
+heatmap_data.columns = full_titles
 
-for i, (col, title) in enumerate(zip(prevalence_columns, simple_titles)):
-    ax = plt.subplot(gs_heatmap[i + 1])
-    data = df[col].replace(0.0, np.nan).values.reshape(-1, 1)
-    masked = np.ma.masked_invalid(data)
-    im = ax.imshow(masked, cmap=prevalence_cmap, aspect=0.4, vmin=0, vmax=50)
-    ax.set_yticks(np.arange(len(df)))
-    ax.set_yticklabels([])  # Already shown
-    ax.set_xticks([])
-    ax.set_title(title, fontsize=6)
-    ax.xaxis.tick_top()
+ax2 = plt.subplot(gs[0, 1])
+sns.heatmap(heatmap_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50, cbar=False,
+            annot=False, linewidths=0, linecolor='none')
+ax2.set_yticks([]) 
+ax2.set_yticklabels([])  
+ax2.set_xticklabels(full_titles, rotation=45, ha='left', fontsize=9)  
+ax2.xaxis.tick_top()
+ax2.set_xlabel('')
+for spine in ax2.spines.values():
+    spine.set_visible(False)
 
-# Colorbar
-ax_cb = plt.subplot(gs[1])
-cb = plt.colorbar(im, cax=ax_cb)
-cb.set_label('Prevalence (%)', fontsize=6)
-cb.ax.tick_params(labelsize=6)
+# colorbar
+cb_ax = plt.subplot(gs[1, 1])
+cb = plt.colorbar(ax2.collections[0], cax=cb_ax, orientation='horizontal')
+cb.set_label('Prevalence (%)', fontsize=9)  
+cb.ax.tick_params(labelsize=9) 
 
-# Legend panel
-ax_right = plt.subplot(gs[2])
-ax_right.axis('off')
-legend_text = (
-    "ARO: Best hit antimicrobial resistance gene\n"
-    "P: Dog Pet\n"
-    "C: Dog Colony\n"
-    "F: Dog Free-roaming\n"
-    "S: Dog Shelter\n"
-)
-ax_right.text(0.2, 1, legend_text, fontsize=6, va='top', ha='left', linespacing=1.5)
-
+# --- Layout adjustments
 fig.tight_layout()
-fig.subplots_adjust(top=0.88, wspace=0.4)
+fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.05)
 plt.show()
 
 # --- Part 2: Circular Gene Plot ---
