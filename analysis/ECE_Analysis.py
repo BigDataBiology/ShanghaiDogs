@@ -87,54 +87,56 @@ for element_id, aro in element_info_list:
 
 df = pd.DataFrame(prevalence_records)
 
-# Plotting 
+# --- Plotting ---
 fig = plt.figure(figsize=(9 / IN2CM, 7 / IN2CM))  # Adjusted to fit ~9 cm width
-gs = gridspec.GridSpec(2, 2, height_ratios=[6, 0.3], width_ratios=[1, 4])
+gs = gridspec.GridSpec(2, 2, height_ratios=[6, 0.3], width_ratios=[3.5, 1.5])  # Adjusted ratios for more space on ARG
 
-# Colormap
+# --- Colormap
 ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))  # Smooth gradient
 prevalence_cmap = LinearSegmentedColormap.from_list('YlOrBr_Custom', ylorbr_colors)
 
-#  ARO labels column
-ax1 = plt.subplot(gs[0, 0])
-ax1.imshow(np.ones((len(df), 1)), cmap=LinearSegmentedColormap.from_list("white_only", ['white', 'white']),
-           aspect='auto')  # aspect='auto' to minimize gaps
-ax1.set_yticks(np.arange(len(df)))
-ax1.set_yticklabels(df['Element'], fontsize=9)
-ax1.set_xticks([])
-ax1.set_title('ARG', fontsize=9, rotation=45, ha='right')
-ax1.xaxis.tick_top()
-for i, aro in enumerate(df['Best_Hit_ARO']):
-    ax1.text(0, i, aro, ha='center', va='center', fontsize=9, color='black')
-for spine in ax1.spines.values():
-    spine.set_visible(False)
-
-# Single Prevalence Heatmap using Seaborn 
+# --- Single Prevalence Heatmap using Seaborn ---
 prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
 full_titles = ['Pet', 'Colony', 'Free-roaming', 'Shelter']
 heatmap_data = df[prevalence_columns].copy()
 heatmap_data.columns = full_titles
 
-ax2 = plt.subplot(gs[0, 1])
+ax2 = plt.subplot(gs[0, 0]) 
 sns.heatmap(heatmap_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50, cbar=False,
             annot=False, linewidths=0, linecolor='none')
-ax2.set_yticks([])
-ax2.set_yticklabels([])
+ax2.set_yticks(np.arange(len(df)) + 0.5)  
+ax2.set_yticklabels(df['Element'], fontsize=9, va='center')  # 
 ax2.set_xticklabels(full_titles, rotation=45, ha='left', fontsize=9)
 ax2.xaxis.tick_top()
 ax2.set_xlabel('')
+# Disable y-axis ticks
+ax2.tick_params(axis='y', which='both', length=0)  
 for spine in ax2.spines.values():
     spine.set_visible(False)
 
-# colorbar
-cb_ax = plt.subplot(gs[1, 1])
+# --- ARO labels column 
+ax1 = plt.subplot(gs[0, 1]) 
+ax1.imshow(np.ones((len(df), 1)), cmap=LinearSegmentedColormap.from_list("white_only", ['white', 'white']),
+           aspect='auto') 
+ax1.set_yticks([])  
+ax1.set_xticks([])
+ax1.set_title('ARG', fontsize=9, rotation=45, ha='right')
+ax1.xaxis.tick_top()
+# Remove y-axis ticks (dashes)
+ax1.tick_params(axis='y', which='both', length=0)  
+for i, aro in enumerate(df['Best_Hit_ARO']):
+    ax1.text(0, i, aro, ha='center', va='center', fontsize=9, color='black')
+for spine in ax1.spines.values():
+    spine.set_visible(False)
+
+# --- Colorbar ---
+cb_ax = plt.subplot(gs[1, 0])  
 cb = plt.colorbar(ax2.collections[0], cax=cb_ax, orientation='horizontal')
 cb.set_label('Prevalence (%)', fontsize=9)
 cb.ax.tick_params(labelsize=9)
 
-# Layout adjustments
 fig.tight_layout()
-fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.05)
+fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.1) 
 fig.show()
 
 # Part 2: Circular Gene Plot 
