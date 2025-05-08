@@ -26,14 +26,13 @@ NCE_info = pd.read_csv('/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/S
 # Load Contigs and Extrachromosomal elements data 
 Contigs_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/contigs-ARGs_ALL_filt.txt"
 Extrachromosomal_elements_file = "/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/SHD_NC_props.tsv.gz"
-
 df_arg = pd.read_csv(Contigs_file, sep=",")
 df_non_chromo = pd.read_csv(Extrachromosomal_elements_file, sep="\t")
 
-# Clean contig names to match
+# Clean the 'Contig' column in df_arg
 df_arg['Contig_clean'] = df_arg['Contig'].str.extract(r'(contig_\d+)')
 
-# Merge ARGs with extrachromosomal elements
+# Merge the dataframes
 merged_df = pd.merge(
     df_non_chromo,
     df_arg[['Contig_clean', 'sample_id', 'Best_Hit_ARO', 'Cut_Off', 'Best_Identities']],
@@ -44,14 +43,15 @@ merged_df = pd.merge(
 
 merged_df = merged_df.drop(columns=['Contig_clean'])
 
-# Filter rows with ARO information
+# Filter to keep only the rows where Best_Hit_ARO is not null and Cut_Off is either 'Strict' or 'Perfect'
 filtered_df = merged_df[merged_df['Best_Hit_ARO'].notnull()]
+filtered_df = filtered_df[filtered_df['Cut_Off'].isin(['Strict', 'Perfect'])]
 
-# Build prevalence dataframe
-# Create one row per (Element, ARO) pair
-element_info_rows = filtered_df[['Element', 'Best_Hit_ARO']].drop_duplicates()
+# Create list of unique elements with their AROs and categories
+element_info_rows = filtered_df[['Element', 'Best_Hit_ARO', 'Category']].drop_duplicates()
 element_info_list = list(element_info_rows.itertuples(index=False, name=None))
 
+# Mapping for abbreviations in the metadata
 abbreviations = {
     'Dog Pet': 'Current_Pet',
     'Dog Colony': 'Current_Colony',
@@ -59,9 +59,9 @@ abbreviations = {
     'Dog Free_roaming': 'Current_Free'
 }
 
+# Prevalence calculations
 prevalence_records = []
-
-for element_id, aro in element_info_list:
+for element_id, aro, category in element_info_list:
     if element_id not in MAGs_NCE_covered_frac.index or element_id not in NCE_info.index:
         continue
 
@@ -76,8 +76,9 @@ for element_id, aro in element_info_list:
     prevalence = metadata_env.groupby('env_classification')['is_positive'].mean() * 100
 
     record = {
-        'Element': element_id,
+        'Element': element_id.replace('NC', 'EC'),
         'Best_Hit_ARO': aro,
+        'Category': category,
         'Current_Pet': prevalence.get('Dog Pet', np.nan),
         'Current_Colony': prevalence.get('Dog Colony', np.nan),
         'Current_Shelter': prevalence.get('Dog Shelter', np.nan),
@@ -85,58 +86,81 @@ for element_id, aro in element_info_list:
     }
     prevalence_records.append(record)
 
+# Create dataframe from prevalence records
 df = pd.DataFrame(prevalence_records)
 
 # --- Plotting ---
-fig = plt.figure(figsize=(9 / IN2CM, 7 / IN2CM))  # Adjusted to fit ~9 cm width
-gs = gridspec.GridSpec(2, 2, height_ratios=[6, 0.3], width_ratios=[3.5, 1.5])  # Adjusted ratios for more space on ARG
+n_rows = len(df)
+fig_height = max(7 / IN2CM, n_rows * 0.5 / IN2CM)
+fig = plt.figure(figsize=(15 / IN2CM, fig_height))
+gs = gridspec.GridSpec(2, 5, height_ratios=[6, 0.3],
+                       width_ratios=[0.3, 1.2, 2.5, 0.1, 2.1], hspace=0.3, wspace=0.02)
 
-# --- Colormap
-ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))  # Smooth gradient
+# --- Colormap ---
+ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))
 prevalence_cmap = LinearSegmentedColormap.from_list('YlOrBr_Custom', ylorbr_colors)
 
-# --- Single Prevalence Heatmap using Seaborn ---
+# --- Column 1: Category circles ---
+ax0 = fig.add_subplot(gs[0, 0])
+ax0.set_xlim(0, 1)
+ax0.set_ylim(0, n_rows)
+ax0.set_aspect('equal')  
+ax0.axis('off')
+
+unique_categories = df['Category'].unique()
+dark2_colors = sns.color_palette("Dark2", n_colors=len(unique_categories))
+category_to_color = dict(zip(unique_categories, dark2_colors))
+for i, cat in enumerate(df['Category']):
+    ax0.add_patch(Circle((0.5, n_rows - i - 0.5), 0.3, color=category_to_color[cat]))
+ax0.text(0.5, n_rows + 0.5, "Category", fontsize=9, ha='center', rotation=45)
+
+# --- Column 2: Element names ---
+ax1 = fig.add_subplot(gs[0, 1])
+ax1.set_xlim(0, 1)
+ax1.set_ylim(0, n_rows)
+ax1.axis('off')
+for i, name in enumerate(df['Element']):
+    ax1.text(0, n_rows - i - 0.5, name, va='center', fontsize=9)
+ax1.text(0.5, n_rows + 0.5, "Element", fontsize=9, ha='center', rotation=45)
+
+# --- Column 3: Heatmap ---
 prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
 full_titles = ['Pet', 'Colony', 'Free-roaming', 'Shelter']
 heatmap_data = df[prevalence_columns].copy()
 heatmap_data.columns = full_titles
 
-ax2 = plt.subplot(gs[0, 0]) 
-sns.heatmap(heatmap_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50, cbar=False,
-            annot=False, linewidths=0, linecolor='none')
-ax2.set_yticks(np.arange(len(df)) + 0.5)  
-ax2.set_yticklabels(df['Element'], fontsize=9, va='center')  # 
-ax2.set_xticklabels(full_titles, rotation=45, ha='left', fontsize=9)
+ax2 = fig.add_subplot(gs[0, 2])
+sns.heatmap(heatmap_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50,
+            cbar=False, xticklabels=True, yticklabels=False,
+            linewidths=0, linecolor='none')
+
+ax2.set_xticks(np.arange(len(full_titles)) + 0.5)
+ax2.set_xticklabels(full_titles, rotation=45, ha='center', fontsize=9)
 ax2.xaxis.tick_top()
 ax2.set_xlabel('')
-# Disable y-axis ticks
-ax2.tick_params(axis='y', which='both', length=0)  
-for spine in ax2.spines.values():
-    spine.set_visible(False)
 
-# --- ARO labels column 
-ax1 = plt.subplot(gs[0, 1]) 
-ax1.imshow(np.ones((len(df), 1)), cmap=LinearSegmentedColormap.from_list("white_only", ['white', 'white']),
-           aspect='auto') 
-ax1.set_yticks([])  
-ax1.set_xticks([])
-ax1.set_title('ARG', fontsize=9, rotation=45, ha='right')
-ax1.xaxis.tick_top()
-# Remove y-axis ticks (dashes)
-ax1.tick_params(axis='y', which='both', length=0)  
-for i, aro in enumerate(df['Best_Hit_ARO']):
-    ax1.text(0, i, aro, ha='center', va='center', fontsize=9, color='black')
-for spine in ax1.spines.values():
-    spine.set_visible(False)
-
-# --- Colorbar ---
-cb_ax = plt.subplot(gs[1, 0])  
+# --- Column 4: Colorbar ---
+cb_ax = fig.add_subplot(gs[1, 2])
 cb = plt.colorbar(ax2.collections[0], cax=cb_ax, orientation='horizontal')
-cb.set_label('Prevalence (%)', fontsize=9)
 cb.ax.tick_params(labelsize=9)
 
+# --- Column 5: ARG labels ---
+perfect_aros = set(df_arg[df_arg['Cut_Off'] == 'Perfect']['Best_Hit_ARO'].unique())
+strict_aros = set(df_arg[df_arg['Cut_Off'] == 'Strict']['Best_Hit_ARO'].unique())
+ax3 = fig.add_subplot(gs[0, 4])
+ax3.set_xlim(0, 1)
+ax3.set_ylim(0, n_rows)
+ax3.axis('off')
+for i, arg in enumerate(df['Best_Hit_ARO']):
+    weight = 'bold' if arg in perfect_aros else ('normal' if arg not in strict_aros else 'light')
+    ax3.text(0, n_rows - i - 0.5, arg, va='center', fontsize=9, fontweight=weight)
+ax3.text(0, n_rows + 0.5, "ARG", fontsize=9, ha='left', rotation=45)
+
+# --- Layout ---
 fig.tight_layout()
-fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.1) 
+fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.02)
+
+fig.savefig('prevalence_heatmap', bbox_inches='tight', dpi=300)
 fig.show()
 
 # Part 2: Circular Gene Plot 
@@ -156,11 +180,13 @@ with gzip.open(faa_file, "rt") as f:
             match = pattern.search(line)
             if match:
                 start, end = map(int, match.groups())
-                contig_id = line.split()[0][1:]  # remove ">"
+                contig_id = line.split()[0][1:]  
+                strand = int(line.split("#")[3].strip().split()[0])  
                 genes.append({
                     "start": start,
                     "end": end,
-                    "contig": contig_id
+                    "contig": contig_id,
+                    "strand": strand
                 })
 
 # Step 2: Parse COG categories from annotations
@@ -175,46 +201,49 @@ with open(annotations_file, "r") as f:
             contig_name = parts[0]
             cog_field = parts[6]
             filtered = "".join(c for c in cog_field if c in valid_cogs)
-            cog_categories[contig_name] = filtered if filtered else "NA"
+            cog_categories[contig_name] = filtered if filtered else "S"
 
 # Step 3: Map COGs to genes
 for gene in genes:
-    gene["cog_category"] = cog_categories.get(gene["contig"], "NA")
+    gene["cog_category"] = cog_categories.get(gene["contig"], "S")
 
 # Step 4: Plot
 genomic_size = max(g["end"] for g in genes)
-fig, ax = plt.subplots(figsize=(2, 2))  # Size remains reduced by 1.5 times
-
-fig_circle = plt.Circle((0, 0), 0.15, fill=False, color='black')
+fig, ax = plt.subplots(figsize=(3, 3))  
+fig_circle = plt.Circle((0, 0), 0.15, fill=False, color='black', linewidth=1.5)
 ax.add_artist(fig_circle)
 
-# Color map: Dark2 greyish-green for NA, Dark2 for others
+# Color map: Grey for S, Dark2 for others
 unique_cogs = sorted(set(g["cog_category"] for g in genes))
-color_map = {"NA": plt.cm.Dark2.colors[7]}
-non_na_cogs = [c for c in unique_cogs if c != "NA"]
-color_map.update(zip(non_na_cogs, [c for i, c in enumerate(plt.cm.Dark2.colors) if i != 7][:len(non_na_cogs)]))
+color_map = {"S": [0.6, 0.6, 0.6]}  # Custom grey color (dark grey)
+non_s_cogs = [c for c in unique_cogs if c != "S"]
+color_map.update(zip(non_s_cogs, [c for i, c in enumerate(plt.cm.Dark2.colors) if i != 7][:len(non_s_cogs)]))
 
-# Arcs and labels
+# Arcs and labels with strand indication (+/-)
 for gene in genes:
     angle = ((gene["start"] + gene["end"]) / 2 / genomic_size) * 2 * np.pi
     arc_len = (gene["end"] - gene["start"]) / genomic_size * 2 * np.pi
     theta = np.linspace(angle - arc_len / 2, angle + arc_len / 2, 100)
-    x, y = 0.15 * np.cos(theta), 0.15 * np.sin(theta)
+    r = 0.15
+    x, y = r * np.cos(theta), r * np.sin(theta)
     cog = gene["cog_category"]
     color = color_map.get(cog)
-    ax.plot(x, y, linewidth=4, color=color)
-    label = "NA" if cog == "NA" else cog
-    ax.text(0.19 * np.cos(angle), 0.19 * np.sin(angle), label, ha='center', va='center', fontsize=7)
 
-# Formatting
+    # Reverse arc direction if strand is -1 (counterclockwise)
+    if gene["strand"] == -1:
+        x, y = x[::-1], y[::-1]
+
+    ax.plot(x, y, linewidth=4, color=color)
+
+    # Label with strand indication (+ for 1, - for -1)
+    strand_symbol = "+" if gene["strand"] == 1 else "-"
+    label = f"{cog}{strand_symbol}" if cog != "NA" else f"NA{strand_symbol}"
+    ax.text(0.19 * np.cos(angle), 0.19 * np.sin(angle), label, ha='center', va='center', fontsize=9, color='black')
+
 ax.set_aspect('equal')
-ax.set_xlim(-0.25, 0.25)  
-ax.set_ylim(-0.25, 0.25) 
+ax.set_xlim(-0.3, 0.3)  
+ax.set_ylim(-0.3, 0.3) 
 ax.axis("off")
 
-# Legend
-handles = [plt.Line2D([0], [0], color=color_map[c], lw=4, label=c) for c in unique_cogs]
-fig.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=9)
-
 fig.tight_layout()
-fig.show()
+fig.savefig('circular_gene_plot.png')
