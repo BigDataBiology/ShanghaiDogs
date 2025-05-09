@@ -26,13 +26,14 @@ NCE_info = pd.read_csv('/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/S
 # Load Contigs and Extrachromosomal elements data 
 Contigs_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/contigs-ARGs_ALL_filt.txt"
 Extrachromosomal_elements_file = "/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/SHD_NC_props.tsv.gz"
+
 df_arg = pd.read_csv(Contigs_file, sep=",")
 df_non_chromo = pd.read_csv(Extrachromosomal_elements_file, sep="\t")
 
-# Clean the 'Contig' column in df_arg
+# Clean Contig column in df_arg
 df_arg['Contig_clean'] = df_arg['Contig'].str.extract(r'(contig_\d+)')
 
-# Merge the dataframes
+# Merge dataframes
 merged_df = pd.merge(
     df_non_chromo,
     df_arg[['Contig_clean', 'sample_id', 'Best_Hit_ARO', 'Cut_Off', 'Best_Identities']],
@@ -43,15 +44,15 @@ merged_df = pd.merge(
 
 merged_df = merged_df.drop(columns=['Contig_clean'])
 
-# Filter to keep only the rows where Best_Hit_ARO is not null and Cut_Off is either 'Strict' or 'Perfect'
+# Filter rows with valid Best_Hit_ARO and Strict/Perfect Cut_Off
 filtered_df = merged_df[merged_df['Best_Hit_ARO'].notnull()]
 filtered_df = filtered_df[filtered_df['Cut_Off'].isin(['Strict', 'Perfect'])]
 
-# Create list of unique elements with their AROs and categories
+# Create list of unique elements with AROs and categories
 element_info_rows = filtered_df[['Element', 'Best_Hit_ARO', 'Category']].drop_duplicates()
 element_info_list = list(element_info_rows.itertuples(index=False, name=None))
 
-# Mapping for abbreviations in the metadata
+# Map abbreviations for metadata
 abbreviations = {
     'Dog Pet': 'Current_Pet',
     'Dog Colony': 'Current_Colony',
@@ -59,7 +60,7 @@ abbreviations = {
     'Dog Free_roaming': 'Current_Free'
 }
 
-# Prevalence calculations
+# Calculate prevalence
 prevalence_records = []
 for element_id, aro, category in element_info_list:
     if element_id not in MAGs_NCE_covered_frac.index or element_id not in NCE_info.index:
@@ -76,7 +77,7 @@ for element_id, aro, category in element_info_list:
     prevalence = metadata_env.groupby('env_classification')['is_positive'].mean() * 100
 
     record = {
-        'Element': element_id.replace('NC', 'EC'),
+        'Element': element_id,
         'Best_Hit_ARO': aro,
         'Category': category,
         'Current_Pet': prevalence.get('Dog Pet', np.nan),
@@ -86,35 +87,67 @@ for element_id, aro, category in element_info_list:
     }
     prevalence_records.append(record)
 
-# Create dataframe from prevalence records
+# Create dataframe
 df = pd.DataFrame(prevalence_records)
 
-# --- Plotting ---
-n_rows = len(df)
-fig_height = max(7 / IN2CM, n_rows * 0.5 / IN2CM)
-fig = plt.figure(figsize=(15 / IN2CM, fig_height))
-gs = gridspec.GridSpec(2, 5, height_ratios=[6, 0.3],
-                       width_ratios=[0.3, 1.2, 2.5, 0.1, 2.1], hspace=0.3, wspace=0.02)
+# Extract size in kbp
+df_non_chromo['Size'] = df_non_chromo['Working_header'].str.extract(r'Size_(\d+)').astype(float)
+df_non_chromo['Size_kbp'] = df_non_chromo['Size'] / 1000
+size_data = df_non_chromo[['Element', 'Size_kbp']].drop_duplicates()
 
-# --- Colormap ---
+# Merge size data
+df = pd.merge(df, size_data, on='Element', how='left')
+
+# Apply log transformation to sizes
+df['Log_Size_kbp'] = np.log10(df['Size_kbp'])
+min_log_size = df['Log_Size_kbp'].min()
+max_log_size = df['Log_Size_kbp'].max()
+
+# Normalize log sizes
+df['Normalized_Log_Size'] = (df['Log_Size_kbp'] - min_log_size) / (max_log_size - min_log_size) * 0.8
+
+# Load and process putative hosts
+putative_hosts = pd.read_csv('/work/microbiome/shanghai_dogs/intermediate-outputs/external_datasets_mappings/dogs_putative_hosts.csv', sep=',')
+putative_hosts['Species'] = putative_hosts['Putative host'].str.extract(r's__([^;]+)')
+host_mapping = putative_hosts.groupby('Putative Plasmid')['Species'].first().to_dict()
+df['Putative_Host'] = df['Element'].map(host_mapping)
+df['Putative_Host'] = df['Putative_Host'].fillna('Unknown')
+
+# Set up plot
+n_rows = len(df)
+fig_height = max(12 / IN2CM, n_rows * 0.7 / IN2CM)
+fig = plt.figure(figsize=(12 / IN2CM, fig_height))
+gs = gridspec.GridSpec(2, 6, height_ratios=[6, 0.5],
+                       width_ratios=[0.5, 1.5, 1.5, 0.1, 0.9, 1.0], hspace=0.3, wspace=0.005)
+
+# Define colormap
 ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))
 prevalence_cmap = LinearSegmentedColormap.from_list('YlOrBr_Custom', ylorbr_colors)
 
-# --- Column 1: Category circles ---
+# Plot Category and Size (log scale)
 ax0 = fig.add_subplot(gs[0, 0])
-ax0.set_xlim(0, 1)
+min_size_kbp = df['Size_kbp'].min()
+max_size_kbp = df['Size_kbp'].max()
+ax0.set_xlim(10, 500)
+ax0.set_xscale('log')
 ax0.set_ylim(0, n_rows)
-ax0.set_aspect('equal')  
-ax0.axis('off')
+ax0.set_xlabel('Size (kbp)', fontsize=9)
+ax0.set_xticks([10, 50, 100])
+ax0.set_xticklabels(['10', '50', '100'], fontsize=9)
+ax0.set_yticks([])
+ax0.spines['left'].set_visible(True)
+ax0.spines['right'].set_visible(False)
+ax0.spines['top'].set_visible(False)
+ax0.spines['bottom'].set_visible(True)
 
 unique_categories = df['Category'].unique()
 dark2_colors = sns.color_palette("Dark2", n_colors=len(unique_categories))
 category_to_color = dict(zip(unique_categories, dark2_colors))
-for i, cat in enumerate(df['Category']):
-    ax0.add_patch(Circle((0.5, n_rows - i - 0.5), 0.3, color=category_to_color[cat]))
-ax0.text(0.5, n_rows + 0.5, "Category", fontsize=9, ha='center', rotation=45)
+for i, (cat, size_kbp) in enumerate(zip(df['Category'], df['Size_kbp'])):
+    ax0.barh(n_rows - i - 0.5, size_kbp, height=0.4, color=category_to_color[cat])
+ax0.text(100, n_rows + 0.5, "Category\n& Size", fontsize=9, ha='center', rotation=45)
 
-# --- Column 2: Element names ---
+# Plot Element names
 ax1 = fig.add_subplot(gs[0, 1])
 ax1.set_xlim(0, 1)
 ax1.set_ylim(0, n_rows)
@@ -123,9 +156,9 @@ for i, name in enumerate(df['Element']):
     ax1.text(0, n_rows - i - 0.5, name, va='center', fontsize=9)
 ax1.text(0.5, n_rows + 0.5, "Element", fontsize=9, ha='center', rotation=45)
 
-# --- Column 3: Heatmap ---
+# Plot Heatmap
 prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
-full_titles = ['Pet', 'Colony', 'Free-roaming', 'Shelter']
+full_titles = ['Pet', 'Colony', 'Free', 'Shelter']
 heatmap_data = df[prevalence_columns].copy()
 heatmap_data.columns = full_titles
 
@@ -139,29 +172,44 @@ ax2.set_xticklabels(full_titles, rotation=45, ha='center', fontsize=9)
 ax2.xaxis.tick_top()
 ax2.set_xlabel('')
 
-# --- Column 4: Colorbar ---
+# Plot Colorbar
 cb_ax = fig.add_subplot(gs[1, 2])
 cb = plt.colorbar(ax2.collections[0], cax=cb_ax, orientation='horizontal')
 cb.ax.tick_params(labelsize=9)
 
-# --- Column 5: ARG labels ---
-perfect_aros = set(df_arg[df_arg['Cut_Off'] == 'Perfect']['Best_Hit_ARO'].unique())
-strict_aros = set(df_arg[df_arg['Cut_Off'] == 'Strict']['Best_Hit_ARO'].unique())
+# Plot ARG labels
 ax3 = fig.add_subplot(gs[0, 4])
 ax3.set_xlim(0, 1)
 ax3.set_ylim(0, n_rows)
 ax3.axis('off')
+ax3.spines['right'].set_visible(False)
+ax3.spines['top'].set_visible(False)
+ax3.spines['bottom'].set_visible(False)
+ax3.spines['left'].set_visible(False)
+perfect_aros = set(df_arg[df_arg['Cut_Off'] == 'Perfect']['Best_Hit_ARO'].unique())
+strict_aros = set(df_arg[df_arg['Cut_Off'] == 'Strict']['Best_Hit_ARO'].unique())
 for i, arg in enumerate(df['Best_Hit_ARO']):
-    weight = 'bold' if arg in perfect_aros else ('normal' if arg not in strict_aros else 'light')
-    ax3.text(0, n_rows - i - 0.5, arg, va='center', fontsize=9, fontweight=weight)
+    weight = 'bold' if arg in perfect_aros else ('normal' if arg in strict_aros else 'light')
+    ax3.text(0, n_rows - i - 0.5, arg, va='center', fontsize=9)
 ax3.text(0, n_rows + 0.5, "ARG", fontsize=9, ha='left', rotation=45)
 
-# --- Layout ---
-fig.tight_layout()
-fig.subplots_adjust(top=0.92, bottom=0.12, hspace=0.3, wspace=0.02)
+# Plot Putative Host
+ax4 = fig.add_subplot(gs[0, 5])
+ax4.set_xlim(0, 1)
+ax4.set_ylim(0, n_rows)
+ax4.axis('off')
+ax4.spines['right'].set_visible(False)
+ax4.spines['top'].set_visible(False)
+ax4.spines['bottom'].set_visible(False)
+ax4.spines['left'].set_visible(False)
+for i, host in enumerate(df['Putative_Host']):
+    ax4.text(0, n_rows - i - 0.5, host, va='center', fontsize=9)
+ax4.text(0, n_rows + 0.5, "Putative Host", fontsize=9, ha='left', rotation=45)
 
-fig.savefig('prevalence_heatmap', bbox_inches='tight', dpi=300)
-fig.show()
+fig.tight_layout()
+fig.subplots_adjust(top=0.95, bottom=0.10, hspace=0.3, wspace=0.005)
+
+fig.savefig('prevalence_heatmap.png', bbox_inches='tight', dpi=300)
 
 # Part 2: Circular Gene Plot 
 faa_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
