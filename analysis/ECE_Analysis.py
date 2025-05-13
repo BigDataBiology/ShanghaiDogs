@@ -111,40 +111,45 @@ putative_hosts = pd.read_csv('/work/microbiome/shanghai_dogs/intermediate-output
 putative_hosts['Species'] = putative_hosts['Putative host'].str.extract(r's__([^;]+)')
 host_mapping = putative_hosts.groupby('Putative Plasmid')['Species'].first().to_dict()
 df['Putative_Host'] = df['Element'].map(host_mapping)
-df['Putative_Host'] = df['Putative_Host'].fillna('Unknown')
+df['Putative_Host'] = df['Putative_Host'].fillna('-')
+
+# Replace 'NC' with 'EC' in Element names for display
+df['Display_Element'] = df['Element'].str.replace('NC', 'EC', regex=False)
 
 # Set up plot
 n_rows = len(df)
 fig_height = max(12 / IN2CM, n_rows * 0.7 / IN2CM)
-fig = plt.figure(figsize=(12 / IN2CM, fig_height))
+fig = plt.figure(figsize=(13/ IN2CM, fig_height))
+
 gs = gridspec.GridSpec(2, 6, height_ratios=[6, 0.5],
-                       width_ratios=[0.5, 1.5, 1.5, 0.1, 0.9, 1.0], hspace=0.3, wspace=0.005)
+                       width_ratios=[0.5, 1.1, 1.5, 0.1, 0.7, 0.9], hspace=0.3, wspace=0.001)
 
 # Define colormap
 ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))
 prevalence_cmap = LinearSegmentedColormap.from_list('YlOrBr_Custom', ylorbr_colors)
 
-# Plot Category and Size (log scale)
+# Plot Category and Size
 ax0 = fig.add_subplot(gs[0, 0])
-min_size_kbp = df['Size_kbp'].min()
-max_size_kbp = df['Size_kbp'].max()
 ax0.set_xlim(10, 500)
 ax0.set_xscale('log')
 ax0.set_ylim(0, n_rows)
-ax0.set_xlabel('Size (kbp)', fontsize=9)
+ax0.set_xlabel('Size (kbp)', fontsize=9, labelpad=5)
 ax0.set_xticks([10, 50, 100])
+ax0.tick_params(axis='x', labelsize=9)
 ax0.set_xticklabels(['10', '50', '100'], fontsize=9)
 ax0.set_yticks([])
-ax0.spines['left'].set_visible(True)
+ax0.invert_xaxis()
+ax0.spines['left'].set_visible(False)
 ax0.spines['right'].set_visible(False)
 ax0.spines['top'].set_visible(False)
-ax0.spines['bottom'].set_visible(True)
+ax0.spines['bottom'].set_visible(False)
 
 unique_categories = df['Category'].unique()
 dark2_colors = sns.color_palette("Dark2", n_colors=len(unique_categories))
 category_to_color = dict(zip(unique_categories, dark2_colors))
 for i, (cat, size_kbp) in enumerate(zip(df['Category'], df['Size_kbp'])):
     ax0.barh(n_rows - i - 0.5, size_kbp, height=0.4, color=category_to_color[cat])
+
 ax0.text(100, n_rows + 0.5, "Category\n& Size", fontsize=9, ha='center', rotation=45)
 
 # Plot Element names
@@ -152,7 +157,7 @@ ax1 = fig.add_subplot(gs[0, 1])
 ax1.set_xlim(0, 1)
 ax1.set_ylim(0, n_rows)
 ax1.axis('off')
-for i, name in enumerate(df['Element']):
+for i, name in enumerate(df['Display_Element']):
     ax1.text(0, n_rows - i - 0.5, name, va='center', fontsize=9)
 ax1.text(0.5, n_rows + 0.5, "Element", fontsize=9, ha='center', rotation=45)
 
@@ -182,10 +187,6 @@ ax3 = fig.add_subplot(gs[0, 4])
 ax3.set_xlim(0, 1)
 ax3.set_ylim(0, n_rows)
 ax3.axis('off')
-ax3.spines['right'].set_visible(False)
-ax3.spines['top'].set_visible(False)
-ax3.spines['bottom'].set_visible(False)
-ax3.spines['left'].set_visible(False)
 perfect_aros = set(df_arg[df_arg['Cut_Off'] == 'Perfect']['Best_Hit_ARO'].unique())
 strict_aros = set(df_arg[df_arg['Cut_Off'] == 'Strict']['Best_Hit_ARO'].unique())
 for i, arg in enumerate(df['Best_Hit_ARO']):
@@ -198,18 +199,14 @@ ax4 = fig.add_subplot(gs[0, 5])
 ax4.set_xlim(0, 1)
 ax4.set_ylim(0, n_rows)
 ax4.axis('off')
-ax4.spines['right'].set_visible(False)
-ax4.spines['top'].set_visible(False)
-ax4.spines['bottom'].set_visible(False)
-ax4.spines['left'].set_visible(False)
 for i, host in enumerate(df['Putative_Host']):
     ax4.text(0, n_rows - i - 0.5, host, va='center', fontsize=9)
 ax4.text(0, n_rows + 0.5, "Putative Host", fontsize=9, ha='left', rotation=45)
 
 fig.tight_layout()
-fig.subplots_adjust(top=0.95, bottom=0.10, hspace=0.3, wspace=0.005)
-
+fig.subplots_adjust(top=0.95, bottom=0.10, hspace=0.3, wspace=0.001)
 fig.savefig('prevalence_heatmap.png', bbox_inches='tight', dpi=300)
+fig.savefig('prevalence_heatmap.svg', format='svg', bbox_inches='tight', dpi=300)
 
 # Part 2: Circular Gene Plot 
 faa_file = "/work/microbiome/shanghai_dogs/intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
