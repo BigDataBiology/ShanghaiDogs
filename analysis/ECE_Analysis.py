@@ -15,56 +15,51 @@ threshold = 0.8
 
 # Load data
 metadata = pd.read_csv('data/ShanghaiDogsMetadata/REP_canid_metadata.csv', sep=',', encoding='unicode_escape', index_col=0)
-MAGs_NCE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mappings/SHD_covered_fraction.tsv.gz', sep='\t', index_col=0)
-df_non_chromo = pd.read_csv('data/ShanghaiDogsTables/SHD_NC_props.tsv.gz', sep='\t', index_col=0)
-df_non_chromo = df_non_chromo.reset_index()  # Reset index to make 'Element' a column
+MAGs_ECE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mappings/SHD_covered_fraction.tsv.gz', sep='\t', index_col=0)
+df_Extra_chromo = pd.read_csv('data/ShanghaiDogsTables/SHD1_EC_props.tsv.gz', sep='\t', index_col=0)
+df_Extra_chromo = df_Extra_chromo.reset_index()  # Reset index to make 'Element' a column
 df_arg = pd.read_csv('intermediate-outputs/06_ARG/contigs-ARGs_ALL_filt.txt', sep=",")
 
-# Clean Contig column in df_arg
+# Clean Contig column in df.arg
 df_arg['Contig_clean'] = df_arg['Contig'].str.extract(r'(contig_\d+)')
 
 # Merge dataframes
 merged_df = pd.merge(
-    df_non_chromo,
+    df_Extra_chromo,
     df_arg[['Contig_clean', 'sample_id', 'Best_Hit_ARO', 'Cut_Off', 'Best_Identities']],
     left_on=['Contig', 'Sample'],
     right_on=['Contig_clean', 'sample_id'],
     how='left'
 )
-
 merged_df = merged_df.drop(columns=['Contig_clean'])
 
 # Filter rows with valid Best_Hit_ARO and Strict/Perfect Cut_Off
 filtered_df = merged_df[merged_df['Best_Hit_ARO'].notnull()]
 filtered_df = filtered_df[filtered_df['Cut_Off'].isin(['Strict', 'Perfect'])]
 
-# Create list of unique elements with AROs and categories
-element_info_rows = filtered_df[['Element', 'Best_Hit_ARO', 'Category']].drop_duplicates()
-# Replace 'NC' with 'EC' in Element names early
+# Create list of unique elements with AROs, categories, and Cut_Off
+element_info_rows = filtered_df[['Element', 'Best_Hit_ARO', 'Category', 'Cut_Off']].drop_duplicates()
 element_info_rows['Display_Element'] = element_info_rows['Element'].str.replace('NC', 'EC', regex=False)
-element_info_list = list(element_info_rows[['Display_Element', 'Best_Hit_ARO', 'Category']].itertuples(index=False, name=None))
+element_info_list = list(element_info_rows[['Display_Element', 'Best_Hit_ARO', 'Category', 'Cut_Off']].itertuples(index=False, name=None))
 
 # Calculate prevalence
 prevalence_records = []
-for display_element, aro, category in element_info_list:
-    element_id = display_element.replace('EC', 'NC')  # Revert for index lookup
-    if element_id not in MAGs_NCE_covered_frac.index:
+for display_element, aro, category, cutoff in element_info_list:
+    element_id = display_element.replace('EC', 'NC')
+    if element_id not in MAGs_ECE_covered_frac.index:
         continue
-
-    coverage = MAGs_NCE_covered_frac.loc[element_id]
+    coverage = MAGs_ECE_covered_frac.loc[element_id]
     presence = coverage[coverage >= threshold]
     positive_samples = presence.index.str.split('_').str[0]
-
     metadata_env = metadata[['env_classification']].copy()
     metadata_env = metadata_env[metadata_env['env_classification'].isin(['Dog Pet', 'Dog Colony', 'Dog Shelter', 'Dog Free_roaming'])]
     metadata_env['is_positive'] = metadata_env.index.isin(positive_samples)
-
     prevalence = metadata_env.groupby('env_classification')['is_positive'].mean() * 100
-
     record = {
         'Display_Element': display_element,
         'Best_Hit_ARO': aro,
         'Category': category,
+        'Cut_Off': cutoff,
         'Current_Pet': prevalence.get('Dog Pet', np.nan),
         'Current_Colony': prevalence.get('Dog Colony', np.nan),
         'Current_Shelter': prevalence.get('Dog Shelter', np.nan),
@@ -75,24 +70,21 @@ for display_element, aro, category in element_info_list:
 # Create dataframe
 df = pd.DataFrame(prevalence_records)
 
-# Extract size in kbp from df_non_chromo and merge with df
-df_non_chromo['Size_kbp'] = df_non_chromo['Working_header'].str.extract(r'Size_(\d+)').astype(float) / 1000
-size_data = df_non_chromo[['Element', 'Size_kbp']]
-
-# Replace 'NC' with 'EC' in Element for merging
-size_data['Element'] = size_data['Element'].str.replace('NC', 'EC', regex=False)
+# Extract size in kbp from df_Extra_chromo and merge with df
+df_Extra_chromo['Size_kbp'] = df_Extra_chromo['Working_header'].str.extract(r'Size_(\d+)').astype(float) / 1000
+size_data = df_Extra_chromo[['Element', 'Size_kbp']]
 df = pd.merge(df, size_data, left_on='Display_Element', right_on='Element', how='left')
-df = df.drop(columns=['Element'])  # Drop the redundant Element column
+df = df.drop(columns=['Element'])
 
 # Load and process putative hosts
 putative_hosts = pd.read_csv('intermediate-outputs/external_datasets_mappings/dogs_putative_hosts.csv', sep=',')
 host_mapping = putative_hosts.groupby('Putative Plasmid')['Putative host'].first().str.extract(r's__([^;]+)').iloc[:, 0].to_dict()
-# Map using the original Element name (revert Display_Element)
 df['Putative_Host'] = df['Display_Element'].str.replace('EC', 'NC').map(host_mapping).fillna('-').str.replace('_', ' ')
 
-# Handle duplicate elements by combining ARGs
+# Aggregate by Display_Element, combining ARGs and Cut_Off values
 df = df.groupby('Display_Element').agg({
     'Best_Hit_ARO': lambda x: ', '.join(x.dropna().unique()),
+    'Cut_Off': lambda x: list(x.dropna()),
     'Category': 'first',
     'Current_Pet': 'first',
     'Current_Colony': 'first',
@@ -127,7 +119,6 @@ ax0.spines['left'].set_visible(False)
 ax0.spines['right'].set_visible(False)
 ax0.spines['top'].set_visible(False)
 ax0.spines['bottom'].set_visible(False)
-
 unique_categories = df['Category'].unique()
 dark2_colors = sns.color_palette("Dark2", n_colors=len(unique_categories))
 category_to_color = dict(zip(unique_categories, dark2_colors))
@@ -148,7 +139,6 @@ ax1.text(0.5, n_rows + 0.5, "Element", fontsize=9, ha='center', rotation=45)
 prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
 heatmap_data = df[prevalence_columns].copy()
 heatmap_data.columns = ['Pet', 'Colony', 'Free', 'Shelter']
-
 ax2 = fig.add_subplot(gs[0, 2])
 sns.heatmap(heatmap_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50,
             cbar=False, xticklabels=True, yticklabels=False,
@@ -163,22 +153,20 @@ cb_ax = fig.add_subplot(gs[1, 2])
 plt.colorbar(ax2.collections[0], cax=cb_ax, orientation='horizontal')
 cb_ax.tick_params(labelsize=9)
 
-# Plot ARG labels, stacking ARGs vertically for the last element
+# Plot ARG labels, stacking ARGs vertically for all elements with multiple ARGs
 ax3 = fig.add_subplot(gs[0, 4])
 ax3.set_xlim(0, 1)
 ax3.set_ylim(0, n_rows)
 ax3.axis('off')
-perfect_aros = set(df_arg[df_arg['Cut_Off'] == 'Perfect']['Best_Hit_ARO'].unique())
-strict_aros = set(df_arg[df_arg['Cut_Off'] == 'Strict']['Best_Hit_ARO'].unique())
 line_height = 0.5
-for i, (element, arg_str) in enumerate(zip(df['Display_Element'], df['Best_Hit_ARO'])):
+for i, (element, arg_str, cutoffs) in enumerate(zip(df['Display_Element'], df['Best_Hit_ARO'], df['Cut_Off'])):
     args = [a.strip() for a in arg_str.split(',')]
-    if i == len(df) - 1:  # Special handling for the last element (SHD1_EC_183)
-        for j, arg in enumerate(args):
-            weight = 'bold' if arg in perfect_aros else ('normal' if arg in strict_aros else 'light')
+    if len(args) > 1:  # Stack ARGs vertically if multiple
+        for j, (arg, cutoff) in enumerate(zip(args, cutoffs)):
+            weight = 'bold' if cutoff == 'Perfect' else 'normal'
             ax3.text(0, n_rows - i - 0.5 + (len(args)/2 - j - 1) * line_height, arg, va='center', fontsize=9, fontweight=weight)
-    else:
-        weight = 'bold' if any(a in perfect_aros for a in args) else ('normal' if any(a in strict_aros for a in args) else 'light')
+    else:  # Single ARG
+        weight = 'bold' if cutoffs[0] == 'Perfect' else 'normal'
         ax3.text(0, n_rows - i - 0.5, arg_str, va='center', fontsize=9, fontweight=weight)
 ax3.text(0, n_rows + 0.5, "ARG", fontsize=9, ha='left', rotation=45)
 
@@ -191,6 +179,7 @@ for i, host in enumerate(df['Putative_Host']):
     ax4.text(0, n_rows - i - 0.5, host, va='center', fontsize=9)
 ax4.text(0, n_rows + 0.5, "Putative Host", fontsize=9, ha='left', rotation=45)
 
+# Finalize and save plot
 fig.tight_layout()
 fig.subplots_adjust(top=0.95, bottom=0.10, hspace=0.3, wspace=0.001)
 fig.savefig('prevalence_heatmap.svg', format='svg', bbox_inches='tight', dpi=300)
