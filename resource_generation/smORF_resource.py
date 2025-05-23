@@ -29,6 +29,7 @@ import pandas as pd
 import os
 import gzip
 
+
 # Define paths
 base_dir = "/work/microbiome/shanghai_dogs"
 smorf_file = f"{base_dir}/intermediate-outputs/GMSC_MAPPER_TEST/D030_PP1_PolcaCorr/predicted.filterd.smorf.faa"
@@ -109,4 +110,34 @@ output_df = pd.DataFrame({
 })
 
 output_df.to_csv(output_tsv, sep="\t", index=False)
-print(f"TSV saved to {output_tsv})
+print(f"TSV saved to {output_tsv}")
+
+
+##part3 
+
+import re
+
+#Paths
+base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER_TEST"
+sample_dir = "D030_PP1_PolcaCorr"
+input_faa = f"{base_dir}/{sample_dir}/mapped.smorfs.faa"
+output_faa = f"{base_dir}/{sample_dir}/SHD_mapped_smorfs.faa"
+
+# Extract
+sample_number = re.match(r"D(\d+)_PP1_PolcaCorr", sample_dir).group(1)
+
+# Renaming smORFs
+with open(input_faa, "r") as f_in, open(output_faa, "w") as f_out:
+    smorf_count = 1
+    for line in f_in:
+        if line.startswith(">"):
+            # Original ID: >smORF_00051
+            new_id = f">SHD_SM.{sample_number}.{smorf_count:05d}"
+            f_out.write(new_id + "\n")
+            smorf_count += 1
+        else:
+            # Write sequence unchanged
+            f_out.write(line)
+
+print(f"Renamed smORFs saved to {output_faa}")
+print(f"Total smORFs renamed: {smorf_count - 1}")
