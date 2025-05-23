@@ -24,32 +24,43 @@ for file in "$INPUT_DIR"/*.{fa,fasta,fna}; do
     gmsc-mapper -i "$file" -o "$outdir" --dbdir "$GMSC/db" -t 24
 done
 
-###PART 2
+### PART 2
 import pandas as pd
 import os
 import gzip
 
+# Define paths
 base_dir = "/work/microbiome/shanghai_dogs"
 smorf_file = f"{base_dir}/intermediate-outputs/GMSC_MAPPER_TEST/D030_PP1_PolcaCorr/predicted.filterd.smorf.faa"
+alignment_file = f"{base_dir}/intermediate-outputs/GMSC_MAPPER_TEST/D030_PP1_PolcaCorr/alignment.out.smorfs.tsv"
 habitat_file = f"{base_dir}/intermediate-outputs/GMSC_MAPPER_TEST/D030_PP1_PolcaCorr/habitat.out.smorfs.tsv"
 mag_dir = f"{base_dir}/data/ShanghaiDogsMAGs"
 mimag_report = f"{base_dir}/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv"
 output_tsv = f"{base_dir}/intermediate-outputs/GMSC_MAPPER_TEST/D030_PP1_PolcaCorr/D030_smorfs.tsv"
 
-# Step 1: Parse smORF IDs and contig IDs from predicted.filtered.smorf.faa
+# Step 1: Parse smORF IDs and contig IDs from predicted.filterd.smorf.faa
 smorfs = []
 with open(smorf_file, "r") as f:
     for line in f:
         if line.startswith(">"):
             parts = line[1:].strip().split("#")
-            smorf_id = parts[0].strip()  # e.g., smORF_00003
-            contig_id = parts[1].strip()  # e.g., contig_1179_polypolish_5
-            core_contig = "_".join(contig_id.split("_")[:-1])  # e.g., contig_1179_polypolish
+            smorf_id = parts[0].strip()  
+            contig_id = parts[1].strip()  
+            core_contig = "_".join(contig_id.split("_")[:-1])  
             smorfs.append({"smorf_id": smorf_id, "contig_id": contig_id, "core_contig": core_contig})
 
 smorfs_df = pd.DataFrame(smorfs)
 
-# Step 2: Parse habitats from habitat.out.smorfs.tsv
+# Step 2: Parse GMSC hits from alignment file
+gmsc_hits = {}
+if os.path.exists(alignment_file):
+    alignment_df = pd.read_csv(alignment_file, sep="\t", header=None, usecols=[0, 1], names=["qseqid", "sseqid"])
+    for qseqid, group in alignment_df.groupby("qseqid"):
+        hits = ";".join(group["sseqid"])  
+        gmsc_hits[qseqid] = hits
+smorfs_df["gmsc_hits"] = smorfs_df["smorf_id"].map(gmsc_hits).fillna("-")
+
+# Step3 Parse habitats from habitat file
 habitats = {}
 if os.path.exists(habitat_file):
     habitat_df = pd.read_csv(habitat_file, sep="\t", names=["qseqid", "habitat"])
@@ -57,7 +68,7 @@ if os.path.exists(habitat_file):
         habitats[row["qseqid"]] = row["habitat"]
 smorfs_df["habitat"] = smorfs_df["smorf_id"].map(habitats).fillna("-")
 
-# Step 3: Map contig IDs to MAG IDs
+# Step4 Map contig IDs to MAG IDs
 mag_mapping = {}
 mag_files = [f for f in os.listdir(mag_dir) if f.endswith(".fna.gz")]
 for mag_file in mag_files:
@@ -65,17 +76,21 @@ for mag_file in mag_files:
         for line in f:
             if line.startswith(">"):
                 header = line[1:].strip()
-                if " D030" in header:
+                if header.endswith(" D030"):  
                     parts = header.split()
-                    mag_id = parts[0].split("_")[0] + "_" + parts[0].split("_")[1]  # e.g., SHD1_1440
-                    contig_id = parts[1] 
-                    core_contig = contig_id  
+                    mag_id = parts[0].split("_")[0] + "_" + parts[0].split("_")[1]  
+                    contig_id = parts[1]  # e.g., contig_28_polypolish
+                    core_contig = contig_id
                     mag_mapping[core_contig] = mag_id
+                    print(f"Matched MAG contig: {contig_id} -> {mag_id}")
 
-
+# Map smORFs to MAG IDs
 smorfs_df["mag_id"] = smorfs_df["core_contig"].map(mag_mapping).fillna("-")
+unmatched = smorfs_df[smorfs_df["mag_id"] == "-"]["core_contig"].unique()
+for contig in unmatched:
+    print(f"Unmatched smORF contig: {contig}")
 
-# Step 4: Load MIMAG report and map MAG IDs to taxonomy
+# Step5 Load MIMAG report,map MAG IDs to taxonomy
 mimag_df = pd.read_csv(mimag_report)
 taxonomy_mapping = {}
 for _, row in mimag_df.iterrows():
@@ -85,13 +100,13 @@ for _, row in mimag_df.iterrows():
 
 smorfs_df["taxonomy"] = smorfs_df["mag_id"].map(taxonomy_mapping).fillna("-")
 
-# Step 5: Create TSV with required columns
+# Step 6 TSV Creation
 output_df = pd.DataFrame({
     "ID": smorfs_df["smorf_id"],
-    "GMSC_Hits": "-",
+    "GMSC_Hits": smorfs_df["gmsc_hits"],
     "Taxonomy": smorfs_df["taxonomy"],
     "Other_Habitats": smorfs_df["habitat"]
 })
 
 output_df.to_csv(output_tsv, sep="\t", index=False)
-print(f"TSV saved to {output_tsv}")
+print(f"TSV saved to {output_tsv})
