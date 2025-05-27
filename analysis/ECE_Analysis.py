@@ -8,6 +8,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import gzip
 import re
+from Bio import SeqIO
 
 # Constants
 IN2CM = 2.54
@@ -187,9 +188,21 @@ fig.savefig('prevalence_heatmap.svg', format='svg', bbox_inches='tight', dpi=300
 # Part 2: Circular Gene Plot 
 faa_file = "intermediate-outputs/Prodigal/D003/D003_proteins.faa.gz"
 annotations_file = "intermediate-outputs/eggNOG_annot_contigs/D003/D003.emapper.annotations"
+fasta_file = "shanghai_dogs/data/ShanghaiDogsAssemblies/D003_PP1_PolcaCorr.fna.gz"
 
-# COG categories to consider
-valid_cogs = set("DLISJLV")
+#Full contig length from fasta.gz
+def get_full_contig_length(contig_prefix, fasta_gz_path):
+    with gzip.open(fasta_gz_path, "rt") as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            if record.id.startswith(contig_prefix):
+                return len(record.seq)
+    return None
+contig_prefix = "contig_2645_polypolish"
+
+# Get full contig length 
+genomic_size = get_full_contig_length(contig_prefix, fasta_file)
+if genomic_size is None:
+    raise ValueError(f"Contig {contig_prefix} not found in {fasta_file}")
 
 # Step 1: Parse gene coordinates from .faa.gz
 pattern = re.compile(r"#\s+(\d+)\s+#\s+(\d+)")
@@ -197,7 +210,7 @@ genes = []
 
 with gzip.open(faa_file, "rt") as f:
     for line in f:
-        if line.startswith(">contig_2645"):
+        if line.startswith(f">{contig_prefix}"):
             match = pattern.search(line)
             if match:
                 start, end = map(int, match.groups())
@@ -211,11 +224,12 @@ with gzip.open(faa_file, "rt") as f:
                 })
 
 # Step 2: Parse COG categories from annotations
+valid_cogs = set("DLISJLV")
 cog_categories = {}
 
 with open(annotations_file, "r") as f:
     for line in f:
-        if line.startswith("#") or not line.startswith("contig_2645"):
+        if line.startswith("#") or not line.startswith(contig_prefix):
             continue
         parts = line.strip().split("\t")
         if len(parts) > 6:
@@ -228,19 +242,18 @@ with open(annotations_file, "r") as f:
 for gene in genes:
     gene["cog_category"] = cog_categories.get(gene["contig"], "S")
 
-# Step 4: Plot
-genomic_size = max(g["end"] for g in genes)
+# Step 4: Plot circular gene map
 fig, ax = plt.subplots(figsize=(3, 3))  
 fig_circle = plt.Circle((0, 0), 0.15, fill=False, color='black', linewidth=1.5)
 ax.add_artist(fig_circle)
 
-# Color map: Grey for S, Dark2 for others
+# Color map setup
 unique_cogs = sorted(set(g["cog_category"] for g in genes))
-color_map = {"S": [0.6, 0.6, 0.6]}  # Custom grey color (dark grey)
+color_map = {"S": [0.6, 0.6, 0.6]}  # grey for 'S'
 non_s_cogs = [c for c in unique_cogs if c != "S"]
 color_map.update(zip(non_s_cogs, [c for i, c in enumerate(plt.cm.Dark2.colors) if i != 7][:len(non_s_cogs)]))
 
-# Arcs and labels with strand indication (+/-)
+# Plot each gene arc with strand direction
 for gene in genes:
     angle = ((gene["start"] + gene["end"]) / 2 / genomic_size) * 2 * np.pi
     arc_len = (gene["end"] - gene["start"]) / genomic_size * 2 * np.pi
@@ -250,20 +263,18 @@ for gene in genes:
     cog = gene["cog_category"]
     color = color_map.get(cog)
 
-    # Reverse arc direction if strand is -1 (counterclockwise)
     if gene["strand"] == -1:
         x, y = x[::-1], y[::-1]
 
     ax.plot(x, y, linewidth=4, color=color)
 
-    # Label with strand indication (+ for 1, - for -1)
     strand_symbol = "+" if gene["strand"] == 1 else "-"
     label = f"{cog}{strand_symbol}" if cog != "NA" else f"NA{strand_symbol}"
     ax.text(0.19 * np.cos(angle), 0.19 * np.sin(angle), label, ha='center', va='center', fontsize=9, color='black')
 
 ax.set_aspect('equal')
-ax.set_xlim(-0.3, 0.3)  
-ax.set_ylim(-0.3, 0.3) 
+ax.set_xlim(-0.3, 0.3)
+ax.set_ylim(-0.3, 0.3)
 ax.axis("off")
 
 fig.tight_layout()
