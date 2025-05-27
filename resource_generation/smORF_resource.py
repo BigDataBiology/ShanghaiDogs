@@ -149,3 +149,44 @@ with open(input_faa, "r") as f_in, open(output_faa, "w") as f_out:
 
 print(f"Renamed smORFs saved to {output_faa}")
 print(f"Total smORFs renamed: {smorf_count - 1}")
+
+
+##Script to run for all samples
+
+import os
+import re
+
+base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER_TEST"
+
+
+sample_dirs = sorted([d for d in os.listdir(base_dir) if re.match(r"D\d{3}_PP1_PolcaCorr", d)])
+
+for sample_dir in sample_dirs:
+    input_faa = os.path.join(base_dir, sample_dir, "mapped.smorfs.faa")
+    output_faa = os.path.join(base_dir, sample_dir, "SHD_mapped_smorfs.faa")
+
+    # Check if input file exists
+    if not os.path.exists(input_faa):
+        print(f"[SKIP] {sample_dir}: No mapped.smorfs.faa found.")
+        continue
+
+    # Extract sample number 
+    sample_number_match = re.match(r"D(\d+)_PP1_PolcaCorr", sample_dir)
+    if not sample_number_match:
+        print(f"[SKIP] {sample_dir}: Could not extract sample number.")
+        continue
+    sample_number = sample_number_match.group(1)
+
+    # Process and rename sequences
+    with open(input_faa, "r") as f_in, open(output_faa, "w") as f_out:
+        smorf_count = 1
+        for line in f_in:
+            if line.startswith(">"):
+                new_id = f">SHD_SM.{sample_number}.{smorf_count:05d}"
+                f_out.write(new_id + "\n")
+                smorf_count += 1
+            else:
+                f_out.write(line)
+
+    print(f"[DONE] {sample_dir}: Renamed {smorf_count - 1} smORFs → {output_faa}")
+
