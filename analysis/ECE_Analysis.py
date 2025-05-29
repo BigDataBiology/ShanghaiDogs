@@ -43,7 +43,7 @@ element_info_rows = filtered_df[['Element', 'Best_Hit_ARO', 'Category', 'Cut_Off
 element_info_rows['Display_Element'] = element_info_rows['Element'].str.replace('NC', 'EC', regex=False)
 element_info_list = list(element_info_rows[['Display_Element', 'Best_Hit_ARO', 'Category', 'Cut_Off']].itertuples(index=False, name=None))
 
-# Calculate prevalence
+# Calculate prevalence, splitting Pet into This_Study (Shanghai Dogs) and Current_Pet (other Pets)
 prevalence_records = []
 for display_element, aro, category, cutoff in element_info_list:
     element_id = display_element.replace('EC', 'NC')
@@ -52,16 +52,27 @@ for display_element, aro, category, cutoff in element_info_list:
     coverage = MAGs_ECE_covered_frac.loc[element_id]
     presence = coverage[coverage >= threshold]
     positive_samples = presence.index.str.split('_').str[0]
-    metadata_env = metadata[['env_classification']].copy()
+    metadata_env = metadata[['env_classification', 'Study']].copy()
     metadata_env = metadata_env[metadata_env['env_classification'].isin(['Dog Pet', 'Dog Colony', 'Dog Shelter', 'Dog Free_roaming'])]
     metadata_env['is_positive'] = metadata_env.index.isin(positive_samples)
+    
+    # Split Dog Pet into Shanghai Dogs (This_study) and other Pets
+    pet_samples = metadata_env[metadata_env['env_classification'] == 'Dog Pet']
+    shanghai_pet = pet_samples[pet_samples['Study'] == 'This_study']
+    other_pet = pet_samples[pet_samples['Study'] != 'This_study']
+    
+    # Calculate prevalence for each group
     prevalence = metadata_env.groupby('env_classification')['is_positive'].mean() * 100
+    shanghai_pet_prev = shanghai_pet['is_positive'].mean() * 100 if not shanghai_pet.empty else np.nan
+    other_pet_prev = other_pet['is_positive'].mean() * 100 if not other_pet.empty else np.nan
+    
     record = {
         'Display_Element': display_element,
         'Best_Hit_ARO': aro,
         'Category': category,
         'Cut_Off': cutoff,
-        'Current_Pet': prevalence.get('Dog Pet', np.nan),
+        'This_Study': shanghai_pet_prev,
+        'Current_Pet': other_pet_prev,
         'Current_Colony': prevalence.get('Dog Colony', np.nan),
         'Current_Shelter': prevalence.get('Dog Shelter', np.nan),
         'Current_Free': prevalence.get('Dog Free_roaming', np.nan)
@@ -87,6 +98,7 @@ df = df.groupby('Display_Element').agg({
     'Best_Hit_ARO': lambda x: ', '.join(x.dropna().unique()),
     'Cut_Off': lambda x: list(x.dropna()),
     'Category': 'first',
+    'This_Study': 'first',
     'Current_Pet': 'first',
     'Current_Colony': 'first',
     'Current_Shelter': 'first',
@@ -99,11 +111,11 @@ df = df.groupby('Display_Element').agg({
 n_rows = len(df)
 fig_height = max(12 / IN2CM, n_rows * 0.7 / IN2CM)
 fig = plt.figure(figsize=(13 / IN2CM, fig_height))
-gs = gridspec.GridSpec(2, 6, height_ratios=[6, 0.5], width_ratios=[0.5, 1.1, 1.5, 0.1, 0.7, 0.9], hspace=0.3, wspace=0.001)
+gs = gridspec.GridSpec(2, 6, height_ratios=[6, 0.5], width_ratios=[0.5, 1.1, 1.8, 0.1, 0.7, 0.9], hspace=0.3, wspace=0.001)
 
-# Define colormap
-ylorbr_colors = cm.YlOrBr(np.linspace(0, 1, 256))
-prevalence_cmap = LinearSegmentedColormap.from_list('YlOrBr_Custom', ylorbr_colors)
+# colormap
+prevalence_cmap = cm.YlOrBr
+prevalence_cmap.set_bad(color='#DCDCDC') #lightgrey color
 
 # Plot Category and Size
 ax0 = fig.add_subplot(gs[0, 0])
@@ -136,16 +148,17 @@ for i, name in enumerate(df['Display_Element']):
     ax1.text(0, n_rows - i - 0.5, name, va='center', fontsize=9)
 ax1.text(0.5, n_rows + 0.5, "Element", fontsize=9, ha='center', rotation=45)
 
-# Plot Heatmap with square cells
-prevalence_columns = ['Current_Pet', 'Current_Colony', 'Current_Free', 'Current_Shelter']
+# Plot Heatmap with square cells, with Non prevalent elements as light grey color
+prevalence_columns = ['This_Study', 'Current_Pet', 'Current_Colony', 'Current_Shelter', 'Current_Free']
 heatmap_data = df[prevalence_columns].copy()
-heatmap_data.columns = ['Pet', 'Colony', 'Free', 'Shelter']
+heatmap_data.columns = ['This_Study', 'Pet', 'Colony', 'Shelter', 'Free']  # Updated column order
+heatmap_plot_data = heatmap_data.replace(0, np.nan)
 ax2 = fig.add_subplot(gs[0, 2])
-sns.heatmap(heatmap_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50,
+sns.heatmap(heatmap_plot_data, ax=ax2, cmap=prevalence_cmap, vmin=0, vmax=50,
             cbar=False, xticklabels=True, yticklabels=False,
             linewidths=0, linecolor='none', square=True)
-ax2.set_xticks(np.arange(4) + 0.5)
-ax2.set_xticklabels(['Pet', 'Colony', 'Free', 'Shelter'], rotation=45, ha='center', fontsize=9)
+ax2.set_xticks(np.arange(5) + 0.5)
+ax2.set_xticklabels(['This_Study', 'Pet', 'Colony', 'Shelter', 'Free'], rotation=45, ha='center', fontsize=9)  # Updated label order
 ax2.xaxis.tick_top()
 ax2.set_xlabel('')
 
