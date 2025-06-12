@@ -1,31 +1,39 @@
 import pandas as pd
 
 # paths
-mimag_report_path = '/work/microbiome/shanghai_dogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv'
-args_filt_path = '/work/microbiome/shanghai_dogs/intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt'
-
-# input files
+mimag_report_path = 'shanghai_dogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv'
+args_filt_path = 'microbiome/shanghai_dogs/intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt'
 mimag_df = pd.read_csv(mimag_report_path)
 args_df = pd.read_csv(args_filt_path)
 
-# Merge the dataframes using 'Bin ID'
-merged_df = pd.merge(mimag_df, args_df, on='Bin ID', how='left')
+# extract species
+mimag_df['Species'] = mimag_df['Classification'].str.extract(r's__([^;]+)')
 
-# pivot table to count occurrences of each ARG per Bin ID
-arg_counts = merged_df.pivot_table(
+# table with all Bin IDs and species
+base_df = mimag_df[['Bin ID', 'Species']].copy()
+
+# count ARGs per Bin
+arg_counts = args_df.pivot_table(
     index='Bin ID',
     columns='Best_Hit_ARO',
     aggfunc='size',
     fill_value=0
-)
+).reset_index()
 
-# make 'Bin ID' a column again
-arg_counts = arg_counts.reset_index()
+# merge with ARG counts 
+full_df = pd.merge(base_df, arg_counts, on='Bin ID', how='left')
 
-arg_counts['Total_ARGs'] = arg_counts.iloc[:, 1:].sum(axis=1)
+# fbins with no ARGs with 0
+full_df = full_df.fillna(0)
 
-# Save table
-arg_counts.to_csv('ARGs_by_Bin_Summary.csv', index=False)
+#  columns to int
+for col in full_df.columns[2:]:
+    full_df[col] = full_df[col].astype(int)
 
-print("table saved as 'ARGs_by_Bin_Summary.csv'")
+# total ARGs column
+full_df['Total_ARGs'] = full_df.iloc[:, 2:].sum(axis=1)
 
+# save
+full_df.to_csv('ARGs_by_Bin_Summary.csv', index=False)
+
+print("File saved as 'ARGs_by_Bin_Summary.csv'")
