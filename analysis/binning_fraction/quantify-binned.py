@@ -2,11 +2,16 @@ import fasta
 from jug import TaskGenerator
 EX_BINS_BASEDIR = '../../external-data/data/Coelho_2018_bins/'
 
+
 @TaskGenerator
 def generate_contigs_binned_table():
     import pandas as pd
     metadata = pd.read_csv('../../data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv')
 
+    in_eces = set()
+    for h,_ in fasta.fasta_iter(f'../../data/ShanghaiDogs_OtherResources/SHD1_EC.fna.gz', full_header=True):
+        _,_,sample,contig,*_ = h.split()
+        in_eces.add((sample, contig + '_polypolish'))
     contig_data = []
     for si in range(0, 53):
         sample = f'D{si:03}'
@@ -20,11 +25,19 @@ def generate_contigs_binned_table():
                 _,oh,_,s = h.split(' ')
                 assert s == sample
                 binned.add(oh)
+        in_eces_sample = {h for s,h in in_eces if s == sample}
+        assert not(in_eces_sample & binned), f'EC contigs found in binned contigs for {sample}'
         for h,seq in fasta.fasta_iter(f'../../data/ShanghaiDogsAssemblies/{sample}_PP1_PolcaCorr.fna.gz'):
-            contig_data.append((sample, h, len(seq), h in binned))
+            if h in binned:
+                category = 'mag'
+            elif (s,h) in in_eces:
+                category = 'ece'
+            else:
+                category = 'unbinned'
+            contig_data.append((sample, h, len(seq), category))
 
-    contig_data = pd.DataFrame(contig_data, columns=['Sample', 'Header', 'Length', 'Binned'])
-    ofile = '../../intermediate-outputs/Tables/SHD_contigs_binned.csv'
+    contig_data = pd.DataFrame(contig_data, columns=['Sample', 'Header', 'Length', 'BinningCategory'])
+    ofile = '../../intermediate-outputs/Tables/SHD_contigs_binned_or_ece.csv'
     contig_data.to_csv(ofile, index=False)
     return ofile
 
@@ -84,25 +97,30 @@ def quantify_spire_mags():
     contig_data.to_csv(ofile, index=False)
     return ofile
 
+
 @TaskGenerator
-def unigene_binned_fraction():
+def unigene_binned_fraction(binned_table):
     import pandas as pd
-    binned = pd.read_csv('../../intermediate-outputs/Tables/SHD_contigs_binned.csv', )
+    binned = pd.read_csv(binned_table)
     binned['SampleHeader'] = binned['Sample'] + '__' + binned['Header']
     binned.set_index('SampleHeader', inplace=True)
 
-    orfs = pd.read_csv('../../intermediate-outputs/Prodigal/SHD.ORF.orig.tsv.xz',
-                        sep='\t', names=['ORF', 'Sample', 'Header'])
-    orfs['Contig'] = orfs['Header'].str.rsplit('_').str[:-1].str.join('_')
+    orfs = pd.read_csv('../../intermediate-outputs/Prodigal/SHD.ORF.orig.tsv.xz', sep='\t')
+
+    orfs['Contig'] = orfs['Original_ID'].str.rsplit('_').str[:-1].str.join('_')
     orfs['SampleHeader'] = orfs['Sample'] + '__' + orfs['Contig']
 
-    orfs = orfs.join(binned[['Binned']], on='SampleHeader')
+    orfs = orfs.join(binned[['BinningCategory']], on='SampleHeader')
 
     clusters = pd.read_csv('../../intermediate-outputs/Prodigal/SHD.clusters.tsv.xz', sep='\t', names=['ORF', 'rel100', 'rep100', 'rel95', 'rep95'])
 
     orfs.set_index('ORF', inplace=True)
     clusters.set_index('ORF', inplace=True)
-    clusters = clusters.join(orfs[['Binned']])
+
+    clusters = clusters.join(orfs[['BinningCategory', 'Partial']])
+    clusters['IsComplete'] = clusters['Partial'] == 0
+    clusters['Binned'] = clusters.eval("BinningCategory != 'unbinned'")
+    clusters['Binned_MAGOnly'] = clusters.eval("BinningCategory == 'mag'")
 
     results = {
             'count' : [
@@ -115,10 +133,22 @@ def unigene_binned_fraction():
                 clusters.groupby('rep100')['Binned'].any().mean(),
                 clusters.groupby('rep95')['Binned'].any().mean(),
                 ],
+            'fraction_binned_in_mag' : [
+                clusters['Binned_MAGOnly'].mean(),
+                clusters.groupby('rep100')['Binned_MAGOnly'].any().mean(),
+                clusters.groupby('rep95')['Binned_MAGOnly'].any().mean(),
+                ],
+            'fraction_complete' : [
+                clusters['IsComplete'].mean(),
+                clusters.groupby('rep100')['IsComplete'].any().mean(),
+                clusters.groupby('rep95')['IsComplete'].any().mean(),
+            ],
             }
+
+    pd.DataFrame(results, index=['ORF', '100NT', '95NT'])
     return pd.DataFrame(results, index=['ORF', '100NT', '95NT'])
 
-generate_contigs_binned_table()
+binned_table = generate_contigs_binned_table()
 semibin_binned_fraction()
 quantify_spire_mags()
-unigene_binned_fraction()
+ubinned = unigene_binned_fraction(binned_table)
