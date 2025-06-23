@@ -14,11 +14,13 @@
 
 ### Data
 
-1. Raw FastQs from service provider. FQs will be uploaded, Fast5 maybe
-2. Metadata
-3. Polished assemblies
-4. MAGs
-5. Annotation tables
+1. `ShanghaiDogsFastQ/`: Raw FastQs from service provider. FQs will be uploaded, Fast5 maybe
+2. `ShanghaiDogsMetadata/`: Metadata for the samples
+3. `ShanghaiDogsAssemblies/`: Polished assemblies
+4. `ShanghaiDogsMAGs/`: MAGs (FASTA files)
+5. `ShanghaiDogsMAGAnnotations/`: Annotations of MAGs, including `EMapper` and `Barrnap` subdirectories
+6. `ShanghaiDogsMAGsTables/`: Tables with MAGs, including `singleM` and `mOTU` subdirectories
+7. `ShanghaiDogs_OtherResources/`: Other resources, including gene and smORF catalogues (and their respective annotations)
 
 ### External data
 
