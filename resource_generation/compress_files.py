@@ -11,7 +11,7 @@ def compress_emapper_file(emapper):
     # file is chunked (enable parallel decompression)
     subprocess.check_call(['xz', '--threads=4', emapper])
 
-    os.link(emapper + '.xz', '../data/ShanghaiDogsTables/MAGAnnotations/' + path.basename(emapper) + '.xz')
+    os.link(emapper + '.xz', '../data/ShanghaiDogsMAGAnnotations/EMapper/' + path.basename(emapper) + '.xz')
     return emapper + '.xz'
 
 
