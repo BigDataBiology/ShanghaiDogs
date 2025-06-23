@@ -1,1 +1,67 @@
+import os
+from collections import defaultdict
+import fasta  
 
+#Paths
+base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER"
+fasta_file = os.path.join(base_dir, "Mapped_SmORFs_sequences.faa")
+output_tsv = os.path.join(base_dir, "sequence_metadata.tsv")
+log_file = os.path.join(base_dir, "merge_log.txt")
+
+#Create dictionary from FASTA file (sequence -> new ID)
+seq_to_id = {}
+for header, seq in fasta.fasta_iter(fasta_file, full_header=True):
+    normalized_seq = seq.replace(" ", "").replace("\n", "").upper()
+    seq_to_id[normalized_seq] = header  
+
+#Process predicted.filterd.smorf.faa files and combine metadata
+seq_metadata = defaultdict(lambda: {"samples": set(), "contig": [], "coords": [], "strand": [], "smorfs": set()})
+seq_counts = defaultdict(int)  # Track number of occurrences per sequence
+for sample in os.listdir(base_dir):
+    sample_path = os.path.join(base_dir, sample)
+    if os.path.isdir(sample_path):
+        pred_file = os.path.join(sample_path, "predicted.filterd.smorf.faa")  
+        if os.path.exists(pred_file):
+            for header, seq in fasta.fasta_iter(pred_file, full_header=True):
+                normalized_seq = seq.replace(" ", "").replace("\n", "").upper()
+                seq_counts[normalized_seq] += 1
+                if normalized_seq in seq_to_id:
+                    parts = header.split("#")
+                    if len(parts) >= 5:
+                        smorf_id = parts[0].strip()
+                        contig = parts[1].strip()
+                        start = parts[2].strip()
+                        end = parts[3].strip()
+                        strand = "+" if parts[4].strip() == "1" else "-"
+                        coord = f"{start}-{end}"
+                        seq_metadata[normalized_seq]["samples"].add(sample)
+                        seq_metadata[normalized_seq]["contig"].append(contig)
+                        seq_metadata[normalized_seq]["coords"].append(coord)
+                        seq_metadata[normalized_seq]["strand"].append(strand)
+                        seq_metadata[normalized_seq]["smorfs"].add(smorf_id)
+
+# Write TSV file
+with open(output_tsv, "w") as out_f:
+    out_f.write("SmORF ID\tContig\tCoordinates\tStrand\n")
+    for seq, data in seq_metadata.items():
+        if seq in seq_to_id:
+            new_id = seq_to_id[seq]
+            contig_info = ",".join(data["contig"])
+            coords = ",".join(data["coords"])
+            strand_info = ",".join(data["strand"])
+            out_f.write(f"{new_id}\t{contig_info}\t{coords}\t{strand_info}\n")
+
+# Write log file
+with open(log_file, "w") as log_f:
+    log_f.write(f"Total unique sequences: {len(seq_to_id)}\n")
+    duplicate_count = sum(1 for count in seq_counts.values() if count > 1)
+    log_f.write(f"Number of sequences with duplicates: {duplicate_count}\n")
+    log_f.write("Detailed duplicate counts with associated smORFs:\n")
+    for seq, count in sorted(seq_counts.items(), key=lambda x: x[1], reverse=True):
+        if count > 1 and seq in seq_to_id:
+            new_id = seq_to_id[seq]
+            smorfs = ", ".join(sorted(seq_metadata[seq]["smorfs"]))
+            log_f.write(f"Sequence with ID {new_id} appeared {count} times (smORFs: {smorfs})\n")
+
+print(f"TSV file created: {output_tsv}")
+print(f"Log file created: {log_file}")
