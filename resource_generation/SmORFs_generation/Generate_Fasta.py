@@ -21,8 +21,8 @@ for sample in os.listdir(base_dir):
 # Write unique sequences to output FASTA
 with open(output_fasta, "w") as out_f:
     for seq, headers in sequence_dict.items():
-        new_id = lib.pad9("SHD.SM.100AA", id_counter)  
+        new_id = lib.pad9("SHD1_SM.100AA.", id_counter)  
         out_f.write(f">{new_id}\n{seq}\n")
-        id_counter += 1
+        id_counter += 1 
 
 print(f"FASTA file created: {output_fasta}")
