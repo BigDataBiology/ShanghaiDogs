@@ -45,7 +45,45 @@ def get_sequences():
                 seqs[seq].append((binid, h))
     return seqs
 
+
+@TaskGenerator
+def reorganize_results(results):
+    """
+    Reorganize the results from the Microbe Atlas server into a DataFrame.
+    Parameters:
+    results (list): List of tuples containing sequence, headers, and response from the server.
+
+    Returns:
+    pd.DataFrame: DataFrame with columns ['MAG', 'Seq', 'OTU'].
+    """
+    import pandas as pd
+    reorg = []
+    for seq, hs, (st, r) in results:
+        assert st == 200, f"Error {st} from Microbe Atlas server"
+        otus = r['otutable']['otus']
+        if len(otus) == 0:
+            otus = 'NA'
+        elif len(otus) == 1:
+            [otu] = otus
+        else:
+            raise ValueError(f"Unexpected number of OTUs: {len(otus)} for sequence {seq}")
+        for m, _ in hs:
+            reorg.append((m, seq, otu))
+    data = pd.DataFrame(reorg, columns=['MAG', 'Seq', 'OTU'])
+    data.sort_values(by='MAG', inplace=True)
+    return data.reset_index(drop=True)
+
+@TaskGenerator
+def save_results(final):
+    """
+    Save the final DataFrame to a CSV file.
+    """
+    import pandas as pd
+    final.to_csv('../intermediate-outputs/07_ribosomal_genes/microbe-atlas.csv.gz', index=False)
+
 results = []
 for seq, hs in bvalue(get_sequences()).items():
-    h = hs[0]
+    h = hs[0][1]
     results.append((seq, hs, lookup_1seq(h, seq)))
+final = reorganize_results(results)
+save_results(final)
