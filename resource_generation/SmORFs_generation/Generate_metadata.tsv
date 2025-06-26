@@ -124,3 +124,8 @@ with open(log_file, "w") as log_f:
 print(f"SmORFs metadata TSV created: {sequence_metadata_tsv}")
 print(f"Habitat and taxonomy TSV created: {habitat_taxonomy_tsv}")
 print(f"Log file created: {log_file}")
+
+
+
+### Generate 90AA smORFs based on the 100AA smORFs uses CD - HIT
+./cd-hit -i /work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/Mapped_SmORFs_sequences.faa -o /work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/clustered_SmORFs -c 0.9 -n 5 -M 16000 -T 16 -d 0
