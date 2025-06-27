@@ -1,0 +1,192 @@
+##Part1 
+
+import os
+import csv
+from collections import defaultdict
+import fasta
+
+# Paths
+base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER"
+fasta_file = os.path.join(base_dir, "Mapped_SmORFs_sequences.faa")
+sequence_metadata_tsv = os.path.join(base_dir, "SmORFs_metadata.tsv")
+habitat_taxonomy_tsv = os.path.join(base_dir, "SmORFs_habitat_taxonomy.tsv")
+log_file = os.path.join(base_dir, "merge_log.txt")
+
+# Create dictionary from FASTA file (sequence -> new ID)
+seq_to_id = {}
+for header, seq in fasta.fasta_iter(fasta_file, full_header=True):
+    normalized_seq = seq.replace(" ", "").replace("\n", "").upper()
+    seq_to_id[normalized_seq] = header  
+
+# Process sample folders
+seq_metadata = defaultdict(list)  
+seq_counts = defaultdict(int) 
+smorf_to_habitat = defaultdict(set)
+smorf_to_taxonomy = defaultdict(set)
+
+for sample in os.listdir(base_dir):
+    sample_path = os.path.join(base_dir, sample)
+    if not os.path.isdir(sample_path):
+        continue
+    sample_id = sample.replace("_PP1_PolcaCorr", "")  
+
+    # Read predicted.filterd.smorf.faa
+    pred_file = os.path.join(sample_path, "predicted.filterd.smorf.faa")
+    if os.path.exists(pred_file):
+        for header, seq in fasta.fasta_iter(pred_file, full_header=True):
+            normalized_seq = seq.replace(" ", "").replace("\n", "").upper()
+            seq_counts[normalized_seq] += 1
+            if normalized_seq in seq_to_id:
+                parts = header.split("#")
+                if len(parts) >= 5:
+                    smorf_id = parts[0].strip()
+                    contig = parts[1].strip()
+                    start = parts[2].strip()
+                    end = parts[3].strip()
+                    strand = "+" if parts[4].strip() == "1" else "-"
+                    coord = f"{start}-{end}"
+                    seq_metadata[normalized_seq].append({
+                        "sample_id": sample_id,
+                        "contig": contig,
+                        "coords": coord,
+                        "strand": strand,
+                        "smorf_id": smorf_id
+                    })
+
+    # Read habitat.out.smorfs.tsv
+    habitat_file = os.path.join(sample_path, "habitat.out.smorfs.tsv")
+    if os.path.exists(habitat_file):
+        with open(habitat_file, "r") as f:
+            reader = csv.reader(f, delimiter="\t")
+            next(reader, None)
+            for row in reader:
+                if len(row) >= 2:
+                    smorf_id = row[0].strip()
+                    habitats = [h.strip() for h in row[1].split(",") if h.strip()]
+                    smorf_to_habitat[(smorf_id, sample_id)].update(habitats)
+
+    # Read taxonomy.out.smorfs.tsv
+    taxonomy_file = os.path.join(sample_path, "taxonomy.out.smorfs.tsv")
+    if os.path.exists(taxonomy_file):
+        with open(taxonomy_file, "r") as f:
+            reader = csv.reader(f, delimiter="\t")
+            next(reader, None)
+            for row in reader:
+                if len(row) >= 2:
+                    smorf_id = row[0].strip()
+                    taxonomy = row[1].strip()
+                    smorf_to_taxonomy[(smorf_id, sample_id)].add(taxonomy)
+
+# Arrange sorted SmORF IDs by frequency and sequence
+smorf_order = sorted(
+    seq_to_id.items(),
+    key=lambda x: (-seq_counts[x[0]], x[0])  
+)
+
+# Write SmORFs_metadata.tsv with SmORF ID, Sample ID, Contig, Coordinates, Strand
+with open(sequence_metadata_tsv, "w", newline='') as out_f:
+    writer = csv.writer(out_f, delimiter="\t")
+    writer.writerow(["SmORF ID", "Sample ID", "Contig", "Coordinates", "Strand"])
+    for seq, smorf_id in smorf_order:
+        for entry in seq_metadata[seq]:
+            writer.writerow([
+                smorf_id,  
+                entry["sample_id"],  
+                entry["contig"],
+                entry["coords"],
+                entry["strand"]
+            ])
+
+# Write SmORFs_habitat_taxonomy.tsv with SmORF ID, Sample ID, Habitat, Taxonomy
+with open(habitat_taxonomy_tsv, "w", newline='') as out_f:
+    writer = csv.writer(out_f, delimiter="\t")
+    writer.writerow(["SmORF ID", "Sample ID", "Habitat", "Taxonomy"])
+    for seq, smorf_id in smorf_order:
+        seen_samples = set()
+        for entry in seq_metadata[seq]:
+            sample_id = entry["sample_id"]
+            if sample_id not in seen_samples:
+                habitat_str = ",".join(sorted(smorf_to_habitat.get((entry["smorf_id"], sample_id), set())))
+                taxonomy_str = max(smorf_to_taxonomy.get((entry["smorf_id"], sample_id), set()), key=len, default="")
+                writer.writerow([smorf_id, sample_id, habitat_str, taxonomy_str])
+                seen_samples.add(sample_id)
+
+# Write log file
+with open(log_file, "w") as log_f:
+    log_f.write(f"Total unique sequences: {len(seq_to_id)}\n")
+    duplicate_count = sum(1 for count in seq_counts.values() if count > 1)
+    log_f.write(f"Number of sequences with duplicates: {duplicate_count}\n")
+    log_f.write("Detailed duplicate counts with associated smORFs:\n")
+    for seq, smorf_id in smorf_order:
+        count = seq_counts[seq]
+        if count > 1:
+            smorfs = ", ".join(sorted(set(entry["smorf_id"] for entry in seq_metadata[seq])))
+            log_f.write(f"Sequence with ID {smorf_id} appeared {count} times (smORFs: {smorfs})\n")
+
+print(f"SmORFs metadata TSV created: {sequence_metadata_tsv}")
+print(f"Habitat and taxonomy TSV created: {habitat_taxonomy_tsv}")
+print(f"Log file created: {log_file}")
+
+
+#PART 2
+### Generate 90AA smORFs based on the 100AA smORFs uses CD - HIT
+./cd-hit -i /work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/Mapped_SmORFs_sequences.faa -o /work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/clustered_SmORFs -c 0.9 -n 5 -M 16000 -T 16 -d 0
+
+### Clustering file
+
+import os
+import csv
+import fasta
+from tqdm import tqdm
+
+# Paths
+base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER"
+fasta_file = os.path.join(base_dir, "Mapped_SmORFs_sequences.faa")
+cluster_file = os.path.join(base_dir, "clustered_SmORFs.clstr")
+output_tsv = os.path.join(base_dir, "SHD_Clusters.tsv")
+log_file = os.path.join(base_dir, "merge_log_Clusters.txt")
+
+# Create dictionary from FASTA file (sequence -> 100AA ID)
+seq_to_id_100aa = {}
+for header, seq in tqdm(fasta.fasta_iter(fasta_file, full_header=True), desc="Processing FASTA file"):
+    normalized_seq = seq.replace(" ", "").replace("\n", "").upper()
+    seq_to_id_100aa[normalized_seq] = header  
+
+# Create dictionary from cluster file (100AA ID -> 90AA representative ID)
+id_100aa_to_90aa = {}
+current_cluster_rep = None
+with open(cluster_file, "r") as f:
+    lines = f.readlines()
+for line in tqdm(lines, desc="Processing cluster file"):
+    line = line.strip()
+    if line.startswith(">Cluster"):
+        current_cluster_rep = None
+    else:
+        parts = line.split()
+        smorf_id = parts[2].strip(">").split("...")[0]
+        if parts[-1] == "*":
+            current_cluster_rep = smorf_id  
+        if current_cluster_rep:
+            id_100aa_to_90aa[smorf_id.replace("90AA", "100AA")] = current_cluster_rep  
+
+# Arrange sorted SmORF IDs by sequence
+smorf_order = sorted(
+    seq_to_id_100aa.items(),
+    key=lambda x: x[0]  
+)
+
+with open(output_tsv, "w", newline='') as out_f:
+    writer = csv.writer(out_f, delimiter="\t")
+    writer.writerow(["100 AA SmORF ID", "90 AA SmORF ID"])
+    for seq, smorf_id in tqdm(smorf_order, desc="Writing TSV"):
+        writer.writerow([
+            smorf_id,
+            id_100aa_to_90aa.get(smorf_id, smorf_id.replace("100AA", "90AA"))
+        ])
+
+# Write log file
+with open(log_file, "w") as log_f:
+    log_f.write(f"Total unique sequences: {len(seq_to_id_100aa)}\n")
+
+print(f"SHD Clusters TSV created: {output_tsv}")
+print(f"Log file created: {log_file}")
