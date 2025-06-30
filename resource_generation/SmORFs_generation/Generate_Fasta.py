@@ -18,11 +18,14 @@ for sample in os.listdir(base_dir):
             for header, seq in fasta.fasta_iter(fasta_file, full_header=True):
                 sequence_dict[seq].append(header)
 
+#Sort sequences by frequency 
+sorted_sequences = sorted(sequence_dict.items(), key=lambda x: len(x[1]), reverse=True)
+
 # Write unique sequences to output FASTA
 with open(output_fasta, "w") as out_f:
-    for seq, headers in sequence_dict.items():
-        new_id = lib.pad9("SHD1_SM.100AA", id_counter)  
+    for seq, headers in sorted_sequences:
+        new_id = lib.pad9("SHD1_SM.100AA", id_counter)
         out_f.write(f">{new_id}\n{seq}\n")
-        id_counter += 1 
+        id_counter += 1
 
 print(f"FASTA file created: {output_fasta}")
