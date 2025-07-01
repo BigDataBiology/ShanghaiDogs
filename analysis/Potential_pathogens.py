@@ -1,77 +1,91 @@
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib import cm
 import os
-mimag_report_path = 'data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv'
-args_filt_path = 'intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt'
+import argnorm.lib
+import argnorm.drug_categorization
 
-# Read data
-mimag_df = pd.read_csv(mimag_report_path)
-args_df = pd.read_csv(args_filt_path)
+def antibiotic(aro):
+    if pd.isna(aro):
+        return 'Unknown'
+    aro = f'ARO:{int(aro)}'
+    drugs = argnorm.drug_categorization.confers_resistance_to(aro)
+    drug_classes = argnorm.drug_categorization.drugs_to_drug_classes(drugs)
+    names = [aro_ontology[d].name for d in drug_classes]
+    names = set(names)
+    names = [n.replace(' antibiotic', '') for n in names]
+    names.sort()
+    return ';'.join(names)
 
-# Extract species
-mimag_df['Species'] = mimag_df['Classification'].str.extract(r's__([^;]+)')
-base_df = mimag_df[['Bin ID', 'Species']].copy()
+def extract_species(classification):
+    if pd.isna(classification):
+        return "Unknown"
+    genus, species = None, None
+    parts = classification.split(';')
+    for part in parts:
+        if part.startswith('g__'):  # Identify genus
+            genus = part[3:]
+        if part.startswith('s__'):  # Identify species
+            species = part[3:]
+    if species:
+        return species
+    elif genus:  # If 's__' consider it as genus + "novel sp"
+        return f"{genus} novel_sp"
+    else:
+        return "Unknown"  # If neither genus nor species are found
 
-# Filter pathogens
-pathogens = [
-    'Campylobacter_D upsaliensis', 'Enterobacter hormaechei_A', 'Enterobacter roggenkampii',
-    'Enterococcus faecalis', 'Enterococcus_B faecium', 'Enterococcus_B hirae',
-    'Enterococcus_B lactis', 'Enterococcus_D gallinarum', 'Helicobacter_A bilis_A',
-    'Helicobacter_A rappini', 'Helicobacter_B canis', 'Helicobacter_B canis_B',
-    'Helicobacter_C magdeburgensis', 'Klebsiella pneumoniae', 'Proteus mirabilis'
-]
-base_df = base_df[base_df['Species'].isin(pathogens)]
+mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
+args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
 
-# Count ARGs per Bin
-arg_counts = args_df.pivot_table(index='Bin ID', columns='Best_Hit_ARO', aggfunc='size', fill_value=0).reset_index()
+merged_df = pd.merge(mags, args_mags, on="Bin ID")
+merged_df['Species'] = merged_df['Classification'].map(extract_species)
+merged_df['Species'].unique()
 
-# Merge data
-full_df = pd.merge(base_df, arg_counts, on='Bin ID', how='left').fillna(0)
+species = merged_df['Species'].to_list()
+potential_pathogens = [sp for sp in species if sp.startswith('Helicobacter')] + \
+                     [sp for sp in species if sp.startswith('Enterococcus')] + \
+                     [sp for sp in species if sp.startswith('Staphylococcus')] + \
+                     ['Escherichia coli', 'Proteus mirabilis', 'Clostridioides difficile', 'Sarcina ventriculi', 'Klebsiella pneumoniae']
+merged_df['Potential_Pathogen'] = merged_df['Species'].apply(set(potential_pathogens).__contains__)
 
-# Convert ARG columns to integers
-for col in full_df.columns[2:]:
-    full_df[col] = full_df[col].astype(int)
+merged_df = merged_df[~merged_df['ARO'].isna()]
+merged_df = merged_df.query('Potential_Pathogen')
+aro_ontology = argnorm.lib.get_aro_ontology()
+resf = argnorm.lib.get_aro_mapping_table('resfinder')
+in_resfinder = set(resf['ARO'].str.split(':').str[1].map(float))
+in_resfinder.discard(float('nan'))
+merged_df = merged_df[merged_df['ARO'].map(set(in_resfinder).__contains__)]
+merged_df = merged_df.query('Best_Identities >= 95')
 
-# Collapse by species, calculate median
-collapsed_df = full_df.groupby('Species').median(numeric_only=True).reset_index()
+merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
+merged_df['Gene_name'] = merged_df['Best_Hit_ARO'] + ' (' + merged_df['antibiotic'] + ')'
 
-# Add total ARGs column
-collapsed_df['Total_ARGs'] = collapsed_df.iloc[:, 1:].sum(axis=1)
-print(collapsed_df)
+species_counts = merged_df['Species'].value_counts().to_dict()
+merged_df['Species_Prevalence'] = merged_df['Species'].map(species_counts)
 
-# We need to finalise the important ARGs for the heatmap-pending
-IN2CM = 2.54  
-fig, ax = plt.subplots(figsize=(17.2 / IN2CM, 17.2 / IN2CM))
+# ARG heatmap by antibiotic class
+ab_heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['antibiotic'])
+bin2species = merged_df.set_index('Bin ID')['Species'].to_dict()
+ab_heatmap.index = ab_heatmap.index.map(bin2species)
+ab_heatmap = ab_heatmap.groupby(ab_heatmap.index).sum()
 
-# Filter non-zero ARGs
-arg_columns = collapsed_df.columns[1:-1]
-non_zero_args = arg_columns[collapsed_df[arg_columns].sum() > 0]
-filtered_df = collapsed_df[['Species'] + list(non_zero_args)]
-heatmap_df = filtered_df.set_index('Species')
-heatmap_df_log = np.log1p(heatmap_df)
+# prevalence column 
+ab_heatmap['Prevalence'] = ab_heatmap.index.map(species_counts)
 
-# Plot heatmap
-sns.heatmap(
-    heatmap_df_log,
-    cmap='viridis',
-    annot=False,
-    cbar_kws={'shrink': 0.4, 'aspect': 21, 'pad': 0.01},
-    xticklabels=True,
-    yticklabels=True,
-    square=True,
-    ax=ax
-)
-# Configure colorbar
-cbar = ax.collections[0].colorbar
-cbar.ax.set_ylabel('')
-cbar.ax.tick_params(labelsize=6)
+#MDR resistance to 3+ classes
+ab_heatmap['Num_Drug_Classes'] = (ab_heatmap.iloc[:, :-1] > 0).sum(axis=1)
+ab_heatmap['MDR'] = ab_heatmap['Num_Drug_Classes'] >= 3
+ab_heatmap.to_csv('ARG_species_summary.csv')
 
-# Configure axes
-ax.tick_params(axis='x', rotation=90, labelsize=6)
-ax.tick_params(axis='y', labelsize=6)
-
+# Plotheatmap
+mheat = ab_heatmap.iloc[:, :-3]
+mheat[mheat == 0] = np.nan
+fig, ax = plt.subplots(figsize=(17 / 2.54, 10 / 2.54))
+cm.OrRd.set_bad(color='white')
+sns.heatmap(mheat, cmap='OrRd', cbar_kws={'label': 'ARG Count'}, linewidths=0.5, ax=ax)
+ax.set_xlabel('')
+ax.set_ylabel('')
 fig.tight_layout()
-fig.savefig('heatmap_args.png', bbox_inches='tight')
-fig.show()
+fig.savefig('Updated_hetamap.png', dpi=300)
