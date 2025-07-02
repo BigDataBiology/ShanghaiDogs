@@ -1,91 +1,106 @@
 import numpy as np
+from matplotlib import cm
+import matplotlib.patches as mpatches
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from matplotlib import cm
-import os
 import argnorm.lib
 import argnorm.drug_categorization
 
-def antibiotic(aro):
-    if pd.isna(aro):
-        return 'Unknown'
-    aro = f'ARO:{int(aro)}'
-    drugs = argnorm.drug_categorization.confers_resistance_to(aro)
-    drug_classes = argnorm.drug_categorization.drugs_to_drug_classes(drugs)
-    names = [aro_ontology[d].name for d in drug_classes]
-    names = set(names)
-    names = [n.replace(' antibiotic', '') for n in names]
-    names.sort()
-    return ';'.join(names)
+mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
+args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
+merged_df = pd.merge(mags, args_mags, on="Bin ID")
 
 def extract_species(classification):
     if pd.isna(classification):
         return "Unknown"
-    genus, species = None, None
-    parts = classification.split(';')
-    for part in parts:
-        if part.startswith('g__'):  # Identify genus
+    genus, species = "", ""
+    for part in classification.split(';'):
+        if part.startswith('g__'):
             genus = part[3:]
-        if part.startswith('s__'):  # Identify species
+        if part.startswith('s__'):
             species = part[3:]
-    if species:
-        return species
-    elif genus:  # If 's__' consider it as genus + "novel sp"
-        return f"{genus} novel_sp"
-    else:
-        return "Unknown"  # If neither genus nor species are found
+    return species if species else f"{genus} novel_sp" if genus else "Unknown"
 
-mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
-args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
-
-merged_df = pd.merge(mags, args_mags, on="Bin ID")
 merged_df['Species'] = merged_df['Classification'].map(extract_species)
-merged_df['Species'].unique()
 
-species = merged_df['Species'].to_list()
-potential_pathogens = [sp for sp in species if sp.startswith('Helicobacter')] + \
-                     [sp for sp in species if sp.startswith('Enterococcus')] + \
-                     [sp for sp in species if sp.startswith('Staphylococcus')] + \
-                     ['Escherichia coli', 'Proteus mirabilis', 'Clostridioides difficile', 'Sarcina ventriculi', 'Klebsiella pneumoniae']
-merged_df['Potential_Pathogen'] = merged_df['Species'].apply(set(potential_pathogens).__contains__)
+potential_pathogens = [
+    'Escherichia coli', 'Proteus mirabilis', 'Clostridioides difficile',
+    'Sarcina ventriculi', 'Klebsiella pneumoniae'
+] + [s for s in merged_df['Species'].unique()
+     if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus'))]
 
-merged_df = merged_df[~merged_df['ARO'].isna()]
-merged_df = merged_df.query('Potential_Pathogen')
+merged_df = merged_df[
+    merged_df['Species'].isin(potential_pathogens) &
+    (~merged_df['ARO'].isna())
+]
+
+#ResFinder AROs
 aro_ontology = argnorm.lib.get_aro_ontology()
 resf = argnorm.lib.get_aro_mapping_table('resfinder')
 in_resfinder = set(resf['ARO'].str.split(':').str[1].map(float))
-in_resfinder.discard(float('nan'))
-merged_df = merged_df[merged_df['ARO'].map(set(in_resfinder).__contains__)]
-merged_df = merged_df.query('Best_Identities >= 95')
+merged_df = merged_df[
+    merged_df['ARO'].map(set(in_resfinder).__contains__) &
+    (merged_df['Best_Identities'] >= 95)
+]
+
+def antibiotic(aro):
+    if pd.isna(aro):
+        return 'Unknown'
+    aro_id = f'ARO:{int(aro)}'
+    drugs = argnorm.drug_categorization.confers_resistance_to(aro_id)
+    drug_classes = argnorm.drug_categorization.drugs_to_drug_classes(drugs)
+    names = [aro_ontology[d].name.replace(' antibiotic', '') for d in drug_classes]
+    return ';'.join(sorted(set(names)))
 
 merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
-merged_df['Gene_name'] = merged_df['Best_Hit_ARO'] + ' (' + merged_df['antibiotic'] + ')'
 
-species_counts = merged_df['Species'].value_counts().to_dict()
-merged_df['Species_Prevalence'] = merged_df['Species'].map(species_counts)
-
-# ARG heatmap by antibiotic class
-ab_heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['antibiotic'])
+heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
 bin2species = merged_df.set_index('Bin ID')['Species'].to_dict()
-ab_heatmap.index = ab_heatmap.index.map(bin2species)
-ab_heatmap = ab_heatmap.groupby(ab_heatmap.index).sum()
+heatmap.index = heatmap.index.map(bin2species)
+heatmap.sort_index(inplace=True)
 
-# prevalence column 
-ab_heatmap['Prevalence'] = ab_heatmap.index.map(species_counts)
-
-#MDR resistance to 3+ classes
-ab_heatmap['Num_Drug_Classes'] = (ab_heatmap.iloc[:, :-1] > 0).sum(axis=1)
-ab_heatmap['MDR'] = ab_heatmap['Num_Drug_Classes'] >= 3
-ab_heatmap.to_csv('ARG_species_summary.csv')
-
-# Plotheatmap
-mheat = ab_heatmap.iloc[:, :-3]
+# Reorder columns by drug class
+arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic'].to_dict()
+arg_primary_class = {
+    arg: arg_to_class.get(arg, 'Unknown').split(';')[0]
+    if arg_to_class.get(arg) else 'Unknown'
+    for arg in heatmap.columns
+}
+sorted_args = sorted(heatmap.columns, key=lambda x: arg_primary_class[x])
+heatmap = heatmap[sorted_args]
+mheat = heatmap.groupby(heatmap.index).mean()
 mheat[mheat == 0] = np.nan
-fig, ax = plt.subplots(figsize=(17 / 2.54, 10 / 2.54))
-cm.OrRd.set_bad(color='white')
-sns.heatmap(mheat, cmap='OrRd', cbar_kws={'label': 'ARG Count'}, linewidths=0.5, ax=ax)
-ax.set_xlabel('')
-ax.set_ylabel('')
+mheat.index = mheat.index.map(lambda x: x.split(' ')[0][0] + '. ' + ' '.join(x.split(' ')[1:]))
+
+# Drug class colors
+all_classes = sorted(set(arg_primary_class.values()))
+palette = sns.color_palette('tab10', len(all_classes))
+class_to_color = dict(zip(all_classes, palette))
+arg_colors = [class_to_color[arg_primary_class[arg]] for arg in mheat.columns]
+
+IN2CM = 2.54
+fig, ax = plt.subplots(figsize=(17 / IN2CM, 10 / IN2CM))
+cmap = cm.OrRd
+cmap.set_bad(color='white')
+ax.imshow(mheat, aspect='auto', cmap=cmap)
+
+ax.set_xticks(range(len(mheat.columns)))
+ax.set_xticklabels(mheat.columns, rotation=90, fontsize=6)
+ax.set_yticks(range(len(mheat.index)))
+ax.set_yticklabels(mheat.index, fontsize=6)
+
+#colored bar 
+for idx, color in enumerate(arg_colors):
+    ax.add_patch(plt.Rectangle((idx - 0.5, len(mheat.index) - 0.4), 1, 0.1,
+                               transform=ax.transData, clip_on=False,
+                               facecolor=color, linewidth=0))
+#legend
+handles = [mpatches.Patch(color=class_to_color[c], label=c) for c in class_to_color]
+ax.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left',
+          title='Drug Class', fontsize=6, title_fontsize=7)
+
+sns.despine(ax=ax, trim=True)
+ax.tick_params(axis='x', which='both', length=0)
 fig.tight_layout()
-fig.savefig('Updated_hetamap.png', dpi=300)
+fig.savefig('potential_pathogens_updated.png', dpi=300, bbox_inches='tight')
