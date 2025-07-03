@@ -7,8 +7,6 @@ import seaborn as sns
 import argnorm.lib
 import argnorm.drug_categorization
 from collections import Counter
-import os 
-
 mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
 args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
 merged_df = pd.merge(mags, args_mags, on="Bin ID")
@@ -31,9 +29,16 @@ potential_pathogens = [
     'Sarcina ventriculi', 'Klebsiella pneumoniae'
 ] + [s for s in merged_df['Species'].unique()
      if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus'))]
-
+mag_counts_df = (
+    merged_df[merged_df['Species'].isin(potential_pathogens)][['Species', 'Bin ID']]
+    .drop_duplicates()
+    .groupby('Species')
+    .count()
+    .rename(columns={'Bin ID': 'MAG Count'})
+)
+mag_counts = mag_counts_df['MAG Count'].to_dict()
 merged_df = merged_df[
-    merged_df['Species'].isin(potential_pathogens) &
+    merged_df['Species'].isin(potential_pathogens) & 
     (~merged_df['ARO'].isna())
 ]
 
@@ -55,17 +60,14 @@ def antibiotic(aro):
     return ';'.join(sorted(set(names)))
 
 merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
-
-species_mag_counts = merged_df.groupby('Species')['Bin ID'].nunique().to_dict()
 merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
-    lambda s: f"{s} – {species_mag_counts.get(s, 0)}"
+    lambda s: f"{s} – {mag_counts.get(s, 0)}"
 )
 
 heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
 bin2species = merged_df.set_index('Bin ID')['SpeciesWithCounts'].to_dict()
 heatmap.index = heatmap.index.map(bin2species)
 heatmap.sort_index(inplace=True)
-
 arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic'].to_dict()
 arg_primary_class = {
     arg: arg_to_class.get(arg, 'Unknown').split(';')[0]
@@ -79,7 +81,6 @@ sorted_args = sorted(
     heatmap.columns,
     key=lambda x: (sorted_classes.index(arg_primary_class[x]), x)
 )
-
 heatmap = heatmap[sorted_args]
 mheat = heatmap.groupby(heatmap.index).mean()
 mheat[mheat == 0] = np.nan
@@ -93,7 +94,6 @@ def format_species_label(species_label):
     return f"{italic_name} – {count}"
 
 mheat.index = mheat.index.map(format_species_label)
-
 def italicize_gene_name(gene):
     if "AAC(6')-Ie-APH(2'')-Ia bifunctional protein" in gene:
         gene = gene.replace(" bifunctional protein", "")
@@ -110,26 +110,34 @@ IN2CM = 2.54
 fig, ax = plt.subplots(figsize=(17 / IN2CM, 10 / IN2CM))
 cmap = cm.OrRd
 cmap.set_bad(color='white')
-heatmap_img = ax.imshow(mheat, aspect='auto', cmap=cmap)
+heatmap_img = ax.imshow(mheat, aspect='equal', cmap=cmap, interpolation='nearest')
+
+ax.spines[:].set_visible(False)
+ax.set_xticks(np.arange(len(mheat.columns) + 1) - 0.5, minor=True)
+ax.set_yticks(np.arange(len(mheat.index) + 1) - 0.5, minor=True)
+ax.grid(which="minor", color="w", linestyle='-', linewidth=0.5)  # Adjust linewidth for gap size
+ax.tick_params(which="minor", bottom=False, left=False)
+
 ax.set_xticks(range(len(mheat.columns)))
 ax.set_xticklabels(mheat.columns, rotation=90, fontsize=6)
 ax.set_yticks(range(len(mheat.index)))
 ax.set_yticklabels(mheat.index, fontsize=6)
 
-# Colored drug class
+# Color bar 
 for idx, color in enumerate(arg_colors):
     ax.add_patch(plt.Rectangle((idx - 0.5, len(mheat.index) - 0.4), 1, 0.3,
                                transform=ax.transData, clip_on=False,
                                facecolor=color, linewidth=0))
+
 # Legend
 handles = [mpatches.Patch(color=class_to_color[c], label=c) for c in class_to_color]
 ax.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left',
           title='Drug Class', fontsize=6, title_fontsize=7)
 
-# Colorbar 
+# Colorbar
 cbar = fig.colorbar(heatmap_img, ax=ax, shrink=0.5, aspect=10, pad=0.02)
 cbar.ax.tick_params(labelsize=6)
-sns.despine(ax=ax, trim=True)
-ax.tick_params(axis='x', which='both', length=0)
+sns.despine(ax=ax, trim=True)  # Note: sns.despine may be redundant with spines off
+ax.tick_params(axis='x', which='major', length=0)
 fig.tight_layout()
 fig.savefig('potential_pathogens_updated.svg', dpi=300, bbox_inches='tight')
