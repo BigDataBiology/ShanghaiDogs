@@ -8,7 +8,7 @@ import argnorm.lib
 import argnorm.drug_categorization
 from collections import Counter
 import os 
-os.chdir('/work/microbiome/shanghai_dogs/')
+
 mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
 args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
 merged_df = pd.merge(mags, args_mags, on="Bin ID")
@@ -95,6 +95,8 @@ def format_species_label(species_label):
 mheat.index = mheat.index.map(format_species_label)
 
 def italicize_gene_name(gene):
+    if "AAC(6')-Ie-APH(2'')-Ia bifunctional protein" in gene:
+        gene = gene.replace(" bifunctional protein", "")
     return r"$\it{" + gene.replace("_", r"\_") + "}$"
 
 mheat.columns = [italicize_gene_name(col) for col in mheat.columns]
@@ -130,4 +132,4 @@ cbar.ax.tick_params(labelsize=6)
 sns.despine(ax=ax, trim=True)
 ax.tick_params(axis='x', which='both', length=0)
 fig.tight_layout()
-fig.savefig('potential_pathogens_updated.png', dpi=300, bbox_inches='tight')
+fig.savefig('potential_pathogens_updated.svg', dpi=300, bbox_inches='tight')
