@@ -145,10 +145,18 @@ for idx, color in enumerate(arg_colors):
     ax.add_patch(plt.Rectangle((idx - 0.5, len(mheat.index) - 0.4), 1, 0.3,
                                transform=ax.transData, clip_on=False,
                                facecolor=color, linewidth=0))
-
 handles = [mpatches.Patch(color=class_to_color[c], label=c) for c in class_to_color]
-ax.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper left',
-          title='Drug Class', fontsize=6, title_fontsize=7)
+
+legend = ax.legend(
+    handles=handles,
+    loc='upper center',
+    bbox_to_anchor=(0.7, -0.25), 
+    ncol=2,                     
+    frameon=False,
+    fontsize=6,
+    title='Drug Class',
+    title_fontsize=7
+)
 
 cbar = fig.colorbar(heatmap_img, ax=ax, shrink=0.3, aspect=18, pad=0.02)
 cbar.ax.tick_params(labelsize=6)
