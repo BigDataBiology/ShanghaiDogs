@@ -120,7 +120,11 @@ def italicize_gene_name(gene):
 mheat.columns = [italicize_gene_name(col) for col in mheat.columns]
 
 all_classes = sorted(set(arg_primary_class.values()), key=lambda x: sorted_classes.index(x))
-palette = sns.color_palette('Dark2', len(all_classes))
+dark2_colors = sns.color_palette("Dark2", 8)
+tab10_colors = sns.color_palette("tab10", len(all_classes) - len(dark2_colors))
+combined_palette = dark2_colors + tab10_colors
+palette = combined_palette[:len(all_classes)]
+
 class_to_color = dict(zip(all_classes, palette))
 arg_colors = [class_to_color[arg_primary_class[arg]] for arg in sorted_args]
 
@@ -160,6 +164,7 @@ legend = ax.legend(
 
 cbar = fig.colorbar(heatmap_img, ax=ax, shrink=0.3, aspect=18, pad=0.02)
 cbar.ax.tick_params(labelsize=8)
+
 sns.despine(ax=ax, trim=True)
 ax.tick_params(axis='x', which='major', length=0)
 fig.tight_layout()
