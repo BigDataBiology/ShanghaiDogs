@@ -26,7 +26,7 @@ def extract_species(classification):
 merged_df['Species'] = merged_df['Classification'].map(extract_species)
 
 potential_pathogens = [
-    'Escherichia coli', 'Proteus mirabilis', 'Clostridioides difficile',
+    'Escherichia coli','Clostridioides difficile',
     'Sarcina ventriculi', 'Klebsiella pneumoniae'
 ] + [s for s in merged_df['Species'].unique()
      if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus'))]
@@ -41,7 +41,7 @@ mag_counts_df = (
 mag_counts = mag_counts_df['MAG Count'].to_dict()
 
 merged_df = merged_df[
-    merged_df['Species'].isin(potential_pathogens) &
+    merged_df['Species'].isin(potential_pathogens) & 
     (~merged_df['ARO'].isna())
 ]
 
@@ -73,6 +73,8 @@ def abbreviate_species(name):
 merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
     lambda s: f"{abbreviate_species(s)} – {mag_counts.get(s, 0)}"
 )
+
+merged_df = merged_df[merged_df['Species'].map(lambda s: mag_counts.get(s, 0) > 1)]
 
 heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
 bin2species = merged_df.set_index('Bin ID')['SpeciesWithCounts'].to_dict()
@@ -169,3 +171,7 @@ sns.despine(ax=ax, trim=True)
 ax.tick_params(axis='x', which='major', length=0)
 fig.tight_layout()
 fig.savefig('potential_pathogens_updated.svg', dpi=300, bbox_inches='tight')
+
+
+    
+  
