@@ -12,6 +12,11 @@ def xz_out(fname):
                 p.wait()
 
 
+def pad6(prefix, n):
+    n = f'{n:06}'
+    n = f'{n[:3]}_{n[3:]}'
+    return f'{prefix}.{n}'
+
 def pad9(prefix, n):
     n = f'{n:09}'
     n = f'{n[:3]}_{n[3:6]}_{n[6:]}'
