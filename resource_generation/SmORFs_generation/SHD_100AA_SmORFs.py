@@ -3,13 +3,17 @@ import csv
 from collections import defaultdict
 import fasta
 import lib
+import gzip
 
 # Paths
 base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER"
-output_fasta = os.path.join(base_dir, "100AA_SmORFs_sequences.faa")
-sequence_metadata_tsv = os.path.join(base_dir, "100AA_SmORFs_origins.tsv")
 habitat_taxonomy_tsv = os.path.join(base_dir, "100AA_SmORFs_habitat_taxonomy.tsv")
 log_file = os.path.join(base_dir, "merge_log.txt")
+
+os.makedirs(os.path.join(base_dir, "SHD_SMORF_resource"), exist_ok=True)
+output_fasta = os.path.join(base_dir, "SHD_SMORF_resource", "100AA_SmORFs_sequences.faa.gz")
+sequence_metadata_tsv = os.path.join(base_dir, "SHD_SMORF_resource", "100AA_SmORFs_origins.tsv.gz")
+
 
 # all mapped SmORFs and group by sequence
 sequence_dict = defaultdict(list)
@@ -25,7 +29,7 @@ for sample in os.listdir(base_dir):
 # Assign IDs based on frequency (most frequent first)
 sorted_sequences = sorted(sequence_dict.items(), key=lambda x: (-len(x[1]), x[0]))
 seq_to_id = {}
-with open(output_fasta, "w") as out_f:
+with gzip.open(output_fasta, "wt") as out_f:
     for idx, (seq, headers) in enumerate(sorted_sequences):
         new_id = lib.pad6("SHD1_SM.100AA", idx)
         out_f.write(f">{new_id}\n{seq}\n")
@@ -101,7 +105,7 @@ for sample in os.listdir(base_dir):
 smorf_order = sorted(seq_to_id.items(), key=lambda x: (-seq_counts[x[0]], x[0]))
 
 # SmORFs_metadata.tsv
-with open(sequence_metadata_tsv, "w", newline='') as out_f:
+with gzip.open(sequence_metadata_tsv, "wt", newline='') as out_f:
     writer = csv.writer(out_f, delimiter="\t")
     writer.writerow(["SmORF ID", "Sample ID", "Contig", "Coordinates", "Strand"])
     for seq, smorf_id in smorf_order:

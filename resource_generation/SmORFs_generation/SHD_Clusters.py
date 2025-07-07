@@ -9,10 +9,11 @@ import pandas as pd
 
 #paths
 base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/"
-input_fasta = os.path.join(base_dir, "100AA_SmORFs_sequences.faa.gz")
-origin_tsv = os.path.join(base_dir, "100AA_SmORFs_origins.tsv.gz")
+input_fasta = os.path.join(base_dir, "SHD_SMORF_resource", "100AA_SmORFs_sequences.faa.gz")
+origin_tsv = os.path.join(base_dir, "SHD_SMORF_resource", "100AA_SmORFs_origins.tsv.gz")
+output_tsv = os.path.join(base_dir, "SHD_SMORF_resource", "SHD_Clusters.tsv.gz")
+
 cluster_file = os.path.join(base_dir, "clustered_SmORFs.clstr")
-output_tsv = os.path.join(base_dir, "SHD_Clusters.tsv")
 
 # Parse CD-HIT cluster file
 def parse_cdhit_clusters(cluster_file):
@@ -53,18 +54,19 @@ if missing_ids:
 origins = pd.read_csv(origin_tsv, sep="\t")
 count100aa = origins['SmORF ID'].value_counts().to_dict()
 
-def count_smorfs(mapping_item):
-    # Sort by the number of SmORFs in the cluster and then by the minimum 100AA
-    # SmORF ID as a tiebreaker
+def smorf_sorting_key(mapping_item):
+    # Sort by the number of SmORFs in the cluster and then by the representive
+    # 100AA SmORF ID as a tiebreaker
+    [rep] = [seq_id for seq_id, similarity in mapping_item[1] if similarity == "*"]
     return (
-            sum(
+            -sum(
                 count100aa[seq_id] for seq_id, _ in mapping_item[1]
                 ),
-            min(seq_id for seq_id, _ in mapping_item[1])
+            rep,  # Use the representative 100AA SmORF ID for sorting
             )
 
 clusters = list(cluster_mappings.items())
-clusters.sort(key=count_smorfs, reverse=True)
+clusters.sort(key=smorf_sorting_key)
 # Map 100AA to 90AA IDs
 mappings = []
 for idx, (_, seqs) in enumerate(clusters):
@@ -89,7 +91,6 @@ assert len(seqs) == len(map_90aa_100aa)
 
 seqs.sort()
 
-with open(f"{base_dir}/SHD_90AA_SmORFs.faa", "wt") as out_f:
+with gzip.open(f"{base_dir}/SHD_SMORF_resource/SHD_90AA_SmORFs.faa.gz", "wt") as out_f:
     for h90, h100, seq in seqs:
         out_f.write(f">{h90} {h100}\n{seq}\n")
-
