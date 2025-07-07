@@ -7,11 +7,14 @@ import seaborn as sns
 import argnorm.lib
 import argnorm.drug_categorization
 from collections import Counter
+import os
 
+#paths
 mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
 args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
 merged_df = pd.merge(mags, args_mags, on="Bin ID")
 
+#extract species
 def extract_species(classification):
     if pd.isna(classification):
         return "Unknown"
@@ -26,11 +29,12 @@ def extract_species(classification):
 merged_df['Species'] = merged_df['Classification'].map(extract_species)
 
 potential_pathogens = [
-    'Escherichia coli','Clostridioides difficile',
+    'Escherichia coli','Proteus mirabilis','Clostridioides difficile',
     'Sarcina ventriculi', 'Klebsiella pneumoniae'
 ] + [s for s in merged_df['Species'].unique()
      if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus'))]
 
+#count MAGs
 mag_counts_df = (
     merged_df[merged_df['Species'].isin(potential_pathogens)][['Species', 'Bin ID']]
     .drop_duplicates()
@@ -39,12 +43,12 @@ mag_counts_df = (
     .rename(columns={'Bin ID': 'MAG Count'})
 )
 mag_counts = mag_counts_df['MAG Count'].to_dict()
-
+#filter the args
 merged_df = merged_df[
     merged_df['Species'].isin(potential_pathogens) & 
     (~merged_df['ARO'].isna())
 ]
-
+#Resfinder mapping
 aro_ontology = argnorm.lib.get_aro_ontology()
 resf = argnorm.lib.get_aro_mapping_table('resfinder')
 in_resfinder = set(resf['ARO'].str.split(':').str[1].map(float))
@@ -59,11 +63,21 @@ def antibiotic(aro):
     aro_id = f'ARO:{int(aro)}'
     drugs = argnorm.drug_categorization.confers_resistance_to(aro_id)
     drug_classes = argnorm.drug_categorization.drugs_to_drug_classes(drugs)
-    names = [aro_ontology[d].name.replace(' antibiotic', '') for d in drug_classes]
+    names = [aro_ontology[d].name.replace(' antibiotic', '').replace(' ; ', ';').replace(' ', '') for d in drug_classes]
     return ';'.join(sorted(set(names)))
 
 merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
 
+def categorize_antibiotic_class(abx_str):
+    if abx_str == 'Unknown' or pd.isna(abx_str):
+        return 'Unknown'
+    if ';' in abx_str:
+        return 'Multi-class'
+    return abx_str
+
+merged_df['antibiotic_class_cat'] = merged_df['antibiotic'].map(categorize_antibiotic_class)
+
+#Abbreviate species
 def abbreviate_species(name):
     parts = name.split()
     if len(parts) >= 2:
@@ -71,20 +85,20 @@ def abbreviate_species(name):
     return name
 
 merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
-    lambda s: f"{abbreviate_species(s)} – {mag_counts.get(s, 0)}"
+    lambda s: f"{abbreviate_species(s)} - {mag_counts.get(s, 0)}"
 )
 
 merged_df = merged_df[merged_df['Species'].map(lambda s: mag_counts.get(s, 0) > 1)]
 
+#generate ARG-by-MAG heatmap table
 heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
 bin2species = merged_df.set_index('Bin ID')['SpeciesWithCounts'].to_dict()
 heatmap.index = heatmap.index.map(bin2species)
 heatmap.sort_index(inplace=True)
 
-arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic'].to_dict()
+arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic_class_cat'].to_dict()
 arg_primary_class = {
-    arg: arg_to_class.get(arg, 'Unknown').split(';')[0]
-    if arg_to_class.get(arg) else 'Unknown'
+    arg: arg_to_class.get(arg, 'Unknown')
     for arg in heatmap.columns
 }
 class_counts = Counter(arg_primary_class.values())
@@ -100,55 +114,70 @@ mheat[mheat == 0] = np.nan
 
 species_order = sorted(
     mheat.index,
-    key=lambda s: int(s.split(' – ')[-1]),
+    key=lambda s: int(s.split(' - ')[-1]),
     reverse=True
 )
 mheat = mheat.loc[species_order]
 
 def format_species_label(species_label):
     try:
-        name_part, count = species_label.split(' – ')
+        name_part, count = species_label.split(' - ')
     except ValueError:
         return species_label
     return f"{name_part} (n={count})"
 
 mheat.index = mheat.index.map(format_species_label)
 
+#italicize gene names
 def italicize_gene_name(gene):
     if "AAC(6')-Ie-APH(2'')-Ia bifunctional protein" in gene:
         gene = gene.replace(" bifunctional protein", "")
-    return r"$\it{" + gene.replace("_", r"\_") + "}$"
+    gene_escaped = gene.replace("_", r"\_").replace("-", r"\text{-}")
+    return r"$\mathit{" + gene_escaped + "}$"
 
 mheat.columns = [italicize_gene_name(col) for col in mheat.columns]
 
+#Generate color palette
 all_classes = sorted(set(arg_primary_class.values()), key=lambda x: sorted_classes.index(x))
 dark2_colors = sns.color_palette("Dark2", 8)
 tab10_colors = sns.color_palette("tab10", len(all_classes) - len(dark2_colors))
 combined_palette = dark2_colors + tab10_colors
-palette = combined_palette[:len(all_classes)]
 
-class_to_color = dict(zip(all_classes, palette))
+#separte color for multi class drugs
+if 'Multi-class' in all_classes:
+    multi_class_color = (0.5, 0.5, 0.5)
+    class_to_color_temp = dict(zip(all_classes, combined_palette[:len(all_classes)]))
+    class_to_color_temp['Multi-class'] = multi_class_color
+    class_to_color = class_to_color_temp
+else:
+    class_to_color = dict(zip(all_classes, combined_palette[:len(all_classes)]))
+
 arg_colors = [class_to_color[arg_primary_class[arg]] for arg in sorted_args]
 
+#plot 
 IN2CM = 2.54
 plt.rcParams.update({'font.size': 8})
 fig, ax = plt.subplots(figsize=(17 / IN2CM, 10 / IN2CM))
 cmap = cm.OrRd
 cmap.set_bad(color='white')
-heatmap_img = ax.imshow(mheat, aspect='equal', cmap=cmap, interpolation='nearest')
+heatmap_img = ax.imshow(mheat, aspect='equal', cmap=cmap, interpolation='nearest', vmin=0, vmax=1)
 
-ax.spines[:].set_visible(False)
+#format axes  and grid lines
+ax.spines[:].set_visible(True)
+ax.spines['top'].set_visible(False)
 ax.set_xticks(np.arange(len(mheat.columns) + 1) - 0.5, minor=True)
 ax.set_yticks(np.arange(len(mheat.index) + 1) - 0.5, minor=True)
-ax.grid(which="minor", color="w", linestyle='-', linewidth=0.5)
+ax.grid(which="minor", color="lightgrey", linestyle='-', linewidth=0.5)
 ax.tick_params(which="minor", bottom=False, left=False)
 ax.set_xticks(range(len(mheat.columns)))
 ax.set_xticklabels(mheat.columns, rotation=90, fontsize=8)
+ax.tick_params(axis='x', pad=6)
 ax.set_yticks(range(len(mheat.index)))
 ax.set_yticklabels(mheat.index, fontsize=8)
 
+#color bar for drug classes
 for idx, color in enumerate(arg_colors):
-    ax.add_patch(plt.Rectangle((idx - 0.5, len(mheat.index) - 0.4), 1, 0.3,
+    ax.add_patch(plt.Rectangle((idx - 0.5, -1.0), 1, 0.3,
                                transform=ax.transData, clip_on=False,
                                facecolor=color, linewidth=0))
 
@@ -156,22 +185,21 @@ handles = [mpatches.Patch(color=class_to_color[c], label=c) for c in class_to_co
 legend = ax.legend(
     handles=handles,
     loc='upper center',
-    bbox_to_anchor=(0.8, -0.26),
+    bbox_to_anchor=(0.6, -0.52),
     ncol=2,
     frameon=False,
     fontsize=8,
-    title='Drug Class',
     title_fontsize=8
 )
 
-cbar = fig.colorbar(heatmap_img, ax=ax, shrink=0.3, aspect=18, pad=0.02)
+cbar_ax = fig.add_axes([0.12, 0.16, 0.010, 0.25])
+cbar = fig.colorbar(heatmap_img, cax=cbar_ax, orientation='vertical')
+cbar.ax.set_yticklabels([f"{int(x*100)}%" for x in cbar.get_ticks()])
 cbar.ax.tick_params(labelsize=8)
+ax.set_xlim(-0.5, len(mheat.columns) - 0.5)
+ax.set_ylim(-0.5, len(mheat.index) - 0.5)
 
-sns.despine(ax=ax, trim=True)
 ax.tick_params(axis='x', which='major', length=0)
+plt.subplots_adjust(bottom=0.25)
 fig.tight_layout()
 fig.savefig('potential_pathogens_updated.svg', dpi=300, bbox_inches='tight')
-
-
-    
-  
