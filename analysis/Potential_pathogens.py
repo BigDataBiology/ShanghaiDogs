@@ -12,6 +12,7 @@ import os
 #paths
 mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
 args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
+args_mags["Bin ID"] = args_mags["Bin ID"].str.replace(".fna.gz","")
 merged_df = pd.merge(mags, args_mags, on="Bin ID")
 
 #extract species
