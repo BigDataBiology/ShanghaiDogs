@@ -33,7 +33,7 @@ potential_pathogens = [
     'Escherichia coli','Proteus mirabilis','Clostridioides difficile',
     'Sarcina ventriculi', 'Klebsiella pneumoniae'
 ] + [s for s in merged_df['Species'].unique()
-     if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus'))]
+     if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus', 'Campylobacter'))]
 
 #count MAGs
 mag_counts_df = (
