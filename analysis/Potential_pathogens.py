@@ -1,4 +1,3 @@
-#Rework
 import numpy as np
 from matplotlib import cm
 import matplotlib.patches as mpatches
@@ -13,8 +12,7 @@ import os
 #paths
 mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
 args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
-args_mags["Bin ID"] = args_mags["Bin ID"].str.replace(".fna.gz","")
-merged_df = pd.merge(mags, args_mags, on="Bin ID")
+merged_df = pd.merge(mags, args_mags, on="Bin ID", how="left")
 
 #extract species
 def extract_species(classification):
@@ -29,16 +27,25 @@ def extract_species(classification):
     return species if species else f"{genus} novel_sp" if genus else "Unknown"
 
 merged_df['Species'] = merged_df['Classification'].map(extract_species)
+mags['Species'] = mags['Classification'].map(extract_species)
 
 potential_pathogens = [
-    'Escherichia coli','Proteus mirabilis','Clostridioides difficile',
-    'Sarcina ventriculi', 'Klebsiella pneumoniae'
-] + [s for s in merged_df['Species'].unique()
-     if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus', 'Campylobacter'))]
+    'Escherichia coli', 'Proteus mirabilis', 'Clostridioides difficile',
+    'Sarcina ventriculi', 'Klebsiella pneumoniae',
+    'Holdemanella porci_A', 'Streptococcus lutetiensis', 'Phascolarctobacterium_A sp900552855',
+    'Megamonas funiformis', 'Bacteroides fragilis', 'Phocaeicola coprocola', 'Limisoma sp900541935',
+    'Fusobacterium_A sp900543175', 'Fusobacterium_B sp900541465', 'g__Aphodousia',
+    'Sutterella sp905186105', 'Sutterella wadsworthensis_A', 'Citrobacter freundii',
+    'Citrobacter portucalensis', 'Anaerobiospirillum sp023051105', 'Anaerobiospirillum sp900543125',
+    'Anaerobiospirillum succiniciproducens', 'Campylobacter'
+] + [
+    s for s in merged_df['Species'].unique()
+    if isinstance(s, str) and s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus', 'Campylobacter'))
+]
 
 #count MAGs
 mag_counts_df = (
-    merged_df[merged_df['Species'].isin(potential_pathogens)][['Species', 'Bin ID']]
+    mags[mags['Species'].isin(potential_pathogens)][['Species', 'Bin ID']]
     .drop_duplicates()
     .groupby('Species')
     .count()
@@ -50,6 +57,7 @@ merged_df = merged_df[
     merged_df['Species'].isin(potential_pathogens) & 
     (~merged_df['ARO'].isna())
 ]
+
 #Resfinder mapping
 aro_ontology = argnorm.lib.get_aro_ontology()
 resf = argnorm.lib.get_aro_mapping_table('resfinder')
@@ -85,12 +93,9 @@ def abbreviate_species(name):
     if len(parts) >= 2:
         return f"$\\it{{{parts[0][0]}. {' '.join(parts[1:])}}}$"
     return name
-
 merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
-    lambda s: f"{abbreviate_species(s)} - {mag_counts.get(s, 0)}"
+    lambda s: f"{s} - {mag_counts.get(s, 0)}"
 )
-
-merged_df = merged_df[merged_df['Species'].map(lambda s: mag_counts.get(s, 0) > 1)]
 
 #generate ARG-by-MAG heatmap table
 heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
@@ -99,10 +104,7 @@ heatmap.index = heatmap.index.map(bin2species)
 heatmap.sort_index(inplace=True)
 
 arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic_class_cat'].to_dict()
-arg_primary_class = {
-    arg: arg_to_class.get(arg, 'Unknown')
-    for arg in heatmap.columns
-}
+arg_primary_class = {arg: arg_to_class.get(arg, 'Unknown') for arg in heatmap.columns}
 class_counts = Counter(arg_primary_class.values())
 sorted_classes = [cls for cls, _ in class_counts.most_common()]
 sorted_args = sorted(
@@ -113,7 +115,6 @@ heatmap = heatmap[sorted_args]
 
 mheat = heatmap.groupby(heatmap.index).mean()
 mheat[mheat == 0] = np.nan
-
 species_order = sorted(
     mheat.index,
     key=lambda s: int(s.split(' - ')[-1]),
@@ -159,7 +160,7 @@ arg_colors = [class_to_color[arg_primary_class[arg]] for arg in sorted_args]
 #plot 
 IN2CM = 2.54
 plt.rcParams.update({'font.size': 8})
-fig, ax = plt.subplots(figsize=(17 / IN2CM, 10 / IN2CM))
+fig, ax = plt.subplots(figsize=(30 / IN2CM, 30/ IN2CM))# we can make 3 plots bassed on classfication of the species as the data is more 
 cmap = cm.OrRd
 cmap.set_bad(color='white')
 heatmap_img = ax.imshow(mheat, aspect='equal', cmap=cmap, interpolation='nearest', vmin=0, vmax=1)
@@ -178,6 +179,12 @@ ax.set_yticks(range(len(mheat.index)))
 ax.set_yticklabels(mheat.index, fontsize=8)
 
 #color bar for drug classes
+cbar_ax = fig.add_axes([0.45, 0.16, 0.010, 0.15])  # moved right and shorter
+#([0.12, 0.16, 0.010, 0.25])
+cbar = fig.colorbar(heatmap_img, cax=cbar_ax, orientation='vertical')
+cbar.ax.set_yticklabels([f"{int(x*100)}%" for x in cbar.get_ticks()])
+cbar.ax.tick_params(labelsize=8)
+# Add color patches for ARG classes above x-axis
 for idx, color in enumerate(arg_colors):
     ax.add_patch(plt.Rectangle((idx - 0.5, -1.0), 1, 0.3,
                                transform=ax.transData, clip_on=False,
@@ -194,14 +201,10 @@ legend = ax.legend(
     title_fontsize=8
 )
 
-cbar_ax = fig.add_axes([0.12, 0.16, 0.010, 0.25])
-cbar = fig.colorbar(heatmap_img, cax=cbar_ax, orientation='vertical')
-cbar.ax.set_yticklabels([f"{int(x*100)}%" for x in cbar.get_ticks()])
-cbar.ax.tick_params(labelsize=8)
 ax.set_xlim(-0.5, len(mheat.columns) - 0.5)
 ax.set_ylim(-0.5, len(mheat.index) - 0.5)
-
 ax.tick_params(axis='x', which='major', length=0)
+
 plt.subplots_adjust(bottom=0.25)
 fig.tight_layout()
 fig.savefig('potential_pathogens_updated.svg', dpi=300, bbox_inches='tight')
