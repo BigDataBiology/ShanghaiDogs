@@ -40,7 +40,7 @@ arg_MAGs_rf=pd.merge(arg_MAGs,MIMAG_report[['Original ID','Quality','Bin ID']],l
 arg_MAGs_filt = arg_MAGs_rf[arg_MAGs_rf['Best_Identities']>=90]
 arg_MAGs_filt = arg_MAGs_filt[arg_MAGs_filt['Percentage Length of Reference Sequence']>=90]
 
-arg_MAGs_filt.to_csv('intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt')
+arg_MAGs_filt.to_csv('intermediate-outputs/06_ARG/SHD1_ARGs_MAGs.csv.gz', index=False, compression='gzip')
 
 ## 2) For arg_contigs
 arg_contigs.columns = ["ORF_ID", "Contig", "Start", "Stop", "Orientation", "Cut_Off", "Pass_Bitscore", "Best_Hit_Bitscore",
@@ -62,4 +62,4 @@ arg_contigs['Orientation'] = arg_contigs['Orientation'].fillna('+')
 arg_contigs_filt = arg_contigs[arg_contigs['Best_Identities']>=90]
 arg_contigs_filt = arg_contigs_filt[arg_contigs_filt['Percentage Length of Reference Sequence']>=90]
 
-arg_contigs_filt.to_csv('intermediate-outputs/06_ARG/contigs-ARGs_ALL_filt.txt')
+arg_contigs_filt.to_csv('intermediate-outputs/06_ARG/SHD1_ARGs_contigs.csv.gz', index=False, compression='gzip')
