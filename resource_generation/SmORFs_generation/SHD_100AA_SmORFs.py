@@ -110,10 +110,11 @@ with gzip.open(sequence_metadata_tsv, "wt", newline='') as out_f:
     writer.writerow(["SmORF ID", "Sample ID", "Contig", "Coordinates", "Strand"])
     for seq, smorf_id in smorf_order:
         for entry in seq_metadata[seq]:
+            clean_contig = entry["contig"].split("_polypolish_")[0]
             writer.writerow([
                 smorf_id,
                 entry["sample_id"],
-                entry["contig"],
+                clean_contig,
                 entry["coords"],
                 entry["strand"]
             ])
