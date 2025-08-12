@@ -22,7 +22,7 @@ bash Cluster_SmORFs.sh
 ```
 Performs sequence clustering using CD-HIT on the 100AA SmORF sequences. Clusters are formed based on 90% amino acid identity using default CD-HIT parameters.
 
-**Tool:** [CD-HIT](https://github.com/weizhongli/cdhit) with default parameters
+**Tool:** [CD-HIT](https://github.com/weizhongli/cdhit) with (-c 0.9 -n 5 -M 16000 -T 16 -d 0) parameters.
 
 ### Step 4: Cluster Mapping
 ```bash
