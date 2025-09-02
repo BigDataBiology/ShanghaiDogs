@@ -6,7 +6,7 @@ import lib
 import gzip
 
 # Paths
-base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER"
+base_dir = "../../intermediate-outputs/GMSC_MAPPER"
 habitat_taxonomy_tsv = os.path.join(base_dir, "100AA_SmORFs_habitat_taxonomy.tsv")
 log_file = os.path.join(base_dir, "merge_log.txt")
 
@@ -110,7 +110,7 @@ with gzip.open(sequence_metadata_tsv, "wt", newline='') as out_f:
     writer.writerow(["SmORF ID", "Sample ID", "Contig", "Coordinates", "Strand"])
     for seq, smorf_id in smorf_order:
         for entry in seq_metadata[seq]:
-            clean_contig = entry["contig"].split("_polypolish_")[0]
+            clean_contig = entry["contig"].rsplit("_", maxsplit=1)[0]
             writer.writerow([
                 smorf_id,
                 entry["sample_id"],
