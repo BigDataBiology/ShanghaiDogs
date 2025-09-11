@@ -14,3 +14,9 @@ resource_generation/localDB/
 resource_generation/nohup/
 localDB/
 analysis/unused_scripts
+data/TRASH_TO_BE_REMOVED/
+data/TRASH_WILL_BE_REMOVED/
+data/ShanghaiDogsZenodo/
+data/ShanghaiDogsMAGAnnotations/
+resource_generation/old_scripts_USED/
+data/ShanghaiDogsMetadata/ALL_canid_felid_metadata.csv
