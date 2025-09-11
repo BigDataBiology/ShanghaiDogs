@@ -17,7 +17,7 @@ metadata = metadata[~metadata.index.isin(['D000'])] # remove biological replicat
 
 MAGs_NCE_covered_frac = pd.read_csv('intermediate-outputs/external_datasets_mappings/SHD_covered_fraction.tsv.gz',
                                     sep='\t', index_col=0, compression='gzip')
-NCE_info = pd.read_csv('data/ShanghaiDogsTables/SHD_NC_props.tsv.gz',
+NCE_info = pd.read_csv('data/ShanghaiDogsTables/SHD1_EC_props.tsv.gz',
                        sep='\t', index_col=0, compression='gzip')
 
 # Prevalence estimates for NCEs
