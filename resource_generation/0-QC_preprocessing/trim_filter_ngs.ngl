@@ -1,0 +1,18 @@
+ngless "1.5"
+input = paired(ARGV[1],ARGV[2])
+input = preprocess(input) using |read|:
+    read = substrim(read, min_quality=25)
+    if len(read) < 45:
+        discard
+
+write(input,ofile=ARGV[3]+'_trim.fq')
+
+mapped = map(input, fafile='/data/anna/animal_metagenome/long-mg-dog/input/dog-ref-genome/GCA_000002285.4_Dog10K_Boxer_Tasha_genomic.fna')
+
+mapped_filter = select(mapped) using |mr|:
+    mr = mr.filter(min_match_size=45, min_identity_pc=90, action={unmatch})
+    if mr.flag({mapped}):
+        discard
+
+reads_filter = as_reads(mapped_filter)
+write(reads_filter,ofile=ARGV[3]+'_trim_filter.fq')
