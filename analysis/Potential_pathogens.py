@@ -7,14 +7,8 @@ import seaborn as sns
 import argnorm.lib
 import argnorm.drug_categorization
 from collections import Counter
-import os
 
-#paths
-mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
-args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
-merged_df = pd.merge(mags, args_mags, on="Bin ID", how="left")
 
-#extract species
 def extract_species(classification):
     if pd.isna(classification):
         return "Unknown"
@@ -26,8 +20,12 @@ def extract_species(classification):
             species = part[3:]
     return species if species else f"{genus} novel_sp" if genus else "Unknown"
 
-merged_df['Species'] = merged_df['Classification'].map(extract_species)
+
+mags = pd.read_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv")
+args_mags = pd.read_csv("intermediate-outputs/06_ARG/MAGs-ARGs_ALL_filt.txt")
 mags['Species'] = mags['Classification'].map(extract_species)
+
+merged_df = pd.merge(mags, args_mags, on="Bin ID", how="left")
 
 potential_pathogens = [
     'Klebsiella pneumoniae',
@@ -36,29 +34,21 @@ potential_pathogens = [
     'Clostridioides difficile',
     'Citrobacter freundii',
     'Citrobacter portucalensis',
-    'Enterococcus faecalis',
-    'Enterococcus_B faecium',
-    'Enterococcus_D gallinarum',
     'Streptococcus lutetiensis',
-    'Campylobacter_D upsaliensis',
-    'Helicobacter_C magdeburgensis'
-    'Enterococcus_B hirae',
-    'Enterococcus_B lactis'
 ] + [s for s in merged_df['Species'].unique()
      if s.startswith(('Helicobacter', 'Enterococcus', 'Staphylococcus', 'Campylobacter'))]
 
-#count MAGs
-mag_counts_df = (
+potential_pathogens = set(potential_pathogens)
+
+species_counts = (
      mags[mags['Species'].isin(potential_pathogens)][['Species', 'Bin ID']]
     .drop_duplicates()
     .groupby('Species')
     .count()
-    .rename(columns={'Bin ID': 'MAG Count'})
-)
-mag_counts = mag_counts_df['MAG Count'].to_dict()
+)['Bin ID'].to_dict()
 
 merged_df = merged_df[
-    merged_df['Species'].isin(potential_pathogens) & 
+    merged_df['Species'].isin(potential_pathogens) &
     (~merged_df['ARO'].isna())
 ]
 
@@ -70,6 +60,8 @@ merged_df = merged_df[
     merged_df['ARO'].map(set(in_resfinder).__contains__) &
     (merged_df['Best_Identities'] >= 95)
 ]
+
+
 def antibiotic(aro):
     if pd.isna(aro):
         return 'Unknown'
@@ -79,7 +71,6 @@ def antibiotic(aro):
     names = [aro_ontology[d].name.replace(' antibiotic', '').replace(' ; ', ';').replace(' ', '') for d in drug_classes]
     return ';'.join(sorted(set(names)))
 
-merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
 def categorize_antibiotic_class(abx_str):
     if abx_str == 'Unknown' or pd.isna(abx_str):
         return 'Unknown'
@@ -87,19 +78,16 @@ def categorize_antibiotic_class(abx_str):
         return 'Multi-class'
     return abx_str
 
+merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
 merged_df['antibiotic_class_cat'] = merged_df['antibiotic'].map(categorize_antibiotic_class)
 
-#Abbreviate species
-def abbreviate_species(name):
-    parts = name.split()
-    if len(parts) >= 2:
-        return f"$\\it{{{parts[0][0]}. {' '.join(parts[1:])}}}$"
-    return name
+
 merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
-    lambda s: f"{s} - {mag_counts.get(s, 0)}"
+    lambda s: f"{s} (n = {species_counts[s]})"
 )
 
-#generate ARG-by-MAG heatmap table
+
+# generate ARG-by-MAG heatmap table
 heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
 bin2species = merged_df.set_index('Bin ID')['SpeciesWithCounts'].to_dict()
 heatmap.index = heatmap.index.map(bin2species)
@@ -119,28 +107,20 @@ mheat = heatmap.groupby(heatmap.index).mean()
 mheat[mheat == 0] = np.nan
 species_order = sorted(
     mheat.index,
-    key=lambda s: int(s.split(' - ')[-1]),
+    key=lambda s: int(s.split('(n =')[-1].strip(')')),
     reverse=True
 )
 mheat = mheat.loc[species_order]
 
-def format_species_label(species_label):
-    try:
-        name_part, count = species_label.split(' - ')
-    except ValueError:
-        return species_label
-    return f"{name_part} (n={count})"
 
-mheat.index = mheat.index.map(format_species_label)
 
-#italicize gene names
-def italicize_gene_name(gene):
+def fix_arg_names(gene):
     if "AAC(6')-Ie-APH(2'')-Ia bifunctional protein" in gene:
         gene = gene.replace(" bifunctional protein", "")
     gene_escaped = gene.replace("_", r"\_").replace("-", "-")
-    return r"$\mathit{" + gene_escaped + "}$"
+    return gene_escaped
 
-mheat.columns = [italicize_gene_name(col) for col in mheat.columns]
+mheat.columns = [fix_arg_names(col) for col in mheat.columns]
 
 #Generate color palette
 all_classes = sorted(set(arg_primary_class.values()), key=lambda x: sorted_classes.index(x))
@@ -148,7 +128,7 @@ dark2_colors = sns.color_palette("Dark2", 8)
 tab10_colors = sns.color_palette("tab10", len(all_classes) - len(dark2_colors))
 combined_palette = dark2_colors + tab10_colors
 
-#separte color for multi class drugs
+#separate color for multi class drugs
 if 'Multi-class' in all_classes:
     multi_class_color = (0.5, 0.5, 0.5)
     class_to_color_temp = dict(zip(all_classes, combined_palette[:len(all_classes)]))
@@ -159,7 +139,7 @@ else:
 
 arg_colors = [class_to_color[arg_primary_class[arg]] for arg in sorted_args]
 
-#plot 
+
 IN2CM = 2.54
 plt.rcParams.update({'font.size': 8})
 fig, ax = plt.subplots(figsize=(17 / IN2CM, 17 / IN2CM))
