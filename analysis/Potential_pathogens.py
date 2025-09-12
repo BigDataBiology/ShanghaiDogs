@@ -7,6 +7,7 @@ import seaborn as sns
 import argnorm.lib
 import argnorm.drug_categorization
 from collections import Counter
+plt.rcParams['svg.fonttype'] = 'none'
 
 
 def extract_species(classification):
@@ -82,13 +83,11 @@ merged_df['antibiotic'] = merged_df['ARO'].map(antibiotic)
 merged_df['antibiotic_class_cat'] = merged_df['antibiotic'].map(categorize_antibiotic_class)
 
 
-merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
-    lambda s: f"{s} (n = {species_counts[s]})"
-)
-
-
 # generate ARG-by-MAG heatmap table
-heatmap = pd.crosstab(merged_df['Species'], merged_df['Best_Hit_ARO'])
+heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
+
+bin2species = merged_df.set_index('Bin ID')['Species'].to_dict()
+heatmap.index = heatmap.index.map(bin2species)
 heatmap.sort_index(inplace=True)
 
 arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic_class_cat'].to_dict()
@@ -100,25 +99,10 @@ sorted_args = sorted(
     key=lambda x: (sorted_classes.index(arg_primary_class[x]), x)
 )
 heatmap = heatmap[sorted_args]
-mheat = heatmap.div(pd.Series(species_counts).reindex(heatmap.index), axis=0)
+heatmap[heatmap == 0] = np.nan
 
-mheat[mheat == 0] = np.nan
-mheat.index = mheat.index.map(lambda s: f"{s} (n = {species_counts[s]})")
-species_order = sorted(
-    mheat.index,
-    key=lambda s: int(s.split('(n =')[-1].strip(')')),
-    reverse=True
-)
-mheat = mheat.loc[species_order]
-
-
-def fix_arg_names(gene):
-    if "AAC(6')-Ie-APH(2'')-Ia bifunctional protein" in gene:
-        gene = gene.replace(" bifunctional protein", "")
-    gene_escaped = gene.replace("_", r"\_").replace("-", "-")
-    return gene_escaped
-
-mheat.columns = [fix_arg_names(col) for col in mheat.columns]
+heatmap.columns = heatmap.columns.str.replace(" bifunctional protein", "")
+heatmap.index = heatmap.index.str.replace('_', ' ')
 
 #Generate color palette
 all_classes = sorted(set(arg_primary_class.values()), key=lambda x: sorted_classes.index(x))
@@ -139,24 +123,24 @@ arg_colors = [class_to_color[arg_primary_class[arg]] for arg in sorted_args]
 
 
 IN2CM = 2.54
-plt.rcParams.update({'font.size': 8})
-fig, ax = plt.subplots(figsize=(17 / IN2CM, 17 / IN2CM))
-cmap = cm.OrRd
-cmap.set_bad(color='white')
-heatmap_img = ax.imshow(mheat, aspect='equal', cmap=cmap, interpolation='nearest', vmin=0, vmax=1)
+plt.rcParams.update({'font.size': 7})
+fig, ax = plt.subplots(figsize=(17 / IN2CM, 26 / IN2CM))
+# black and white colormap
+cmap = cm.get_cmap('Greys', 2)
+heatmap_img = ax.imshow(heatmap, aspect='equal', cmap=cmap, interpolation='nearest', vmin=0, vmax=1)
 
 # Format axes and grid lines
 ax.spines[:].set_visible(True)
 ax.spines['top'].set_visible(False)
-ax.set_xticks(np.arange(len(mheat.columns) + 1) - 0.5, minor=True)
-ax.set_yticks(np.arange(len(mheat.index) + 1) - 0.5, minor=True)
+ax.set_xticks(np.arange(len(heatmap.columns) + 1) - 0.5, minor=True)
+ax.set_yticks(np.arange(len(heatmap.index) + 1) - 0.5, minor=True)
 ax.grid(which="minor", color="lightgrey", linestyle='-', linewidth=0.5)
 ax.tick_params(which="minor", bottom=False, left=False)
-ax.set_xticks(range(len(mheat.columns)))
-ax.set_xticklabels(mheat.columns, rotation=90, fontsize=8)
+ax.set_xticks(range(len(heatmap.columns)))
+ax.set_xticklabels(heatmap.columns, rotation=90, fontsize=8)
 ax.tick_params(axis='x', pad=6)
-ax.set_yticks(range(len(mheat.index)))
-ax.set_yticklabels(mheat.index, fontsize=8)
+ax.set_yticks(range(len(heatmap.index)))
+ax.set_yticklabels(heatmap.index, fontsize=8)
 
 for idx, color in enumerate(arg_colors):
     ax.add_patch(plt.Rectangle((idx - 0.5, -1.0), 1, 0.3,
@@ -175,14 +159,9 @@ legend = ax.legend(
     title_fontsize=8
 )
 
-# Colorbar
-cbar_ax = fig.add_axes([0.20, 0.25, 0.008, 0.18])
-cbar = fig.colorbar(heatmap_img, cax=cbar_ax, orientation='vertical')
-cbar.ax.set_yticklabels([f"{int(x*100)}%" for x in cbar.get_ticks()])
-cbar.ax.tick_params(labelsize=8)
 
-ax.set_xlim(-0.5, len(mheat.columns) - 0.5)
-ax.set_ylim(-0.5, len(mheat.index) - 0.5)
+ax.set_xlim(-0.5, len(heatmap.columns) - 0.5)
+ax.set_ylim(-0.5, len(heatmap.index) - 0.5)
 ax.tick_params(axis='x', which='major', length=0)
 
 plt.subplots_adjust(bottom=0.25)
