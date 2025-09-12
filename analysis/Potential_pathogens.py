@@ -88,9 +88,7 @@ merged_df['SpeciesWithCounts'] = merged_df['Species'].map(
 
 
 # generate ARG-by-MAG heatmap table
-heatmap = pd.crosstab(merged_df['Bin ID'], merged_df['Best_Hit_ARO'])
-bin2species = merged_df.set_index('Bin ID')['SpeciesWithCounts'].to_dict()
-heatmap.index = heatmap.index.map(bin2species)
+heatmap = pd.crosstab(merged_df['Species'], merged_df['Best_Hit_ARO'])
 heatmap.sort_index(inplace=True)
 
 arg_to_class = merged_df.set_index('Best_Hit_ARO')['antibiotic_class_cat'].to_dict()
@@ -102,16 +100,16 @@ sorted_args = sorted(
     key=lambda x: (sorted_classes.index(arg_primary_class[x]), x)
 )
 heatmap = heatmap[sorted_args]
+mheat = heatmap.div(pd.Series(species_counts).reindex(heatmap.index), axis=0)
 
-mheat = heatmap.groupby(heatmap.index).mean()
 mheat[mheat == 0] = np.nan
+mheat.index = mheat.index.map(lambda s: f"{s} (n = {species_counts[s]})")
 species_order = sorted(
     mheat.index,
     key=lambda s: int(s.split('(n =')[-1].strip(')')),
     reverse=True
 )
 mheat = mheat.loc[species_order]
-
 
 
 def fix_arg_names(gene):
