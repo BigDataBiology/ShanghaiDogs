@@ -1,5 +1,17 @@
 # Shanghai Dogs
 
+Support repository for the study
+
+> _Capturing global pet dog gut microbial diversity and hundreds of
+> near-finished bacterial genomes by using long-read metagenomics in a Shanghai
+> cohort_ by Anna Cuscó, Yiqian Duan, Fernando Gil, Alexei Chklovski, Nithya
+> Kruthi, Shaojun Pan, Sofia Forslund, Susanne Lau, Ulrike  Löber, Xing-Ming
+> cZhao, and Luis Pedro Coelho (bioRxiv PREPRINT 2025)
+
+
+See also the **MAG collection** at the [Shanghai MAG collection
+website](https://sh-dog-mags.big-data-biology.org/).
+
 
 ## Directories
 
@@ -33,4 +45,15 @@
 1. Quality controled FQs
 2. Not fully polished assemblies
 3. singleM/mOTU output tables
+
+## Copyright & License
+
+This is made available under the MIT License. See `LICENSE` for details.
+
+This code is intended as [Extended Methods
+code](https://doi.org/10.1371/journal.pcbi.1011920) for the above-cited
+manuscript. It is not designed for widespread use, but intended to ensure
+reproducibility and provide documentation. However, please cite the manuscript
+if you use this code or data. If relevant, please also cite any underlying
+tools and datasets used, as described in the manuscript.
 
