@@ -6,10 +6,10 @@ library(svglite)  # For saving plots as SVG
 # Reference categories were: "Study,This_study","env_classification,Dog Pet","Animal_age_simplified,Senior","Size_class,large","Sex,Male"
 # Maaslin2 was run everytime with a cohort excluding unknowns/unclassified depending on which variable we were assessing 
 
-#maaslin_out <- read.delim("D:/AMAX_server/SingleM/maaslin_out_ENV_PetREF/significant_results.tsv", header = TRUE) # Pet as Ref
-maaslin_out <- read.delim("D:/AMAX_server/SingleM/maaslin_out_AGE_SeniorREF/significant_results.tsv", header = TRUE) # Senior as Ref
-#maaslin_out <- read.delim("D:/AMAX_server/SingleM/maaslin_out_SIZE_LargeREF/significant_results.tsv", header = TRUE) # Large as Ref
-#maaslin_out <- read.delim("D:/AMAX_server/SingleM/maaslin_out_SEX_MaleREF/significant_results.tsv", header = TRUE) # Male as Ref
+#maaslin_out <- read.delim("ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_ENV_PetREF/significant_results.tsv", header = TRUE) # Pet as Ref
+maaslin_out <- read.delim("ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_AGE_SeniorREF/significant_results.tsv", header = TRUE) # Senior as Ref
+#maaslin_out <- read.delim(ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_SIZE_LargeREF/significant_results.tsv", header = TRUE) # Large as Ref
+#maaslin_out <- read.delim("ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_SEX_MaleREF/significant_results.tsv", header = TRUE) # Male as Ref
 
 #category <- "Environment"
 category <- "Age"
@@ -112,7 +112,7 @@ p <- ggplot(maaslin_filt, aes(x = `-log10(qvalue)`, y = species, color = value, 
 print(p)
 
 # Save the plot as an SVG file
-ggsave("D:/AMAX_server/SingleM/maaslin_figures/maaslin_ENV_pet.svg", plot = p,  width = 165, height = 60, units = "mm")
+ggsave("ShanghaiDogs/intermediate-outputs/figures/maaslin_ENV_pet.svg", plot = p,  width = 165, height = 60, units = "mm")
 
 env_sign_sp <- unique(maaslin_filt$species[maaslin_filt$max_metadata == 'Environment'])
 env_sign_sp <- as.character(env_sign_sp)
@@ -150,8 +150,9 @@ p <- ggplot(maaslin_filt, aes(x = `-log10(qvalue)`, y = species, color = value, 
 #print(p)
 
 # Save the plot with the specified size in mm
-ggsave("D:/AMAX_server/SingleM/maaslin_figures/maaslin_AGE_senior.svg", plot = p, width = 130, height = 90, units = "mm", device = "svg")
+ggsave("ShanghaiDogs/intermediate-outputs/figures/maaslin_AGE_senior.svg", plot = p, width = 130, height = 90, units = "mm", device = "svg")
 
 age_sign_sp <- unique(maaslin_filt$species[maaslin_filt$max_metadata == 'Age'])
 age_sign_sp <- as.character(age_sign_sp)
 print(age_sign_sp)
+
