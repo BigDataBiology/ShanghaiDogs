@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 
-os.chdir('/data/Projects/ShanghaiDogs/external-data/')
 SRA_metadata = pd.read_table('data/dog_microbiome_archive_otu_tables/SRR_Acc_List_Metadata.txt', sep='|',\
                              skiprows=[1],index_col=0)
 

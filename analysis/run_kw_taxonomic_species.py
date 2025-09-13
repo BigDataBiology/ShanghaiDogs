@@ -3,14 +3,12 @@ Created on Mon Mar 03 17:18:14 2025
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import kruskal
 from statsmodels.stats.multitest import multipletests
 
-os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none'  # to avoid transforming the font to plot
 
 ### Import data

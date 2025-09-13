@@ -5,14 +5,11 @@ Created on Thu Feb 28 14:58:12 2024
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import files

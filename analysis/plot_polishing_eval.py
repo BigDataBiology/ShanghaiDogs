@@ -1,12 +1,9 @@
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import seaborn as sns
 from pysankey2 import Sankey
 
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import files

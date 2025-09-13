@@ -7,9 +7,8 @@ Created on Tue May 21 16:46:17 2024
 
 import os
 import re
-import shutil
 
-os.chdir('/data/Projects/ShanghaiDogs/')
+
 def process_files(barrnap_file, fasta_file):
     # Read the barrnap data
     barrnap_data = []

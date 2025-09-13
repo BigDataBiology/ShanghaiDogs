@@ -1,16 +1,15 @@
 #!/bin/bash
 
-source ~/miniconda3/bin/activate root
-conda activate python_env
 
-cd /data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/
+BASEDIR=$PWD
+cd ${BASEDIR}/external-data/data/NCBI_genomes_ref/
 
 ncbi-genome-download --assembly-accessions fastani_ref_genome_assemblies.txt --formats 'fasta' 'bacteria' #GCF assemblies
 ncbi-genome-download --assembly-accessions fastani_ref_genome_assemblies.txt --formats 'fasta' 'bacteria' -s 'genbank' #GCA_ assemblies
 
 # Count contigs of the genomes
 
-cd /data/Projects/ShanghaiDogs/external-data/code
+cd ${BASEDIR}/external-data/code
 python count_contigs.py
 
 # Run checkm2 into the genomes
@@ -18,7 +17,7 @@ python count_contigs.py
 conda deactivate
 conda activate checkm2
 
-cd /data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/
+cd ${BASEDIR}/external-data/data/NCBI_genomes_ref/
 checkm2 predict -x fna.gz --threads 32 --input */bacteria/*/GC* \
 --output-directory checkm2/
 
@@ -27,11 +26,11 @@ checkm2 predict -x fna.gz --threads 32 --input */bacteria/*/GC* \
 conda deactivate
 conda activate barrnap
 
-cd /data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/
+cd ${BASEDIR}/external-data/data/NCBI_genomes_ref/
 gzip -d */bacteria/*/GC*.fna.gz
 
-path_genbank="/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/genbank/bacteria/"
-path_refseq="/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/refseq/bacteria/"
+path_genbank=${BASEDIR}/external-data/data/NCBI_genomes_ref/genbank/bacteria/
+path_refseq=${BASEDIR}/external-data/data/NCBI_genomes_ref/refseq/bacteria/
 
 for file in "$path_genbank"*/GC*.fna
   do

@@ -6,14 +6,10 @@ Created on Thu 06 Jun 2024 16:24:31
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import numpy as np
 import skbio
-import seaborn as sns
 import matplotlib.pyplot as plt
-
-os.chdir('/data/Projects/ShanghaiDogs/')
 
 ## Import input files
 

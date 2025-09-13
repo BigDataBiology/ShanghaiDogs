@@ -1,1 +1,1 @@
-checkm2 predict -i /data/Projects/ShanghaiDogs/intermediate-outputs/polish_evaluation_mags/polypolish_bins -o /data/Projects/ShanghaiDogs/intermediate-outputs/polish_evaluation_mags/polypolish_bins_checkm --database_path /data/yiqian/software/checkm_database/uniref100.KO.1.dmnd -t 48 -x .fna
+checkm2 predict -i intermediate-outputs/polish_evaluation_mags/polypolish_bins -o intermediate-outputs/polish_evaluation_mags/polypolish_bins_checkm --database_path ${HOME}/checkm_database/uniref100.KO.1.dmnd -t 48 -x .fna

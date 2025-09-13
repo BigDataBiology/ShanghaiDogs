@@ -6,7 +6,7 @@ set -v
 source ~/miniconda3/bin/activate root
 conda activate kingfisher
 
-cd /data/Projects/ShanghaiDogs/external-data/
+cd external-data/
 
 # retrieve Biosample ID for each SRA run
 kingfisher annotate --run-identifiers-list data/dog_microbiome_archive_otu_tables/SRR_Acc_List.txt \
@@ -19,9 +19,9 @@ python code/link_run_to_biosample.py
 
 conda deactivate
 conda activate singleM
-export SINGLEM_METAPACKAGE_PATH='/data/yiqian/databases/singlem/S3.2.1.GTDB_r214.metapackage_20231006.smpkg.zb'
+export SINGLEM_METAPACKAGE_PATH=${HOME}/databases/singlem/S3.2.1.GTDB_r214.metapackage_20231006.smpkg.zb
 
-cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run
+cd external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/multiple_run
 
 # find if there are empty files
 find . -type f -empty
@@ -40,7 +40,7 @@ for ls in *.txt
     --collapse-to-sample-name $prefix
   done
 
-cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run
+cd external-data/data/dog_microbiome_archive_otu_tables/run_to_biosample/single_run
 find . -type f -empty
 # All PRJNA481475 biosamples (Xu_2019), dogs with diahorrea - are not in Sandpiper
 # SAMEA5953195 (Allaway) & SAMN19735736 (Yarlagadda)
@@ -57,7 +57,7 @@ for ls in *.txt
   done
 
 # Reannotate the archive OTU tables from Sandpiper
-cd /data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample
+cd external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample
 for json in *.json
   do
     prefix=$(echo "$json" | cut -d '.' -f 1)
@@ -69,8 +69,8 @@ for json in *.json
 
 # OPTIONAL: Some .json tables were empty, had to re-run re-annotation of pending tables
 # Check pending .json tables
-dir1="/data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample"
-dir2="/data/Projects/ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done"
+dir1="external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample"
+dir2="external-data/data/dog_microbiome_archive_otu_tables/otu_tab_by_biosample/done"
 for file1 in "$dir1"/*; do
     file2="$dir2/$(basename "$file1")"
     if [ -e "$file2" ]; then

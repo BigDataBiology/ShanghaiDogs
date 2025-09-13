@@ -5,12 +5,12 @@ set -v
 
 source ~/miniconda3/bin/activate root
 conda activate singleM
-export SINGLEM_METAPACKAGE_PATH='/data/yiqian/databases/singlem/S3.2.1.GTDB_r214.metapackage_20231006.smpkg.zb'
+export SINGLEM_METAPACKAGE_PATH=${HOME}/databases/singlem/S3.2.1.GTDB_r214.metapackage_20231006.smpkg.zb
 
 # Bioproject PRJNA871950
-reads_path='/data/Projects/ShanghaiDogs/external-data/data/PRJNA871950'
+reads_path='external-data/data/PRJNA871950'
 cd $reads_path
-output_path='/data/Projects/ShanghaiDogs/intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/PRJNA871950'
+output_path='intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/PRJNA871950'
 
 for fq in fastq/*.gz
   do
@@ -23,9 +23,9 @@ for fq in fastq/*.gz
   done
 
 # Bioproject PRJNA917802
-reads_path='/data/Projects/ShanghaiDogs/external-data/data/PRJNA917802/'
+reads_path='external-data/data/PRJNA917802/'
 cd ${reads_path}
-output_path='/data/Projects/ShanghaiDogs/intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/PRJNA917802'
+output_path='intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/PRJNA917802'
 
 for fq in fastq/*.gz
   do
@@ -38,8 +38,8 @@ for fq in fastq/*.gz
   done
 
 # Berlin dogs [unpublished data]
-reads_path='/data/Projects/ShanghaiDogs/external-data/data/berlin_dogs'
-output_path='/data/Projects/ShanghaiDogs/intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/berlin_dogs'
+reads_path='external-data/data/berlin_dogs'
+output_path='intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/berlin_dogs'
 cd ${reads_path}
 
 for fq in *.gz
@@ -54,9 +54,9 @@ for fq in *.gz
   done
 
 # Bioproject NomNomNow (shallow metagenomics)
-reads_path='/data/Projects/ShanghaiDogs/external-data/data/USA_pets_Nomnomnow'
+reads_path='external-data/data/USA_pets_Nomnomnow'
 cd ${reads_path}
-output_path='/data/Projects/ShanghaiDogs/intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/USA_pets_Nomnomnow'
+output_path='intermediate-outputs/singlem_profiling/EXTERNAL-DATASETS/USA_pets_Nomnomnow'
 
 for fq in *.gz
   do

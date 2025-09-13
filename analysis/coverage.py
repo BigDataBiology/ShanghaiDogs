@@ -6,8 +6,8 @@ from glob import glob
 import hashlib
 import subprocess
 
-import pandas as pd
 import numpy as np
+
 MAP_FA = '/data/anna/animal_metagenome/long-mg-dog/05_dereplication/01_drep/ANI_95/drep_95_MAGs_rf.fa'
 
 def rmean(vs):

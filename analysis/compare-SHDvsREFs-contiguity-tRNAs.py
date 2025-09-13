@@ -1,12 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
 import numpy as np
 import seaborn as sns
 from scipy.stats import shapiro,wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 ### Import data

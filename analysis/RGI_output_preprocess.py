@@ -1,8 +1,4 @@
-import sys
 import pandas as pd
-import os
-
-os.chdir('/data/Projects/ShanghaiDogs')
 
 # Import files
 

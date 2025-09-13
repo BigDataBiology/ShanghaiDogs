@@ -11,20 +11,20 @@ import pandas as pd
 
 # Import checkm2, contig count
 
-checkm = pd.read_csv('/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/checkm2/quality_report.tsv',sep='\t')
+checkm = pd.read_csv('external-data/data/NCBI_genomes_ref/checkm2/quality_report.tsv',sep='\t')
 checkm_sub = checkm[['Name','Completeness','Contamination','Genome_Size']]
 checkm_sub['Quality'] = 'low-quality'  # Default value
 checkm_sub.loc[(checkm_sub['Completeness'] >= 50) & (checkm_sub['Contamination'] < 10), 'Quality'] = 'medium-quality'
 checkm_sub.loc[(checkm_sub['Completeness'] >= 90) & (checkm_sub['Contamination'] < 5), 'Quality'] = 'high-quality'
 
-tigs = pd.read_csv('/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/contigs_count.txt',sep=',')
+tigs = pd.read_csv('external-data/data/NCBI_genomes_ref/contigs_count.txt',sep=',')
 tigs['Filename']=tigs['Filename'].str.replace('.fna.gz','')
 
 qual_report = pd.merge(checkm_sub,tigs,left_on='Name',right_on='Filename',how='outer')
 qual_report['Name'] = qual_report['Name'].apply(lambda x: '_'.join(x.split('_')[:2]))
 
 # Add ribosomal genes
-rRNA_path = '/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/barrnap/out/'
+rRNA_path = 'external-data/data/NCBI_genomes_ref/barrnap/out/'
 all_rRNAs = []
 
 for filename in glob.glob(os.path.join(rRNA_path, '*.txt')):
@@ -58,7 +58,7 @@ qual_report = qual_report.fillna(0)
 
 # Add tRNAs
 
-tRNA_path = '/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/tRNAs/'
+tRNA_path = 'external-data/data/NCBI_genomes_ref/tRNAs/'
 tRNA_count = pd.DataFrame(columns=['Name', 'Unique tRNAs', 'Total tRNAs'])
 
 all_tRNAs = []
@@ -85,6 +85,6 @@ for index, row in qual_report_final.iterrows():
             print(row['Quality'])
             qual_report_final.loc[index, 'MIMAG'] = 'Yes'
 
-dest_folder = "/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv"
+dest_folder = "external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv"
 qual_report_final.to_csv(dest_folder, index=False)
 print(f"DataFrame has been saved to '{dest_folder}'")

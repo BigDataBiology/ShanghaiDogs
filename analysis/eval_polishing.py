@@ -1,12 +1,8 @@
 import pandas as pd
-import os
-import numpy as np
 from scipy.stats import shapiro,wilcoxon,friedmanchisquare
 from itertools import combinations
 from statsmodels.stats.multitest import multipletests
-import pingouin as pg
 
-os.chdir('/data/Projects/ShanghaiDogs')
 
 # Import files
 polish_eval = pd.read_csv("intermediate-outputs/polishing_evaluation/results/Checkm2_final_polish_eval.csv", \

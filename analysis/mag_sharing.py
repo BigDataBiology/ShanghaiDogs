@@ -2,10 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
-import os
-import numpy as np
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 data = pd.read_csv('intermediate-outputs/05_dereplication/01_drep/ANI_9999/data_tables/Ndb.csv')

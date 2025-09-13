@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import os
 import pandas as pd
-from scipy.stats import trim_mean
 import matplotlib.pyplot as plt
 import seaborn as sns
-from matplotlib.cm import get_cmap
-from matplotlib.colors import to_hex
 
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
-os.chdir('/data/Projects/ShanghaiDogs')
 
 ### Import and format data
 repbin_cov = pd.read_csv('intermediate-outputs/repbin_coverage_rmean.tsv',
