@@ -9,14 +9,14 @@ library(dplyr)
 
 #Import metadata
 
-metadata <- read.delim("D:/AMAX_server/REP_canid_metadata.csv", header = TRUE, sep = ',')
+metadata <- read.delim("ShanghaiDogs/data/ShanghaiDogsMetadata/REP_canid_metadata.csv", header = TRUE, sep = ',')
 rownames(metadata) <- metadata[, 1]
 metadata <- metadata[, -1]
 metadata$env_classification <- gsub(" captive","",metadata$env_classification)
 metadata$env_classification <- gsub("Dog others","Dog undet",metadata$env_classification)
 
 # Import otu/taxonomy table
-otutab <- read.delim("D:/AMAX_server/SingleM/all-dog-tax-profile-species.tsv", header = TRUE, sep = '\t')
+otutab <- read.delim("ShanghaiDogs/intermediate-outputs/singlem-profiling/tax-profiles/all-dog-tax-profile-species.tsv", header = TRUE, sep = '\t')
 
 # Import list of samples to be included for the analysis
 # Are the samples considered for beta diversity analysis
@@ -31,10 +31,10 @@ taxtab <- separate(taxtab, taxonomy, into = c("Root", "Domain", "Phylum", "Class
 taxtab[is.na(taxtab)] <- "unassigned"
 taxtab <- taxtab[, -1] # remove first column
 taxtab_matrix <- as.matrix(taxtab)
-# write.csv(taxtab,"D:/AMAX_server/SingleM/Taxonomy-all-dog-tax.csv")
+# write.csv(taxtab,"ShanghaiDogs/intermediate-outputs/singlem-profiling/Taxonomy-all-dog-tax.csv")
 
 # Pre-process otu/taxonomy-profile: update naming, remove underscores, etc.
-SRR_archived <- read.delim("D:/AMAX_server/SingleM/SRR_Acc_List_Metadata.txt", header = TRUE, sep = '|')
+SRR_archived <- read.delim("ShanghaiDogs/intermediate-outputs/singlem-profiling/SRR_Acc_List_Metadata.txt", header = TRUE, sep = '|')
 SRR_archived <- SRR_archived[-1, ] # remove first row
 SRR_archived$run <- gsub(" ", "", SRR_archived$run)
 SRR_archived$biosample <- gsub(" ", "", SRR_archived$biosample)
@@ -67,7 +67,7 @@ fit_data = Maaslin2(
   normalization = "NONE", #already RA
   transform = "LOG",
   analysis_method = "LM",
-  output = "D:/AMAX_server/SingleM/maaslin_out_ENV_PetREF/", 
+  output = "ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_ENV_PetREF/", 
   fixed_effects = c("Study","env_classification","Size_class","Animal_age_simplified","Sex"),
   reference = c("Study,This_study","env_classification,Dog Pet","Size_class,large","Animal_age_simplified,Senior","Sex,Male"))
 
@@ -87,7 +87,7 @@ fit_data = Maaslin2(
   normalization = "NONE", #already RA
   transform = "LOG",
   analysis_method = "LM",
-  output = "D:/AMAX_server/SingleM/maaslin_out_AGE_seniorREF/", 
+  output = "ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_AGE_seniorREF/", 
   fixed_effects = c("Study","env_classification","Size_class","Animal_age_simplified","Sex"),
   reference = c("Study,This_study","env_classification,Dog Pet","Size_class,large","Animal_age_simplified,Senior","Sex,Male"))
 
@@ -107,7 +107,7 @@ fit_data = Maaslin2(
   normalization = "NONE", #already RA
   transform = "LOG",
   analysis_method = "LM",
-  output = "D:/AMAX_server/SingleM/maaslin_out_SIZE_LargeREF/", 
+  output = "ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_SIZE_LargeREF/", 
   fixed_effects = c("Study","env_classification","Size_class","Animal_age_simplified","Sex"),
   reference = c("Study,This_study","env_classification,Dog Pet","Size_class,large","Animal_age_simplified,Senior","Sex,Male"))
 
@@ -129,6 +129,7 @@ fit_data = Maaslin2(
   normalization = "NONE", #already RA
   transform = "LOG",
   analysis_method = "LM",
-  output = "D:/AMAX_server/SingleM/maaslin_out_SEX_MaleREF/", 
+  output = "ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_SEX_MaleREF/", 
   fixed_effects = c("Study","env_classification","Size_class","Animal_age_simplified","Sex"),
   reference = c("Study,This_study","env_classification,Dog Pet","Size_class,large","Animal_age_simplified,Senior","Sex,Male"))
+
