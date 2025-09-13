@@ -15,7 +15,6 @@ import seaborn as sns
 from scipy.stats import shapiro,wilcoxon
 from statsmodels.stats.multitest import multipletests
 
-os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import qual_reports
@@ -198,7 +197,7 @@ plt.tight_layout()
 plt.ylim(0, 3)
 plt.yticks([0, 1, 2])
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg")
+plt.savefig("intermediate-outputs/figures/sp_MAG-vs-ref_mobilome_boxplot.svg")
 
 ### Total Mobilome 'hits' SHD vs REFs: statistical significance
 # 1) Assess normality - reshape to long format + Shapiro test

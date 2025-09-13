@@ -3,9 +3,9 @@ import os
 import glob
 
 # Define the directory where your gzipped files are located
-genbank_dir = '/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/genbank/bacteria/'
-refseq_dir = '/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/refseq/bacteria/'
-output_path = '/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/contigs_count.txt'
+genbank_dir = 'external-data/data/NCBI_genomes_ref/genbank/bacteria/'
+refseq_dir = 'external-data/data/NCBI_genomes_ref/refseq/bacteria/'
+output_path = 'external-data/data/NCBI_genomes_ref/contigs_count.txt'
 
 # Initialize count variable
 total_count = 0

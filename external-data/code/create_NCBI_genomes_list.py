@@ -1,7 +1,5 @@
-import os 
 import pandas as pd
 
-os.chdir('/data/Projects/ShanghaiDogs/')
 
 qual_report = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv')
 NCBI_ref = qual_report['GTDBtk fastani Ref'].dropna().unique().tolist()

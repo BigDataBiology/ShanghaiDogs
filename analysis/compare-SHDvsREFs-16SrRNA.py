@@ -5,14 +5,12 @@ Created on Fri Apr 12 12:07:54 2024
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from scipy.stats import shapiro
 
-os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Import quality reports

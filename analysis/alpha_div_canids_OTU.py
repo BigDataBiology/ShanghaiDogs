@@ -4,18 +4,14 @@ Created on Thu 21 Nov 2024 12:21:06
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib.patches import Patch
-from matplotlib.ticker import MaxNLocator
 from skbio.diversity import alpha_diversity
 from scipy.stats import kruskal, mannwhitneyu
 from statsmodels.stats.multitest import multipletests
 from itertools import combinations
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # IMPORT INPUT FILES

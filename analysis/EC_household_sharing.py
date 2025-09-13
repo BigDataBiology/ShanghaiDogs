@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from itertools import combinations
@@ -7,7 +6,6 @@ import seaborn as sns
 from scipy.stats import mannwhitneyu
 from statsmodels.stats.multitest import multipletests
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Input data

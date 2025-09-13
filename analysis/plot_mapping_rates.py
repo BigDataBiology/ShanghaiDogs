@@ -1,9 +1,7 @@
-import os
 import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # Input files

@@ -7,17 +7,14 @@ Created on Mon Sep 02 10:41:58 2024
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import seaborn as sns
-import numpy as np
 import squarify
 
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 ### Import data
-MIMAG_report = pd.read_csv('/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv', \
+MIMAG_report = pd.read_csv('data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv', \
                     delimiter=',', header=0, index_col=0)
-GTDB_qual = pd.read_csv('/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
+GTDB_qual = pd.read_csv('external-data/data/NCBI_genomes_ref/NCBI_genomes_qual_MIMAG_report.csv',sep=',')
 
 MIMAG_report['Quality_det']=MIMAG_report['Quality']
 for n in MIMAG_report.index:
@@ -85,7 +82,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 # Save figure
 plt.tight_layout()
 # plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual.svg")
+plt.savefig("intermediate-outputs/figures/total_MAGs_qual.svg")
 
 ### HQ_mq 1-contig
 quality_table_det = MIMAG_report.pivot_table(
@@ -123,7 +120,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 # Save figure
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual_1tig.svg")
+plt.savefig("intermediate-outputs/figures/total_MAGs_qual_1tig.svg")
 
 ### MIMAG high-quality
 quality_table_MIMAG = MIMAG_report.pivot_table(
@@ -160,7 +157,7 @@ ax.legend(labels=legend_labels, title='', loc='upper right',fontsize=10)
 # Save figure
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/total_MAGs_qual_MIMAG.svg")
+plt.savefig("intermediate-outputs/figures/total_MAGs_qual_MIMAG.svg")
 
 ### Most prevalent species in dog cohort
 # Create 'species' column
@@ -226,7 +223,7 @@ ax.set_xlim(0,100)
 ax.get_legend().remove()
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/prevalent_sp-MAGs_qual_30.svg")
+plt.savefig("intermediate-outputs/figures/prevalent_sp-MAGs_qual_30.svg")
 
 ### Phylum-level MAG counts by reference genome / novelty
 phylum_ref = species_catalog.pivot_table(
@@ -256,7 +253,7 @@ ax.set_xlabel('N# of species-level MAGs',fontsize=10)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/sp_MAG_novelty_red.svg")
+plt.savefig("intermediate-outputs/figures/sp_MAG_novelty_red.svg")
 
 ### NOVEL SPECIES PLOTS
 species_catalog_novel = species_catalog.query('ref_new == "Novel species"')
@@ -304,7 +301,7 @@ p.gca().add_artist(my_circle)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_donutplot.svg")
+plt.savefig("intermediate-outputs/figures/novel_tax_donutplot.svg")
 
 ## TREE PLOT
 # Set up the figure
@@ -328,7 +325,7 @@ ax.set_axis_off()  # Hide the axes
 # Display the plot
 plt.tight_layout()
 #plt.show()
-plt.savefig("/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_tax_squarify.svg")
+plt.savefig("intermediate-outputs/figures/novel_tax_squarify.svg")
 
 ## GENUS PIECHARTS FOR NOVEL SPECIES
 all_df_genus = species_catalog.groupby(['Genus','ref_new'])['Representative'].count().reset_index()
@@ -367,5 +364,5 @@ plt.pie(
     wedgeprops={'linewidth': 2, 'edgecolor': 'white'})
 
 #plt.show()
-out_path = "/data/Projects/ShanghaiDogs/intermediate-outputs/figures/novel_sp_"+genus+".svg"
+out_path = "intermediate-outputs/figures/novel_sp_"+genus+".svg"
 plt.savefig(out_path)

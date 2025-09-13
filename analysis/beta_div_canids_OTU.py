@@ -4,7 +4,6 @@ Created on Mon 08 Apr 2024 16:16:51
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import numpy as np
 import skbio
@@ -15,7 +14,6 @@ from matplotlib.patches import Patch
 import seaborn as sns
 import csv
 
-os.chdir('/data/Projects/ShanghaiDogs')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 # IMPORT INPUT FILES

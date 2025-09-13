@@ -3,12 +3,11 @@
 set -e
 set -v
 
-input_folder="/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref"
-out_folder="/data/Projects/ShanghaiDogs/external-data/data/NCBI_genomes_ref/eggNOG_annot"
+input_folder="external-data/data/NCBI_genomes_ref"
+out_folder="external-data/data/NCBI_genomes_ref/eggNOG_annot"
 
 source ~/miniconda3/bin/activate root
 conda activate eggnog-mapper
-export EGGNOG_DATA_DIR=/data/anna/miniconda3/envs/eggnog-mapper/db
 
 cd ${input_folder}/refseq/bacteria/
 for fafile in */*.fna.gz

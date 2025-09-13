@@ -24,8 +24,8 @@ def select(infile,inputdir,assembly_dir,outdir):
                 if h in contigs:
                     out.write(f'>{h}\n{seq}\n')
 
-infile = '/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv'
-inputdir = '/data/Projects/ShanghaiDogs/data/ShanghaiDogsMAGs/'
-assembly_dir = '/data/Projects/ShanghaiDogs/intermediate-outputs/polishing_evaluation/medaka_LR_polish/ALL/'
-outdir = '/data/Projects/ShanghaiDogs/intermediate-outputs/polish_evaluation_mags/medaka_bins/'
+infile = 'data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv'
+inputdir = 'data/ShanghaiDogsMAGs/'
+assembly_dir = 'intermediate-outputs/polishing_evaluation/medaka_LR_polish/ALL/'
+outdir = 'intermediate-outputs/polish_evaluation_mags/medaka_bins/'
 select(infile,inputdir,assembly_dir,outdir)

@@ -5,7 +5,6 @@ Created on Tue Feb 20 13:43:05 2024
 @author: Anna Cusco
 """
 
-import sys
 import pandas as pd
 import os
 
@@ -15,25 +14,25 @@ import os
 # awk 'FNR > 1' D0*/D0*_qual_report.csv >> ALL_bins_qual_report.csv
 
 # Import quality report for all bins
-qual_report = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/ALL_bins_qual_report.csv"
+qual_report = "intermediate-outputs/05_dereplication/00_dastool/ALL_bins_qual_report.csv"
 qual_report = pd.read_csv(qual_report, delimiter=',',header=0,index_col=0)
 qual_report = qual_report[~qual_report['Quality'].str.contains('low_quality')]
 
 # Import list of species-level bins
-sp_level = pd.read_csv("/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/ShanghaiDogsMAGs_ANI95_sp.txt",\
+sp_level = pd.read_csv("data/ShanghaiDogsTables/ShanghaiDogsMAGs_ANI95_sp.txt",\
                      header=None,names=["Complete ID"])
 sp_level['Representative']='Yes'
 qual_report = pd.merge(qual_report,sp_level,how='outer',right_on='Complete ID',left_on='Complete ID')
 qual_report.loc[qual_report['Representative'].isna(), 'Representative'] = 'No'
 
 # Import renaming file
-renamed_bins = pd.read_csv("/data/Projects/ShanghaiDogs/data/ShanghaiDogsMAGs/mag_meta.tsv.gz",sep='\t')
+renamed_bins = pd.read_csv("data/ShanghaiDogsMAGs/mag_meta.tsv.gz",sep='\t')
 renamed_bins['Complete ID'] = renamed_bins['Name'] + '_' + renamed_bins['Sample']
 renamed_bins = renamed_bins[['Complete ID','Filename']]
 qual_report_bins_renamed = pd.merge(qual_report,renamed_bins,left_on='Complete ID',right_on='Complete ID')
 
 # Import and update quality values for Allobaculum stercoricanis (CheckM2 general model, instead of specific - this last is default)
-checkm_allobaculum = pd.read_csv("/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/Allobaculum_CheckM2_general_model/Allo_quality_report.tsv",\
+checkm_allobaculum = pd.read_csv("intermediate-outputs/05_dereplication/00_dastool/Allobaculum_CheckM2_general_model/Allo_quality_report.tsv",\
                                  delimiter='\t',header=0)
 qual_report_intermediate = pd.merge(qual_report_bins_renamed,checkm_allobaculum[['Completeness_General','Contamination','Name']],\
                                     how='outer',right_on='Name',left_on='Complete ID')
@@ -48,7 +47,7 @@ qual_report_intermediate.loc[(qual_report_intermediate['Completeness'] >= 50) & 
 qual_report_intermediate.loc[(qual_report_intermediate['Completeness'] >= 90) & (qual_report_intermediate['Contamination'] < 5), 'Quality'] = 'high-quality'
 
 # Import tRNA count for all bins
-tRNA_path = "/data/Projects/ShanghaiDogs/intermediate-outputs/05_dereplication/00_dastool/tRNA_scan_output"
+tRNA_path = "intermediate-outputs/05_dereplication/00_dastool/tRNA_scan_output"
 tRNA_count = pd.DataFrame(columns=['complete_id', 'unique_tRNAs', 'total_tRNAs'])
 
 for folder_name in os.listdir(tRNA_path):
@@ -91,4 +90,4 @@ qual_report_final = qual_report_final[['Bin ID','Representative','Completeness',
                                        '5S rRNA','16S partial','23S partial','5S partial','Unique tRNAs','Total tRNAs',
                                        'MIMAG','Sample','Original ID']]
 
-qual_report_final.to_csv("/data/Projects/ShanghaiDogs/data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv",index=False)
+qual_report_final.to_csv("data/ShanghaiDogsTables/SHD_bins_MIMAG_report.csv",index=False)

@@ -5,17 +5,14 @@ Created on Mon Jan 20 12:26:01 2025
 @author: Anna Cusco
 """
 
-import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import numpy as np
-from scipy.stats import kruskal,mannwhitneyu
+from scipy.stats import kruskal, mannwhitneyu
 from statsmodels.stats.multitest import multipletests
 from itertools import combinations
 
-os.chdir('/data/Projects/ShanghaiDogs/')
 plt.rcParams['svg.fonttype'] = 'none' #to avoid transforming the font to plot
 
 ### Import data
