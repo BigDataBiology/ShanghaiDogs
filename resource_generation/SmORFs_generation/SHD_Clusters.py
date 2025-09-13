@@ -8,7 +8,7 @@ import lib
 import pandas as pd
 
 #paths
-base_dir = "/work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/"
+base_dir = "../../intermediate-outputs/GMSC_MAPPER/"
 input_fasta = os.path.join(base_dir, "SHD_SMORF_resource", "100AA_SmORFs_sequences.faa.gz")
 origin_tsv = os.path.join(base_dir, "SHD_SMORF_resource", "100AA_SmORFs_origins.tsv.gz")
 output_tsv = os.path.join(base_dir, "SHD_SMORF_resource", "SHD_Clusters.tsv.gz")

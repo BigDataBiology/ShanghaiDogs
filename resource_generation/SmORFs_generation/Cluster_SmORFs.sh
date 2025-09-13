@@ -4,8 +4,8 @@
 #
 set -ve
 cd-hit \
-    -i /work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/SHD_SMORF_resource/100AA_SmORFs_sequences.faa.gz \
-    -o /work/microbiome/shanghai_dogs/intermediate-outputs/GMSC_MAPPER/clustered_SmORFs \
+    -i ../../intermediate-outputs/GMSC_MAPPER/SHD_SMORF_resource/100AA_SmORFs_sequences.faa.gz \
+    -o ../../intermediate-outputs/GMSC_MAPPER/clustered_SmORFs \
     -c 0.9 \
     -n 5 \
     -M 16000 \
