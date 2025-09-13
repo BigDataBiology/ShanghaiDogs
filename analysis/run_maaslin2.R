@@ -34,7 +34,7 @@ taxtab_matrix <- as.matrix(taxtab)
 # write.csv(taxtab,"ShanghaiDogs/intermediate-outputs/singlem-profiling/Taxonomy-all-dog-tax.csv")
 
 # Pre-process otu/taxonomy-profile: update naming, remove underscores, etc.
-SRR_archived <- read.delim("ShanghaiDogs/intermediate-outputs/singlem-profiling/SRR_Acc_List_Metadata.txt", header = TRUE, sep = '|')
+SRR_archived <- read.delim("ShanghaiDogs/external-data/data/dog_microbiome_archive_otu_tables/SRR_Acc_List_Metadata.txt", header = TRUE, sep = '|')
 SRR_archived <- SRR_archived[-1, ] # remove first row
 SRR_archived$run <- gsub(" ", "", SRR_archived$run)
 SRR_archived$biosample <- gsub(" ", "", SRR_archived$biosample)
@@ -132,4 +132,5 @@ fit_data = Maaslin2(
   output = "ShanghaiDogs/intermediate-outputs/singlem-profiling/Maaslin2_output/maaslin_out_SEX_MaleREF/", 
   fixed_effects = c("Study","env_classification","Size_class","Animal_age_simplified","Sex"),
   reference = c("Study,This_study","env_classification,Dog Pet","Size_class,large","Animal_age_simplified,Senior","Sex,Male"))
+
 
