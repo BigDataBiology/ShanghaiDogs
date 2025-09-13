@@ -6,7 +6,7 @@ Support repository for the study
 > near-finished bacterial genomes by using long-read metagenomics in a Shanghai
 > cohort_ by Anna Cuscó, Yiqian Duan, Fernando Gil, Alexei Chklovski, Nithya
 > Kruthi, Shaojun Pan, Sofia Forslund, Susanne Lau, Ulrike  Löber, Xing-Ming
-> cZhao, and Luis Pedro Coelho (bioRxiv PREPRINT 2025)
+> Zhao, and Luis Pedro Coelho (bioRxiv PREPRINT 2025)
 
 
 See also the **MAG collection** at the [Shanghai MAG collection
@@ -16,17 +16,17 @@ website](https://sh-dog-mags.big-data-biology.org/).
 ## Directories
 
 - `data/` (not on git): raw data and results to upload (to ENA/Zenodo/...)
+- `data/ShanghaiDogsMetadata` (on git): dog-associated information
 - `external-data/code` (on git): code to download external data
 - `external-data/data` (not on git): external data downloaded
 - `intermediate-outputs/` (not on git): results of preprocessing for convenience
 - `resource_generation/`: scripts to generate assemblies, MAGs, annotations, ...
 - `analysis/`
-- `notes/`
 
 
 ### Data
 
-1. `ShanghaiDogsFastQ/`: Raw FastQs from service provider. FQs will be uploaded, Fast5 maybe
+1. `ShanghaiDogsFastQ/`: Raw FastQs from service provider 
 2. `ShanghaiDogsMetadata/`: Metadata for the samples
 3. `ShanghaiDogsAssemblies/`: Polished assemblies
 4. `ShanghaiDogsMAGs/`: MAGs (FASTA files)
