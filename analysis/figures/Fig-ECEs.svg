@@ -27,7 +27,7 @@
      inkscape:document-units="pt"
      showgrid="false"
      inkscape:zoom="1.7469907"
-     inkscape:cx="380.65456"
+     inkscape:cx="306.5271"
      inkscape:cy="176.01696"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
@@ -3240,30 +3240,30 @@
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-linecap:butt;stroke-linejoin:round"
      id="text199"
-     x="-158.43791"
-     y="120.66952"
+     x="-158.19682"
+     y="120.53607"
      transform="rotate(-90)">Pet</text>
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-linecap:butt;stroke-linejoin:round"
      transform="rotate(-90.758785)"
      id="text208"
-     x="-174.50925"
-     y="128.67172">Colony</text>
+     x="-174.42209"
+     y="127.9307">Colony</text>
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-linecap:butt;stroke-linejoin:round"
      id="text217"
-     x="-154.56494"
-     y="153.82393"
+     x="-171.16069"
+     y="150.82393"
      transform="rotate(-90)"><tspan
        sodipodi:role="line"
        id="tspan1295"
-       x="-154.56494"
-       y="153.82393"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle">Free</tspan><tspan
+       x="-171.16069"
+       y="150.82393"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle">Free-roaming</tspan><tspan
        sodipodi:role="line"
        id="tspan1297"
-       x="-154.56494"
-       y="165.07393"
+       x="-171.16069"
+       y="162.07393"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle" /></text>
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-linecap:butt;stroke-linejoin:round"
@@ -3288,8 +3288,8 @@
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-linecap:butt;stroke-linejoin:round"
      id="text226"
-     x="-173.41452"
-     y="142.58563"
+     x="-173.39311"
+     y="141.31691"
      transform="rotate(-90)">Shelter</text>
   <use
      xlink:href="#m8b54124604"
@@ -3378,15 +3378,15 @@
      xml:space="preserve"><tspan
        x="219.47118"
        y="136.67873"
-       id="tspan8">ErmQ
+       id="tspan1">ErmQ
 </tspan><tspan
        x="219.47118"
        y="147.92872"
-       id="tspan9">*tetB(P)
+       id="tspan2">*tetB(P)
 </tspan><tspan
        x="219.47118"
        y="159.17872"
-       id="tspan10">*tetA(P)</tspan></text>
+       id="tspan3">*tetA(P)</tspan></text>
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start"
      x="219.47118"
@@ -3433,7 +3433,7 @@
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect1355);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="28.285156"
        y="277.38913"
-       id="tspan11">Plasmid</tspan></text>
+       id="tspan4">Plasmid</tspan></text>
   <text
      xml:space="preserve"
      transform="matrix(0.75,0,0,0.75,10.418047,-21.895015)"
@@ -3441,7 +3441,7 @@
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect1355-2);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="28.285156"
        y="277.38913"
-       id="tspan13">Uncategorised</tspan></text>
+       id="tspan5">Uncategorised</tspan></text>
   <g
      id="patch_2"
      style="stroke-linecap:butt;stroke-linejoin:round"
@@ -3747,47 +3747,47 @@
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5152);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="383.95898"
        y="239.91257"
-       id="tspan16"><tspan
+       id="tspan7"><tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial, Bold'"
-   id="tspan15">COG categories</tspan>
+   id="tspan6">COG categories</tspan>
 </tspan><tspan
        x="383.95898"
        y="254.91257"
-       id="tspan18"><tspan
+       id="tspan9"><tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan17">X </tspan>Mobilome; 
+   id="tspan8">X </tspan>Mobilome; 
 </tspan><tspan
        x="383.95898"
        y="269.91257"
-       id="tspan27"><tspan
+       id="tspan12"><tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan20">L</tspan>	Replication, recombination &amp; repair;<tspan
+   id="tspan10">L</tspan>	Replication, recombination &amp; repair;<tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan26"> 
+   id="tspan11"> 
 </tspan></tspan><tspan
        x="383.95898"
        y="284.91257"
-       id="tspan32"><tspan
+       id="tspan22"><tspan
          style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-         id="tspan28">V</tspan><tspan
+         id="tspan13">V</tspan><tspan
          style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-         id="tspan29">	</tspan><tspan
+         id="tspan14">	</tspan><tspan
          style="-inkscape-font-specification:Arial"
-         id="tspan30">Defense mechanisms;</tspan><tspan
+         id="tspan19">Defense mechanisms;</tspan><tspan
          style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-         id="tspan31"> 
+         id="tspan21"> 
 </tspan></tspan><tspan
        x="383.95898"
        y="299.91257"
-       id="tspan34"><tspan
+       id="tspan25"><tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan33">I</tspan>	Lipid transport and metabolism; 
+   id="tspan23">I</tspan>	Lipid transport and metabolism; 
 </tspan><tspan
        x="383.95898"
        y="314.91257"
-       id="tspan36"><tspan
+       id="tspan40"><tspan
    style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan35">S</tspan>	Unknown
+   id="tspan39">S</tspan>	Unknown
 </tspan></text>
   <text
      xml:space="preserve"
@@ -3796,7 +3796,7 @@
      style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:14.6961px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5152-6);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="383.95898"
        y="242.34109"
-       id="tspan37">OXA-85 +</tspan></text>
+       id="tspan41">OXA-85 +</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.612405;stroke-linecap:butt;stroke-linejoin:round"
@@ -4152,7 +4152,7 @@
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;writing-mode:lr-tb;stroke-linecap:butt;stroke-linejoin:round"
      id="text2"
      x="-187.19194"
-     y="107.74487"
+     y="109.24487"
      transform="rotate(-90)">This Study</text>
   <g
      id="QuadMesh_1"
