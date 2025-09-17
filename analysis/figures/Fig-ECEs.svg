@@ -28,7 +28,7 @@
      showgrid="false"
      inkscape:zoom="1.7469907"
      inkscape:cx="306.5271"
-     inkscape:cy="176.01696"
+     inkscape:cy="176.58938"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -81,6 +81,12 @@
   </metadata>
   <defs
      id="defs6">
+    <rect
+       x="514.65755"
+       y="264.45476"
+       width="21.369749"
+       height="18.317213"
+       id="rect54" />
     <rect
        x="239.12832"
        y="254.57589"
@@ -301,8 +307,8 @@
     <rect
        x="383.95898"
        y="229.1026"
-       width="212.57629"
-       height="108.79679"
+       width="207.3089"
+       height="98.807961"
        id="rect5152" />
     <rect
        x="28.284271"
@@ -3291,33 +3297,12 @@
      x="-173.39311"
      y="141.31691"
      transform="rotate(-90)">Shelter</text>
-  <use
-     xlink:href="#m8b54124604"
-     x="97.963631"
-     y="220.86568"
-     style="stroke:#000000;stroke-width:0.8"
-     id="use240"
-     transform="matrix(0.72969514,0,0,0.54359493,92.309464,27.805843)" />
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;stroke-width:0.629808;stroke-linecap:butt;stroke-linejoin:round"
      x="94.05732"
      y="228.5424"
      id="text245"
      transform="scale(1.1585987,0.86311162)" />
-  <use
-     xlink:href="#m8b54124604"
-     x="150.22742"
-     y="220.86568"
-     style="stroke:#000000;stroke-width:0.8"
-     id="use249"
-     transform="matrix(0.72969514,0,0,0.54359493,87.253172,27.815552)" />
-  <use
-     xlink:href="#m8b54124604"
-     x="202.4912"
-     y="220.86568"
-     style="stroke:#000000;stroke-width:0.8"
-     id="use258"
-     transform="matrix(0.72969514,0,0,0.54359493,80.106805,27.87355)" />
   <text
      style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
      x="281.21515"
@@ -3378,15 +3363,15 @@
      xml:space="preserve"><tspan
        x="219.47118"
        y="136.67873"
-       id="tspan1">ErmQ
+       id="tspan8">ErmQ
 </tspan><tspan
        x="219.47118"
        y="147.92872"
-       id="tspan2">*tetB(P)
+       id="tspan9">*tetB(P)
 </tspan><tspan
        x="219.47118"
        y="159.17872"
-       id="tspan3">*tetA(P)</tspan></text>
+       id="tspan10">*tetA(P)</tspan></text>
   <text
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start"
      x="219.47118"
@@ -3433,7 +3418,7 @@
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect1355);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="28.285156"
        y="277.38913"
-       id="tspan4">Plasmid</tspan></text>
+       id="tspan12">Plasmid</tspan></text>
   <text
      xml:space="preserve"
      transform="matrix(0.75,0,0,0.75,10.418047,-21.895015)"
@@ -3441,7 +3426,7 @@
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect1355-2);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="28.285156"
        y="277.38913"
-       id="tspan5">Uncategorised</tspan></text>
+       id="tspan13">Uncategorised</tspan></text>
   <g
      id="patch_2"
      style="stroke-linecap:butt;stroke-linejoin:round"
@@ -3742,61 +3727,12 @@
   </g>
   <text
      xml:space="preserve"
-     transform="matrix(0.75,0,0,0.75,44.108147,-30.49985)"
-     id="text5150"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5152);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
-       x="383.95898"
-       y="239.91257"
-       id="tspan7"><tspan
-   style="font-weight:bold;-inkscape-font-specification:'Arial, Bold'"
-   id="tspan6">COG categories</tspan>
-</tspan><tspan
-       x="383.95898"
-       y="254.91257"
-       id="tspan9"><tspan
-   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan8">X </tspan>Mobilome; 
-</tspan><tspan
-       x="383.95898"
-       y="269.91257"
-       id="tspan12"><tspan
-   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan10">L</tspan>	Replication, recombination &amp; repair;<tspan
-   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan11"> 
-</tspan></tspan><tspan
-       x="383.95898"
-       y="284.91257"
-       id="tspan22"><tspan
-         style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-         id="tspan13">V</tspan><tspan
-         style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-         id="tspan14">	</tspan><tspan
-         style="-inkscape-font-specification:Arial"
-         id="tspan19">Defense mechanisms;</tspan><tspan
-         style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-         id="tspan21"> 
-</tspan></tspan><tspan
-       x="383.95898"
-       y="299.91257"
-       id="tspan25"><tspan
-   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan23">I</tspan>	Lipid transport and metabolism; 
-</tspan><tspan
-       x="383.95898"
-       y="314.91257"
-       id="tspan40"><tspan
-   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
-   id="tspan39">S</tspan>	Unknown
-</tspan></text>
-  <text
-     xml:space="preserve"
      transform="matrix(0.60213992,0,0,0.62284623,211.20282,-15.260918)"
      id="text5150-5"
      style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:14.6961px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5152-6);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
        x="383.95898"
        y="242.34109"
-       id="tspan41">OXA-85 +</tspan></text>
+       id="tspan14">OXA-85 +</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.612405;stroke-linecap:butt;stroke-linejoin:round"
@@ -4026,21 +3962,6 @@
      transform="scale(0.75)"
      id="text92"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect92);display:inline;fill:#000000" />
-  <text
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
-     x="190.98425"
-     y="154.87592"
-     id="text24">20</text>
-  <text
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
-     x="221.80316"
-     y="154.93849"
-     id="text25">40</text>
-  <text
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
-     x="162.20175"
-     y="154.91101"
-     id="text26">0</text>
   <text
      xml:space="preserve"
      transform="scale(0.75)"
@@ -4450,40 +4371,80 @@
      id="use94"
      transform="matrix(0.72969514,0,0,0.54359493,-71.977947,22.185961)" />
   <g
-     id="axes_4"
-     transform="matrix(0.64026998,0,0,0.15715909,109.85394,97.66433)"
-     style="stroke-linecap:butt;stroke-linejoin:round">
+     id="g1"
+     transform="translate(9.5424992,-8.6506375)">
+    <use
+       xlink:href="#m8b54124604"
+       x="97.963631"
+       y="220.86568"
+       style="stroke:#000000;stroke-width:0.8"
+       id="use240"
+       transform="matrix(0.72969514,0,0,0.54359493,85.564316,43.874477)" />
+    <use
+       xlink:href="#m8b54124604"
+       x="150.22742"
+       y="220.86568"
+       style="stroke:#000000;stroke-width:0.8"
+       id="use249"
+       transform="matrix(0.72969514,0,0,0.54359493,80.508024,43.884186)" />
+    <use
+       xlink:href="#m8b54124604"
+       x="202.4912"
+       y="220.86568"
+       style="stroke:#000000;stroke-width:0.8"
+       id="use258"
+       transform="matrix(0.72969514,0,0,0.54359493,73.361657,43.942184)" />
+    <text
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
+       x="184.23911"
+       y="170.94455"
+       id="text24">20%</text>
+    <text
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
+       x="215.05801"
+       y="171.00713"
+       id="text25">40%</text>
+    <text
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7px;line-height:normal;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
+       x="155.4566"
+       y="170.97964"
+       id="text26">0%</text>
     <g
-       id="patch_14"
+       id="axes_4"
+       transform="matrix(0.64026998,0,0,0.15715909,103.10879,113.73296)"
        style="stroke-linecap:butt;stroke-linejoin:round">
-      <path
-         d="M 108.24918,319.45606 H 212.21072 V 302.3913 H 108.24918 Z"
-         style="fill:#ffffff;stroke-linecap:butt;stroke-linejoin:round"
-         id="path259" />
-    </g>
-    <image
-       xlink:href="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAbEAAABICAYAAAB4OsvUAAACOElEQVR4nO3VQVLDMBBFQYX7X5NjoGHhOEiyEsKCxa/q3gTGsiwcqt6t6rNaa621aq16e/z8+Dwv767dZ7VZP11bZq2We55dG595nmO8tuxRz2bLvrvZeN53Z/c9qjbv4a1Zv76H2ry3adaXWZ9/fjV7a/3XP+17vvM+P+P87Lu/tR3zWr773jezzfe7vXdYc5nVfl1f9qj643mr1TI7Hr/M6ue5P9fOx9S87lzT51mrOtaO99bw/D7ce19T/XqOWt7D8e94nv26bjrT45nLrO/Xb2d93e+X9eN7enG2p+fdnK2PP49fb5tnx9dwe9zTlvuWVz/Phq+qr7Pa73d83p6cY37W9K86rL/sO65f9223t/dYz7Tbd1x/3ff6d/W2P+f5+0cDgFAiBkAsEQMglogBEEvEAIglYgDEEjEAYokYALFEDIBYIgZALBEDIJaIARBLxACIJWIAxBIxAGKJGACxRAyAWCIGQCwRAyCWiAEQS8QAiCViAMQSMQBiiRgAsUQMgFgiBkAsEQMglogBEEvEAIglYgDEEjEAYokYALFEDIBYIgZALBEDIJaIARBLxACIJWIAxBIxAGKJGACxRAyAWCIGQCwRAyCWiAEQS8QAiCViAMQSMQBiiRgAsUQMgFgiBkAsEQMglogBEEvEAIglYgDEEjEAYokYALFEDIBYIgZALBEDIJaIARBLxACIJWIAxBIxAGKJGACxRAyAWCIGQCwRAyCWiAEQS8QAiCViAMQSMQBifQPzUd0vU8JE2QAAAABJRU5ErkJggg=="
-       id="image7e2fa272e2"
-       transform="scale(1,-1)"
-       x="108.24"
-       y="-319.44"
-       width="79.693748"
-       height="17.280001"
-       style="stroke-linecap:butt;stroke-linejoin:round" />
-    <g
-       id="matplotlib.axis_6"
-       style="stroke-linecap:butt;stroke-linejoin:round" />
-    <g
-       id="LineCollection_1"
-       style="stroke-linecap:butt;stroke-linejoin:round" />
-    <g
-       id="patch_15"
-       transform="translate(-24.062555)"
-       style="stroke-linecap:butt;stroke-linejoin:round">
-      <path
-         d="m 108.24918,319.45606 v -8.53238 -8.53238 h 103.96154 v 8.53238 8.53238 z"
-         style="fill:none;stroke:#000000;stroke-width:0.8;stroke-linecap:square;stroke-linejoin:miter"
-         id="path267" />
+      <g
+         id="patch_14"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           d="M 108.24918,319.45606 H 212.21072 V 302.3913 H 108.24918 Z"
+           style="fill:#ffffff;stroke-linecap:butt;stroke-linejoin:round"
+           id="path259" />
+      </g>
+      <image
+         xlink:href="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAbEAAABICAYAAAB4OsvUAAACOElEQVR4nO3VQVLDMBBFQYX7X5NjoGHhOEiyEsKCxa/q3gTGsiwcqt6t6rNaa621aq16e/z8+Dwv767dZ7VZP11bZq2We55dG595nmO8tuxRz2bLvrvZeN53Z/c9qjbv4a1Zv76H2ry3adaXWZ9/fjV7a/3XP+17vvM+P+P87Lu/tR3zWr773jezzfe7vXdYc5nVfl1f9qj643mr1TI7Hr/M6ue5P9fOx9S87lzT51mrOtaO99bw/D7ce19T/XqOWt7D8e94nv26bjrT45nLrO/Xb2d93e+X9eN7enG2p+fdnK2PP49fb5tnx9dwe9zTlvuWVz/Phq+qr7Pa73d83p6cY37W9K86rL/sO65f9223t/dYz7Tbd1x/3ff6d/W2P+f5+0cDgFAiBkAsEQMglogBEEvEAIglYgDEEjEAYokYALFEDIBYIgZALBEDIJaIARBLxACIJWIAxBIxAGKJGACxRAyAWCIGQCwRAyCWiAEQS8QAiCViAMQSMQBiiRgAsUQMgFgiBkAsEQMglogBEEvEAIglYgDEEjEAYokYALFEDIBYIgZALBEDIJaIARBLxACIJWIAxBIxAGKJGACxRAyAWCIGQCwRAyCWiAEQS8QAiCViAMQSMQBiiRgAsUQMgFgiBkAsEQMglogBEEvEAIglYgDEEjEAYokYALFEDIBYIgZALBEDIJaIARBLxACIJWIAxBIxAGKJGACxRAyAWCIGQCwRAyCWiAEQS8QAiCViAMQSMQBifQPzUd0vU8JE2QAAAABJRU5ErkJggg=="
+         id="image7e2fa272e2"
+         transform="scale(1,-1)"
+         x="108.24"
+         y="-319.44"
+         width="79.693748"
+         height="17.280001"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="matplotlib.axis_6"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="LineCollection_1"
+         style="stroke-linecap:butt;stroke-linejoin:round" />
+      <g
+         id="patch_15"
+         transform="translate(-24.062555)"
+         style="stroke-linecap:butt;stroke-linejoin:round">
+        <path
+           d="m 108.24918,319.45606 v -8.53238 -8.53238 h 103.96154 v 8.53238 8.53238 z"
+           style="fill:none;stroke:#000000;stroke-width:0.8;stroke-linecap:square;stroke-linejoin:miter"
+           id="path267" />
+      </g>
     </g>
   </g>
   <g
@@ -4627,4 +4588,86 @@
          transform="translate(-0.3407375,0.87949667)" />
     </g>
   </g>
+  <g
+     id="g57"
+     transform="translate(-4.5)">
+    <text
+       xml:space="preserve"
+       transform="matrix(0.75,0,0,0.75,44.108147,-29.712442)"
+       id="text5150"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5152);display:inline;stroke-linecap:butt;stroke-linejoin:round"><tspan
+         x="383.95898"
+         y="239.91257"
+         id="tspan16"><tspan
+           style="font-weight:bold;-inkscape-font-specification:'Arial, Bold'"
+           id="tspan15">COG categories
+</tspan></tspan><tspan
+         x="383.95898"
+         y="254.91257"
+         id="tspan18"><tspan
+   style="font-weight:bold;-inkscape-font-specification:'Arial, Bold'"
+   id="tspan17">    </tspan>Mobilome; 
+</tspan><tspan
+         x="383.95898"
+         y="269.91257"
+         id="tspan23">    Replication, recombination &amp; repair;<tspan
+   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
+   id="tspan22"> 
+</tspan></tspan><tspan
+         x="383.95898"
+         y="284.91257"
+         id="tspan32"><tspan
+           style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
+           id="tspan25">    </tspan><tspan
+           style="-inkscape-font-specification:Arial"
+           id="tspan30">Defense mechanisms;</tspan><tspan
+           style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
+           id="tspan31"> 
+</tspan></tspan><tspan
+         x="383.95898"
+         y="299.91257"
+         id="tspan34"><tspan
+   style="font-weight:bold;-inkscape-font-specification:'Arial Bold'"
+   id="tspan33">    </tspan>Lipid transport and metabolism; 
+</tspan><tspan
+         x="383.95898"
+         y="314.91257"
+         id="tspan35">    Unknown</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;text-align:start;letter-spacing:0px;direction:rtl;text-anchor:start;fill:#000000;stroke:#e6ab02;stroke-width:0.663307;stroke-linecap:square;stroke-miterlimit:6.9;paint-order:markers stroke fill"
+       x="332.08228"
+       y="161.46759"
+       id="text15"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';text-align:end;text-anchor:end;stroke:none;stroke-width:0.663307"
+         x="332.08228"
+         y="161.46759"
+         id="tspan20">X</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';text-align:end;text-anchor:end;stroke:none;stroke-width:0.663307"
+         x="332.08228"
+         y="172.71759"
+         id="tspan26">L</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';text-align:end;text-anchor:end;stroke:none;stroke-width:0.663307"
+         x="332.08228"
+         y="183.96759"
+         id="tspan27">V</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';text-align:end;text-anchor:end;stroke:none;stroke-width:0.663307"
+         x="332.08228"
+         y="195.21759"
+         id="tspan28">I</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial Bold';text-align:end;text-anchor:end;stroke:none;stroke-width:0.663307"
+         x="332.08228"
+         y="206.46759"
+         id="tspan29">S</tspan></text>
+  </g>
+  <text
+     xml:space="preserve"
+     transform="scale(0.75)"
+     id="text29"
+     style="fill:#000000;font-size:13.33333333px;-inkscape-font-specification:'Arial Bold';font-family:Arial;stroke-width:0.88440945;paint-order:markers stroke fill;stroke-linecap:square;stroke-miterlimit:6.9;line-height:1.18;letter-spacing:0px;direction:rtl;stroke:none;text-align:end;fill-opacity:1;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal;white-space:pre;shape-inside:url(#rect54)" />
 </svg>
