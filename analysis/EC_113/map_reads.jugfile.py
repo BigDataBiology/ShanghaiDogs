@@ -50,26 +50,45 @@ def sample_paths(sample):
     )
 
 
+def _run_minimap2_to_bam(minimap2_args, output_path):
+    """Run minimap2 and pipe output through samtools view to produce BAM."""
+    minimap2 = subprocess.Popen(
+        minimap2_args,
+        stdout=subprocess.PIPE,
+    )
+    with open(output_path, "wb") as bam:
+        samtools = subprocess.Popen(
+            ["samtools", "view", "-b", "-@", THREADS],
+            stdin=minimap2.stdout,
+            stdout=bam,
+        )
+    minimap2.stdout.close()
+    samtools_rc = samtools.wait()
+    minimap2_rc = minimap2.wait()
+    if minimap2_rc != 0:
+        raise subprocess.CalledProcessError(minimap2_rc, minimap2_args)
+    if samtools_rc != 0:
+        raise subprocess.CalledProcessError(samtools_rc, ["samtools", "view"])
+
+
 @TaskGenerator
 def align_long_reads(sample, reference, ont_reads):
     output_dir = WORK_DIR / "outputs" / "mapped"
     output_dir.mkdir(exist_ok=True)
 
-    output = output_dir / f"{sample}_SHD1_0457_LR.sam"
-    with output.open("wb") as sam:
-        subprocess.run(
-            [
-                "minimap2",
-                "-ax",
-                "map-ont",
-                "-t",
-                THREADS,
-                str(reference),
-                str(ont_reads),
-            ],
-            check=True,
-            stdout=sam,
-        )
+    output = output_dir / f"{sample}_SHD1_0457_LR.bam"
+    _run_minimap2_to_bam(
+        [
+            "minimap2",
+            "-ax",
+            "map-ont",
+            "-t",
+            THREADS,
+            str(reference),
+            str(ont_reads),
+        ],
+        output,
+    )
     return str(output)
 
 
@@ -78,35 +97,31 @@ def align_short_reads(sample, reference, ilm_read1, ilm_read2):
     output_dir = WORK_DIR / "outputs" / "mapped"
     output_dir.mkdir(exist_ok=True)
 
-    output = output_dir / f"{sample}_SHD1_0457_SR.sam"
-    with output.open("wb") as sam:
-        subprocess.run(
-            [
-                "minimap2",
-                "-ax",
-                "sr",
-                "-t",
-                THREADS,
-                str(reference),
-                str(ilm_read1),
-                str(ilm_read2),
-            ],
-            check=True,
-            stdout=sam,
-        )
+    output = output_dir / f"{sample}_SHD1_0457_SR.bam"
+    _run_minimap2_to_bam(
+        [
+            "minimap2",
+            "-ax",
+            "sr",
+            "-t",
+            THREADS,
+            str(reference),
+            str(ilm_read1),
+            str(ilm_read2),
+        ],
+        output,
+    )
     return str(output)
 
 
 @TaskGenerator
-def sort_bam(sam_path):
-    sam_path = Path(sam_path)
-    output = sam_path.with_suffix(".sorted.bam")
-    with output.open("wb") as bam:
-        subprocess.run(
-            ["samtools", "sort", "-@", THREADS, str(sam_path)],
-            check=True,
-            stdout=bam,
-        )
+def sort_bam(bam_path):
+    bam_path = Path(bam_path)
+    output = bam_path.with_suffix(".sorted.bam")
+    subprocess.run(
+        ["samtools", "sort", "-@", THREADS, "-o", str(output), str(bam_path)],
+        check=True,
+    )
     return str(output)
 
 
@@ -136,7 +151,7 @@ SAMPLES = [
 
 for sample in SAMPLES:
     paths = sample_paths(sample)
-    long_sam = align_long_reads(sample, REFERENCE, paths.ont)
-    short_sam = align_short_reads(sample, REFERENCE, paths.ilm1, paths.ilm2)
-    index_bam(sort_bam(long_sam))
-    index_bam(sort_bam(short_sam))
+    long_bam = align_long_reads(sample, REFERENCE, paths.ont)
+    short_bam = align_short_reads(sample, REFERENCE, paths.ilm1, paths.ilm2)
+    index_bam(sort_bam(long_bam))
+    index_bam(sort_bam(short_bam))
