@@ -6,10 +6,12 @@ from collections import namedtuple
 from jug import TaskGenerator
 from jug.utils import timed_path
 
+from ncpus import get_ncpus
+
 
 WORK_DIR = Path('.').resolve()
 PROJECT_ROOT = WORK_DIR.parent.parent
-THREADS = "8"
+THREADS = str(get_ncpus())
 REFERENCE = timed_path(str(WORK_DIR / "data" / "SHD1_0457.fna"))
 
 
