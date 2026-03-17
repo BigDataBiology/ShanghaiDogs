@@ -7,7 +7,7 @@ from jug import TaskGenerator
 from jug.utils import timed_path
 
 
-WORK_DIR = Path(__file__).resolve().parent
+WORK_DIR = Path('.').resolve()
 PROJECT_ROOT = WORK_DIR.parent.parent
 THREADS = "8"
 REFERENCE = timed_path(str(WORK_DIR / "data" / "SHD1_0457.fna"))
@@ -52,7 +52,10 @@ def sample_paths(sample):
 
 @TaskGenerator
 def align_long_reads(sample, reference, ont_reads):
-    output = WORK_DIR / "outputs" / "mapped" / f"{sample}_SHD1_0457_LR.sam"
+    output_dir = WORK_DIR / "outputs" / "mapped"
+    output_dir.mkdir(exist_ok=True)
+
+    output = output_dir / f"{sample}_SHD1_0457_LR.sam"
     with output.open("wb") as sam:
         subprocess.run(
             [
@@ -72,7 +75,10 @@ def align_long_reads(sample, reference, ont_reads):
 
 @TaskGenerator
 def align_short_reads(sample, reference, ilm_read1, ilm_read2):
-    output = WORK_DIR / f"{sample}_SHD1_0457_SR.sam"
+    output_dir = WORK_DIR / "outputs" / "mapped"
+    output_dir.mkdir(exist_ok=True)
+
+    output = output_dir / f"{sample}_SHD1_0457_SR.sam"
     with output.open("wb") as sam:
         subprocess.run(
             [
