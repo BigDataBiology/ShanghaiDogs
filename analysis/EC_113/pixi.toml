@@ -1,0 +1,16 @@
+[workspace]
+authors = ["Luis Pedro Coelho <luis@luispedro.org>"]
+channels = ["conda-forge", "bioconda"]
+name = "ECE"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+mummer = ">=3.23,<4"
+python = ">=3.14.3,<3.15"
+jug = ">=2.5.0,<3"
+polars = ">=1.38.1,<2"
+ipython = ">=9.11.0,<10"
+gnuplot = ">=5.4.10,<6"
