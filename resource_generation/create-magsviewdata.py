@@ -26,6 +26,7 @@ args_mags = args_mags[['Bin ID', 'Predicted_Protein', 'Best_Hit_ARO', 'Cut_Off',
     'Best_Identities': 'Identity',
     'Percentage Length of Reference Sequence': 'Coverage',
 })
+args_mags['Sequence'].fillna('', inplace=True)
 args_mags = args_mags.groupby('Bin ID').apply(lambda g: g.drop('Bin ID', axis=1).to_dict(orient='records')).to_dict()
 
 for key,vals in args_mags.items():
