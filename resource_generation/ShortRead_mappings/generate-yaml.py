@@ -1,8 +1,7 @@
 import yaml
 import glob
 from collections import defaultdict
-from jug import Task
-
+from jug import Task, TaskGenerator
 
 
 @Task
@@ -147,3 +146,37 @@ def generate_Allaway():
 
     with open('Allaway.yaml', 'wt') as out:
         out.write(yaml.dump(r))
+
+@TaskGenerator
+def generate_yaml(project, use_wgs_random):
+    BASEDIR = f'../../external-data/data/{project}/'
+    if use_wgs_random:
+        BASEDIR += 'WGS_RANDOM/'
+
+    samples = glob.glob(f'{BASEDIR}/*')
+
+    r = {}
+    for s in sorted(samples):
+        fqs = glob.glob(f'{s}/*')
+        fqs.sort()
+        f1s = [f for f in fqs if f.endswith('.1.fq.gz')]
+        assert len(f1s) == len(fqs) // 2
+        f1s = [f.removeprefix(BASEDIR) for f in f1s]
+        reads = []
+        for f1 in f1s:
+            f2 = f1.replace('.1.fq.gz', '.2.fq.gz')
+            reads.append({'paired': [f1,f2]})
+        sample = s.removeprefix(BASEDIR)
+        if reads:
+            r[sample] = reads
+
+    r = {
+            'basedir': BASEDIR,
+            'samples': dict(r),
+        }
+
+    with open(f'{project}.yaml', 'wt') as out:
+        out.write(yaml.dump(r))
+
+generate_yaml('Wang_2019', use_wgs_random=True)
+generate_yaml('Branck_2024', use_wgs_random=False)

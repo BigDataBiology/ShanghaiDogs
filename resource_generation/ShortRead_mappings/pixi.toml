@@ -1,4 +1,4 @@
-[project]
+[workspace]
 authors = ["Luis Pedro Coelho <luis@luispedro.org>"]
 channels = ["conda-forge", "bioconda"]
 name = "ShortRead_mappings"
@@ -10,3 +10,4 @@ version = "0.1.0"
 [dependencies]
 jug = ">=2.3.1,<3"
 coverm = ">=0.7.0,<0.8"
+ngless = ">=1.5.0,<2"
