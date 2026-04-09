@@ -48,6 +48,10 @@ Yarlagadda = set(yaml.safe_load(open('Yarlagadda_dogs.yaml'))['samples'])
 shanghai = set(yaml.safe_load(open('SH_dogs.yaml'))['samples'])
 nomnomnow = set(yaml.safe_load(open('USA_pets_Nomnomnow.yaml'))['samples'])
 allaway = set(yaml.safe_load(open('Allaway.yaml'))['samples'])
+wang = set(yaml.safe_load(open('Wang_2019.yaml'))['samples'])
+branck = set(yaml.safe_load(open('Branck_2024.yaml'))['samples'])
+PRJCA020390 = set(yaml.safe_load(open('../../external-data/data/PRJCA020390/samples.yaml'))['samples'])
+
 
 def group_for(s):
     if s in nestle:
@@ -62,5 +66,13 @@ def group_for(s):
         return 'NomNomNow'
     if s in allaway:
         return 'Allaway'
+    if s in wang:
+        return 'Wang'
+    if s in branck:
+        return 'Branck'
+    if s in PRJCA020390:
+        return 'Zhou'
+    raise ValueError(f'Unknown sample: {s}')
+
 data['group'] = data['sample'].map(group_for)
 data.to_csv('../../intermediate-outputs/external_datasets_mappings/reads_mapped_shd.tsv', sep='\t', index=False)
