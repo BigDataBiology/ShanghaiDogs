@@ -147,6 +147,39 @@ def generate_Allaway():
     with open('Allaway.yaml', 'wt') as out:
         out.write(yaml.dump(r))
 
+@Task
+def generate_CastilloFernandez_2025():
+    project = 'Castillo-Fernandez_2025'
+    BASEDIR = f'../../external-data/data/{project}/'
+
+    samples = glob.glob(f'{BASEDIR}/*/*')
+
+    r = {}
+    for s in sorted(samples):
+        fqs = glob.glob(f'{s}/*')
+        fqs.sort()
+        f1s = [f for f in fqs if f.endswith('.1.fq.gz')]
+        f1s = [f.removeprefix(BASEDIR) for f in f1s]
+        if len(f1s) == len(fqs):
+            reads = [{'single': [f1]} for f1 in f1s]
+        else:
+            assert len(f1s) == len(fqs) // 2
+            reads = []
+            for f1 in f1s:
+                f2 = f1.replace('.1.fq.gz', '.2.fq.gz')
+                reads.append({'paired': [f1,f2]})
+        sample = s.removeprefix(BASEDIR).split('/')[1]
+        if reads:
+            r[sample] = reads
+
+    r = {
+            'basedir': BASEDIR,
+            'samples': dict(r),
+        }
+
+    with open(f'{project}.yaml', 'wt') as out:
+        out.write(yaml.dump(r))
+
 @TaskGenerator
 def generate_yaml(project, use_wgs_random):
     BASEDIR = f'../../external-data/data/{project}/'

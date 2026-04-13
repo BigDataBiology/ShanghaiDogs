@@ -53,7 +53,18 @@ branck = set(yaml.safe_load(open('Branck_2024.yaml'))['samples'])
 PRJCA020390 = set(yaml.safe_load(open('../../external-data/data/PRJCA020390/samples.yaml'))['samples'])
 
 
+Castillo = {}
+for s,vs in yaml.safe_load(open('./Castillo-Fernandez_2025.yaml'))['samples'].items():
+    if any(('single' in v) for v in vs):
+        assert not any(('paired' in v) for v in vs)
+        Castillo[s] = 'Castillo-Fernandez_2025-ONT'
+    else:
+
+        Castillo[s] = 'Castillo-Fernandez_2025'
+
 def group_for(s):
+    if s in Castillo:
+        return Castillo[s]
     if s in nestle:
         return 'Nestlé'
     if s in berlin:
