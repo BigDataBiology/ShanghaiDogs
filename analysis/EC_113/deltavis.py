@@ -292,7 +292,7 @@ def plot_dotplot(delta: DeltaFile, rotate: int = 0, flip: bool = False, ax=None)
 
         for aln in sec.alignments:
             is_forward = aln.query_start <= aln.query_end
-            color = "#00BFFF" if is_forward else "#9933FF"
+            color = "#1b9e77" if is_forward != flip else "#d95f02"
 
             x_start = r_off + aln.ref_start
             x_end = r_off + aln.ref_end
