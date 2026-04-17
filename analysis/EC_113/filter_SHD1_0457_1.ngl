@@ -1,0 +1,11 @@
+ngless "1.5"
+import "samtools" version "1.0"
+
+input = samfile(ARGV[1])
+
+filtered = select(input) using |mr|:
+    if not mr.some_match("SHD1_0457_1"):
+        discard
+
+sorted = samtools_sort(filtered)                                                                                                                           
+write(sorted, ofile=ARGV[2])
