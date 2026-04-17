@@ -31,7 +31,7 @@ def rotate_alignments(alignments, rotate, total_query):
             query_end=(aln.query_end - rot_off) % total_query,
         ) for aln in alignments]
 
-def score_alignments(alignments, rotate, total_len):
+def score_alignments_slow(alignments, rotate, total_len):
     rot_off = rotate % total_len if total_len > 0 else 0
     score = 0.0
     for ix, aln in enumerate(alignments):
@@ -44,7 +44,7 @@ def score_alignments(alignments, rotate, total_len):
             score += monotonic * aln_len / total_len * other_len / total_len
     return score
 
-def find_rotation(delta):
+def find_rotation_slow(delta):
     alignments = delta.sections[0].alignments
     lens = np.array(
             [(aln.query_end - aln.query_start) for aln in alignments])
@@ -55,8 +55,37 @@ def find_rotation(delta):
     alignments = [aln for aln in alignments if np.abs(aln.query_end - aln.query_start) >= min_len]
     max_score = 0
     best_rot = 0
-    for rot in range(0, total_len, 10_000):
-        score = score_alignments(alignments, rot, total_len)
+    for rot in range(0, total_len, 1_000):
+        score = score_alignments_slow(alignments, rot, total_len)
+        if np.abs(score) > max_score:
+            max_score = np.abs(score)
+            best_rot = rot
+    return best_rot
+
+def find_rotation(delta):
+    alignments = delta.sections[0].alignments
+    alignments = np.array([(aln.query_start, aln.query_end - aln.query_start) for aln in alignments])
+    lens = np.abs(alignments[:, 1]).copy()
+    total_len = lens.sum()
+    lens.sort()
+    min_len = lens[np.sum( np.cumsum(lens) < 0.1 * total_len )]
+    alignments = alignments.astype(np.float64)
+    alignments = alignments[np.abs(alignments.T[1]) >= min_len]
+
+
+    max_score = 0
+    best_rot = 0
+    alignments.T[1] /= total_len
+    for rot in range(0, total_len, 1_000):
+        rot_off = rot % total_len if total_len > 0 else 0
+        ralignments = alignments.copy()
+        ralignments[:, 0] = (ralignments[:, 0] - rot_off) % total_len
+        score = 0.0
+        for ix in range(len(ralignments)):
+            aln = ralignments[ix]
+            other_aln = ralignments[:ix]
+            monotonic = np.choose(aln[0] > other_aln[:, 0], [1, -1])
+            score += np.sum(monotonic * (aln[1] * other_aln[:, 1]))
         if np.abs(score) > max_score:
             max_score = np.abs(score)
             best_rot = rot
